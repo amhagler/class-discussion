@@ -579,6 +579,7 @@
             cursor: pointer;
             border-radius: 10px;
             transition: all 0.3s ease;
+            width: 100%;
         }
 
         .select-button:hover {
@@ -589,6 +590,48 @@
             background-color: var(--primary-color-dark);
             box-shadow: 0 2px #666;
             transform: translateY(2px);
+        }
+
+        #customColorPopup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border: 1px solid #ccc;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 30;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 600px;
+            text-align: center;
+        }
+
+        #customColorPopup h2 {
+            margin-top: 0;
+            color: var(--primary-color);
+        }
+
+        #customColorPopup label,
+        #customColorPopup input {
+            display: block;
+            width: 80%;
+            margin: 10px auto;
+        }
+
+        #customColorPopup input[type="color"] {
+            width: 100%;
+            height: 60px;
+            padding: 0;
+            border: none;
+        }
+
+        #customColorPopup .color-code {
+            margin: 10px 0;
+            font-size: 18px;
+            color: var(--primary-color);
         }
 
         #logAndReport {
@@ -783,6 +826,13 @@
             padding: 5px 10px;
             font-size: 14px;
         }
+
+        /* Larger discussion title input */
+        #discussionTitle {
+            width: 80%;
+            padding: 10px;
+            font-size: 18px;
+        }
     </style>
 </head>
 
@@ -923,6 +973,18 @@
         <ul id="colorSchemeList"></ul>
     </div>
 
+    <div id="customColorPopup">
+        <h2>Select Your Own Colors</h2>
+        <label for="primaryColor">Primary Color:</label>
+        <input type="color" id="primaryColor" oninput="updatePrimaryColorCode()">
+        <div id="primaryColorCode" class="color-code">#000000</div>
+        <label for="secondaryColor">Secondary Color:</label>
+        <input type="color" id="secondaryColor" oninput="updateSecondaryColorCode()">
+        <div id="secondaryColorCode" class="color-code">#000000</div>
+        <button onclick="applyCustomColors()">Apply</button>
+        <button onclick="closeCustomColorPopup()">Cancel</button>
+    </div>
+
     <div id="confirmRestartPopup">
         <h2>Confirmation</h2>
         <p>This will erase all data! Are you sure you wish to proceed?</p>
@@ -962,6 +1024,11 @@
         const reportContainer = document.getElementById('reportContainer');
         const colorSchemePopup = document.getElementById('colorSchemePopup');
         const colorSchemeList = document.getElementById('colorSchemeList');
+        const customColorPopup = document.getElementById('customColorPopup');
+        const primaryColorInput = document.getElementById('primaryColor');
+        const secondaryColorInput = document.getElementById('secondaryColor');
+        const primaryColorCode = document.getElementById('primaryColorCode');
+        const secondaryColorCode = document.getElementById('secondaryColorCode');
         const discussionTitleDisplay = document.getElementById('discussionTitleDisplay');
         const discussionDateDisplay = document.getElementById('discussionDateDisplay');
         const replayControls = document.getElementById('replayControls');
@@ -1045,6 +1112,14 @@
             colorSchemePopup.style.display = 'none';
         }
 
+        function openCustomColorPopup() {
+            customColorPopup.style.display = 'block';
+        }
+
+        function closeCustomColorPopup() {
+            customColorPopup.style.display = 'none';
+        }
+
         function createColorSchemeList() {
             colorSchemeList.innerHTML = '';
             nhlTeams.forEach(team => {
@@ -1071,6 +1146,42 @@
                 li.appendChild(selectButton);
                 colorSchemeList.appendChild(li);
             });
+
+            // Add "Select your own" option
+            const customLi = document.createElement('li');
+            const customSwatch = document.createElement('div');
+            customSwatch.className = 'swatch';
+            customSwatch.style.backgroundColor = '#000000';
+            const customSwatch2 = document.createElement('div');
+            customSwatch2.className = 'swatch';
+            customSwatch2.style.backgroundColor = '#000000';
+            customLi.appendChild(customSwatch);
+            customLi.appendChild(customSwatch2);
+            customLi.style.width = 'calc(12.5% - 10px)';
+            const customButton = document.createElement('button');
+            customButton.className = 'select-button';
+            customButton.textContent = 'Select your own';
+            customButton.onclick = () => {
+                openCustomColorPopup();
+                closeColorSchemePopup();
+            };
+            customLi.appendChild(customButton);
+            colorSchemeList.appendChild(customLi);
+        }
+
+        function applyCustomColors() {
+            const primaryColor = primaryColorInput.value;
+            const secondaryColor = secondaryColorInput.value;
+            updateColorScheme(primaryColor, secondaryColor, 'Custom');
+            closeCustomColorPopup();
+        }
+
+        function updatePrimaryColorCode() {
+            primaryColorCode.textContent = primaryColorInput.value;
+        }
+
+        function updateSecondaryColorCode() {
+            secondaryColorCode.textContent = secondaryColorInput.value;
         }
 
         document.addEventListener('DOMContentLoaded', createColorSchemeList);
@@ -1105,6 +1216,13 @@
         notesBox.addEventListener('keydown', function(event) {
             if (event.ctrlKey && event.key === 'Enter') {
                 saveNotes();
+            }
+        });
+
+        document.getElementById('discussionTitle').addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                startDiscussion();
             }
         });
 
@@ -1499,49 +1617,47 @@
             location.reload();
         }
 
-     function generateReport() {
-    const reportTable = document.getElementById('reportTable').getElementsByTagName('tbody')[0];
-    const notesReportTable = document.getElementById('notesReportTable').getElementsByTagName('tbody')[0];
-    reportTable.innerHTML = '';
-    notesReportTable.innerHTML = '';
+        function generateReport() {
+            const reportTable = document.getElementById('reportTable').getElementsByTagName('tbody')[0];
+            const notesReportTable = document.getElementById('notesReportTable').getElementsByTagName('tbody')[0];
+            reportTable.innerHTML = '';
+            notesReportTable.innerHTML = '';
 
-    const totalDuration = participants.reduce((sum, participant) => sum + participant.endTimes.reduce((a, b) => a + b, 0), 0);
+            const totalDuration = participants.reduce((sum, participant) => sum + participant.endTimes.reduce((a, b) => a + b, 0), 0);
 
-    participants.forEach(participant => {
-        const row = reportTable.insertRow();
-        const participantCell = row.insertCell(0);
-        const allRatingsCell = row.insertCell(1);
-        const avgRatingCell = row.insertCell(2);
-        const totalAirTimeCell = row.insertCell(3);
-        const dominationCell = row.insertCell(4);
+            participants.forEach(participant => {
+                const row = reportTable.insertRow();
+                const participantCell = row.insertCell(0);
+                const allRatingsCell = row.insertCell(1);
+                const avgRatingCell = row.insertCell(2);
+                const totalAirTimeCell = row.insertCell(3);
+                const dominationCell = row.insertCell(4);
 
-        const ratings = participant.ratings.filter(rating => rating !== null && rating !== undefined);
-        const avgRating = ratings.length > 0 ? (ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(2) : 'N/A';
-        const totalAirTime = participant.endTimes.reduce((a, b) => a + b, 0);
-        const minutes = Math.floor(totalAirTime / 60);
-        const seconds = totalAirTime % 60;
-        const formattedAirTime = `${minutes}m ${seconds.toFixed(2)}s`;
-        const domination = totalDuration > 0 ? ((totalAirTime / totalDuration) * 100).toFixed(2) + "%" : "0%";
+                const ratings = participant.ratings.filter(rating => rating !== null && rating !== undefined);
+                const avgRating = ratings.length > 0 ? (ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(2) : 'N/A';
+                const totalAirTime = participant.endTimes.reduce((a, b) => a + b, 0);
+                const minutes = Math.floor(totalAirTime / 60);
+                const seconds = totalAirTime % 60;
+                const formattedAirTime = `${minutes}m ${seconds.toFixed(2)}s`;
+                const domination = totalDuration > 0 ? ((totalAirTime / totalDuration) * 100).toFixed(2) + "%" : "0%";
 
-        participantCell.textContent = participant.name;
-        allRatingsCell.textContent = ratings.join(', ');
-        avgRatingCell.textContent = avgRating;
-        totalAirTimeCell.textContent = formattedAirTime;
-        dominationCell.textContent = domination;
+                participantCell.textContent = participant.name;
+                allRatingsCell.textContent = ratings.join(', ');
+                avgRatingCell.textContent = avgRating;
+                totalAirTimeCell.textContent = formattedAirTime;
+                dominationCell.textContent = domination;
 
-        const notesRow = notesReportTable.insertRow();
-        const notesParticipantCell = notesRow.insertCell(0);
-        const notesCell = notesRow.insertCell(1);
-        notesParticipantCell.textContent = participant.name;
-        notesCell.textContent = participant.notes.join(' - [] - ');
-    });
+                const notesRow = notesReportTable.insertRow();
+                const notesParticipantCell = notesRow.insertCell(0);
+                const notesCell = notesRow.insertCell(1);
+                notesParticipantCell.textContent = participant.name;
+                notesCell.textContent = participant.notes.join(' - [] - ');
+            });
 
-    reportContainer.style.display = 'block';
-    document.getElementById('copyReportButton').style.display = 'inline';
-    document.getElementById('toggleReportButton').style.display = 'inline';
-}
-
-
+            reportContainer.style.display = 'block';
+            document.getElementById('copyReportButton').style.display = 'inline';
+            document.getElementById('toggleReportButton').style.display = 'inline';
+        }
 
         function copyReport() {
             const range = document.createRange();
