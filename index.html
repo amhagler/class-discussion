@@ -833,6 +833,7 @@
             font-size: 18px;
         }
     </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 
 <body>
@@ -846,6 +847,7 @@
         <button id="copyReportButton" style="display:none;" onclick="copyReport()">Copy Report</button>
         <button id="colorSchemeButton" onclick="openColorSchemePopup()">Change Color Scheme</button>
         <button id="editParticipantsButton" style="display:none;" onclick="openEditParticipantsPopup()">Edit Participants</button>
+        <button id="exportScreenshotButton" style="display:none;" onclick="exportScreenshot()">Export Screenshot</button>
         <div id="replayControls" style="display:none;">
             <h2>Order Replay</h2>
             <button onclick="replayDiscussion(2)">2x Speed</button>
@@ -1385,6 +1387,7 @@
             document.getElementById('copyLogButton').style.display = 'inline';
             document.getElementById('restartDiscussionButton').style.display = 'inline';
             document.getElementById('generateReportButton').style.display = 'inline';
+            document.getElementById('exportScreenshotButton').style.display = 'inline'; // Show the screenshot button
         }
 
         function highlightParticipant(index) {
@@ -1805,6 +1808,15 @@
             placeParticipants();
             redrawConnections();
             renameParticipantsContainer.style.display = 'none';
+        }
+
+        function exportScreenshot() {
+            html2canvas(document.body).then(canvas => {
+                const link = document.createElement('a');
+                link.href = canvas.toDataURL();
+                link.download = 'discussion_tracker_screenshot.png';
+                link.click();
+            });
         }
     </script>
 </body>
