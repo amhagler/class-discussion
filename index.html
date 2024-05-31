@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Harkness Discussion Tracker</title>
+    <title>Discussion Tracker</title>
     <style>
         :root {
             --primary-color: #6F263D;
@@ -418,7 +418,9 @@
         }
 
         #reportContainer {
-            margin-top: 20px;
+            position: fixed;
+            bottom: 0;
+            right: 0;
             display: none;
             max-height: 400px;
             overflow-y: auto;
@@ -479,11 +481,11 @@
         }
 
         #notesBox button:hover {
-            background-color: var (--primary-color-dark);
+            background-color: var(--primary-color-dark);
         }
 
         #notesBox button:active {
-            background-color: var (--primary-color-dark);
+            background-color: var(--primary-color-dark);
             box-shadow: 0 2px #666;
             transform: translateY(2px);
         }
@@ -493,8 +495,8 @@
             top: 50%;
             left: calc(100% + 100px);
             transform: translateY(-50%);
-            background-color: var (--secondary-color);
-            color: var (--text-color);
+            background-color: var(--secondary-color);
+            color: var(--text-color);
             border: none;
             padding: 15px;
             font-size: 16px;
@@ -506,11 +508,11 @@
         }
 
         .pause-button:hover {
-            background-color: var (--secondary-color-dark);
+            background-color: var(--secondary-color-dark);
         }
 
         .pause-button:active {
-            background-color: var (--secondary-color-dark);
+            background-color: var(--secondary-color-dark);
             box-shadow: 0 2px #666;
             transform: translateY(2px);
         }
@@ -535,7 +537,7 @@
 
         #colorSchemePopup h2 {
             margin-top: 0;
-            color: var (--primary-color);
+            color: var(--primary-color);
             text-align: center;
         }
 
@@ -570,8 +572,8 @@
         }
 
         .select-button {
-            background-color: var (--primary-color);
-            color: var (--text-color);
+            background-color: var(--primary-color);
+            color: var(--text-color);
             border: none;
             padding: 5px 10px;
             cursor: pointer;
@@ -580,11 +582,11 @@
         }
 
         .select-button:hover {
-            background-color: var (--primary-color-dark);
+            background-color: var(--primary-color-dark);
         }
 
         .select-button:active {
-            background-color: var (--primary-color-dark);
+            background-color: var(--primary-color-dark);
             box-shadow: 0 2px #666;
             transform: translateY(2px);
         }
@@ -630,12 +632,12 @@
 
         #confirmRestartPopup h2 {
             margin-top: 0;
-            color: var (--primary-color);
+            color: var(--primary-color);
         }
 
         #confirmRestartPopup button {
-            background-color: var (--primary-color);
-            color: var (--text-color);
+            background-color: var(--primary-color);
+            color: var(--text-color);
             border: none;
             padding: 10px;
             font-size: 16px;
@@ -647,11 +649,11 @@
         }
 
         #confirmRestartPopup button:hover {
-            background-color: var (--primary-color-dark);
+            background-color: var(--primary-color-dark);
         }
 
         #confirmRestartPopup button:active {
-            background-color: var (--primary-color-dark);
+            background-color: var(--primary-color-dark);
             box-shadow: 0 2px #666;
             transform: translateY(2px);
         }
@@ -676,7 +678,7 @@
 
         #editParticipantsPopup h2 {
             margin-top: 0;
-            color: var (--primary-color);
+            color: var(--primary-color);
             text-align: center;
         }
 
@@ -694,8 +696,8 @@
         }
 
         #editParticipantsPopup button {
-            background-color: var (--primary-color);
-            color: var (--text-color);
+            background-color: var(--primary-color);
+            color: var(--text-color);
             border: none;
             cursor: pointer;
             border-radius: 20px;
@@ -704,11 +706,11 @@
         }
 
         #editParticipantsPopup button:hover {
-            background-color: var (--primary-color-dark);
+            background-color: var(--primary-color-dark);
         }
 
         #editParticipantsPopup button:active {
-            background-color: var (--primary-color-dark);
+            background-color: var(--primary-color-dark);
             box-shadow: 0 2px #666;
             transform: translateY(2px);
         }
@@ -808,7 +810,7 @@
     </div>
 
     <div id="mainContent">
-        <h1>Harkness Discussion Tracker</h1>
+        <h1>Discussion Tracker</h1>
         <div id="discussionTitleDisplay"></div>
         <div id="discussionDateDisplay"></div>
 
@@ -1693,6 +1695,3 @@
 </body>
 
 </html>
-
-
-
