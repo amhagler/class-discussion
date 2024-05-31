@@ -1,0 +1,1698 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Harkness Discussion Tracker</title>
+    <style>
+        :root {
+            --primary-color: #6F263D;
+            --primary-color-dark: #5c1f32;
+            --secondary-color: #236192;
+            --secondary-color-dark: #1b4e6f;
+            --text-color: #FFFFFF;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background-color: #f4f4f9;
+            color: #333;
+            display: flex;
+            justify-content: center;
+        }
+
+        h1 {
+            text-align: center;
+            color: var(--primary-color);
+            font-size: 2.5em;
+        }
+
+        #discussionTitleDisplay {
+            text-align: center;
+            color: var(--primary-color);
+            margin-top: 10px;
+            font-size: 2.5em;
+        }
+
+        #discussionDateDisplay {
+            text-align: center;
+            color: var(--primary-color);
+            font-size: 1.5em;
+        }
+
+        #controls {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            margin-right: 20px;
+        }
+
+        #participantForm,
+        #replayControls {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        #participantForm label,
+        #participantForm input,
+        #participantForm button {
+            display: block;
+            margin: 10px auto;
+        }
+
+        #participantForm input,
+        #participantForm button {
+            padding: 10px;
+            font-size: 16px;
+        }
+
+        #participantForm button {
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            border: none;
+            cursor: pointer;
+            border-radius: 20px;
+            box-shadow: 0 4px #999;
+            transition: all 0.3s ease;
+        }
+
+        #participantForm button:hover {
+            background-color: var(--primary-color-dark);
+        }
+
+        #participantForm button:active {
+            background-color: var(--primary-color-dark);
+            box-shadow: 0 2px #666;
+            transform: translateY(2px);
+        }
+
+        #controls button {
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px;
+            border-radius: 20px;
+            box-shadow: 0 4px #999;
+            transition: all 0.3s ease;
+            width: 200px;
+        }
+
+        #controls button:hover {
+            background-color: var(--primary-color-dark);
+        }
+
+        #controls button:active {
+            background-color: var(--primary-color-dark);
+            box-shadow: 0 2px #666;
+            transform: translateY(2px);
+        }
+
+        #mainContent {
+            text-align: center;
+            flex-grow: 1;
+        }
+
+        #circle {
+            position: relative;
+            width: 800px;
+            height: 800px;
+            margin: 100px auto 20px;
+            border-radius: 50%;
+            border: 2px solid #ccc;
+            background-color: #fff;
+        }
+
+        .participant {
+            position: absolute;
+            text-align: center;
+            transform: translate(-50%, -50%);
+        }
+
+        .participant p {
+            margin: 0;
+            padding: 10px;
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            border-radius: 50px / 25px;
+            width: 100px;
+            height: 50px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .participant button {
+            margin-top: 5px;
+            padding: 5px;
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            border: none;
+            cursor: pointer;
+            border-radius: 20px;
+            box-shadow: 0 4px #999;
+            transition: all 0.3s ease;
+        }
+
+        .participant button.notes-button {
+            background-color: var(--secondary-color);
+            margin-top: 10px;
+        }
+
+        .participant button:hover {
+            background-color: var(--primary-color-dark);
+        }
+
+        .participant button.notes-button:hover {
+            background-color: var(--secondary-color-dark);
+        }
+
+        .participant button:active {
+            background-color: var(--primary-color-dark);
+            box-shadow: 0 2px #666;
+            transform: translateY(2px);
+        }
+
+        .participant button.notes-button:active {
+            background-color: var(--secondary-color-dark);
+        }
+
+        #ratingBox {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border: 1px solid #ccc;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+            border-radius: 10px;
+        }
+
+        #ratingBox h2 {
+            margin-top: 0;
+            color: var(--primary-color);
+        }
+
+        #ratingBox label,
+        #ratingBox textarea,
+        #ratingBox button {
+            display: block;
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        #ratingBox .rating-options {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-top: 10px;
+        }
+
+        #ratingBox .rating-option {
+            background-color: #ccc;
+            padding: 10px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        #ratingBox .rating-option.selected {
+            background-color: var(--primary-color);
+            color: var(--text-color);
+        }
+
+        #ratingBox .rating-option:hover {
+            background-color: var(--primary-color-dark);
+        }
+
+        #ratingBox textarea {
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        #ratingBox .submit-button {
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            border: none;
+            padding: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 20px;
+            box-shadow: 0 4px #999;
+            transition: all 0.3s ease;
+        }
+
+        #ratingBox .submit-button:hover {
+            background-color: var(--primary-color-dark);
+        }
+
+        #ratingBox .submit-button:active {
+            background-color: var(--primary-color-dark);
+            box-shadow: 0 2px #666;
+            transform: translateY(2px);
+        }
+
+        #logContainer {
+            margin-top: 20px;
+            display: none;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 2px solid var(--secondary-color);
+            padding: 10px;
+            resize: both;
+            overflow: auto;
+            width: 60%;
+            direction: rtl;
+        }
+
+        #logContainer * {
+            direction: ltr;
+        }
+
+        #logContainer h2 {
+            color: var(--primary-color);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+
+        table,
+        th,
+        td {
+            border: 1px solid #ccc;
+        }
+
+        th,
+        td {
+            padding: 12px;
+            text-align: left;
+        }
+
+        th {
+            background-color: var(--primary-color);
+            color: var(--text-color);
+        }
+
+        td {
+            background-color: #fff;
+        }
+
+        .edit-button {
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 5px;
+            box-shadow: 0 4px #999;
+            transition: all 0.3s ease;
+        }
+
+        .edit-button:hover {
+            background-color: var(--primary-color-dark);
+        }
+
+        .edit-button:active {
+            background-color: var(--primary-color-dark);
+            box-shadow: 0 2px #666;
+            transform: translateY(2px);
+        }
+
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        #editRatingBox {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border: 1px solid #ccc;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+            border-radius: 10px;
+        }
+
+        #editRatingBox h2 {
+            margin-top: 0;
+            color: var(--primary-color);
+        }
+
+        #editRatingBox label,
+        #editRatingBox input,
+        #editRatingBox textarea,
+        #editRatingBox button {
+            display: block;
+            width: 100%;
+            margin: 10px 0;
+        }
+
+        #editRatingBox .rating-options {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        #editRatingBox .rating-option {
+            background-color: #ccc;
+            padding: 10px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        #editRatingBox .rating-option.selected {
+            background-color: var(--primary-color);
+            color: var(--text-color);
+        }
+
+        #editRatingBox .rating-option:hover {
+            background-color: var(--primary-color-dark);
+        }
+
+        #editRatingBox textarea {
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        #editRatingBox button {
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            border: none;
+            padding: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 20px;
+            box-shadow: 0 4px #999;
+            transition: all 0.3s ease;
+        }
+
+        #editRatingBox button:hover {
+            background-color: var(--primary-color-dark);
+        }
+
+        #editRatingBox button:active {
+            background-color: var(--primary-color-dark);
+            box-shadow: 0 2px #666;
+            transform: translateY(2px);
+        }
+
+        #reportContainer {
+            margin-top: 20px;
+            display: none;
+            max-height: 400px;
+            overflow-y: auto;
+            border: 2px solid var(--secondary-color);
+            padding: 10px;
+            resize: both;
+            overflow: auto;
+            width: 60%;
+            direction: rtl;
+            border-bottom: 2px solid var(--secondary-color);
+        }
+
+        #reportContainer * {
+            direction: ltr;
+        }
+
+        #reportContainer h2 {
+            color: var(--primary-color);
+        }
+
+        #notesBox {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border: 1px solid #ccc;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 10;
+            border-radius: 10px;
+        }
+
+        #notesBox h2 {
+            margin-top: 0;
+            color: var(--primary-color);
+        }
+
+        #notesBox textarea {
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        #notesBox button {
+            background-color: var(--primary-color);
+            color: var(--text-color);
+            border: none;
+            padding: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 20px;
+            box-shadow: 0 4px #999;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+        }
+
+        #notesBox button:hover {
+            background-color: var (--primary-color-dark);
+        }
+
+        #notesBox button:active {
+            background-color: var (--primary-color-dark);
+            box-shadow: 0 2px #666;
+            transform: translateY(2px);
+        }
+
+        .pause-button {
+            position: absolute;
+            top: 50%;
+            left: calc(100% + 100px);
+            transform: translateY(-50%);
+            background-color: var (--secondary-color);
+            color: var (--text-color);
+            border: none;
+            padding: 15px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 50%;
+            box-shadow: 0 4px #999;
+            transition: all 0.3s ease;
+            z-index: 5;
+        }
+
+        .pause-button:hover {
+            background-color: var (--secondary-color-dark);
+        }
+
+        .pause-button:active {
+            background-color: var (--secondary-color-dark);
+            box-shadow: 0 2px #666;
+            transform: translateY(2px);
+        }
+
+        #colorSchemePopup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border: 1px solid #ccc;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 20;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 800px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        #colorSchemePopup h2 {
+            margin-top: 0;
+            color: var (--primary-color);
+            text-align: center;
+        }
+
+        #colorSchemeList {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            justify-content: space-between;
+        }
+
+        #colorSchemeList li {
+            list-style: none;
+            width: calc(12.5% - 10px);
+            text-align: center;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            background-color: #f9f9f9;
+        }
+
+        .swatch {
+            width: 40px;
+            height: 40px;
+            margin: 5px auto;
+            border-radius: 50%;
+        }
+
+        .team-name {
+            display: block;
+            margin: 10px 0;
+            font-size: 14px;
+        }
+
+        .select-button {
+            background-color: var (--primary-color);
+            color: var (--text-color);
+            border: none;
+            padding: 5px 10px;
+            cursor: pointer;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+        }
+
+        .select-button:hover {
+            background-color: var (--primary-color-dark);
+        }
+
+        .select-button:active {
+            background-color: var (--primary-color-dark);
+            box-shadow: 0 2px #666;
+            transform: translateY(2px);
+        }
+
+        #logAndReport {
+            margin-left: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+        }
+
+        #replayControls {
+            margin-top: 20px;
+            text-align: center;
+        }
+
+        #replayControls button {
+            margin: 5px 0;
+        }
+
+        /* Specific styles for Tampa Bay Lightning and Toronto Maple Leafs */
+        .lightning-highlight,
+        .leafs-highlight {
+            color: #000000 !important;
+        }
+
+        #confirmRestartPopup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border: 1px solid #ccc;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 30;
+            border-radius: 10px;
+            width: 50%;
+            max-width: 400px;
+            text-align: center;
+        }
+
+        #confirmRestartPopup h2 {
+            margin-top: 0;
+            color: var (--primary-color);
+        }
+
+        #confirmRestartPopup button {
+            background-color: var (--primary-color);
+            color: var (--text-color);
+            border: none;
+            padding: 10px;
+            font-size: 16px;
+            cursor: pointer;
+            border-radius: 20px;
+            box-shadow: 0 4px #999;
+            transition: all 0.3s ease;
+            margin: 10px 5px;
+        }
+
+        #confirmRestartPopup button:hover {
+            background-color: var (--primary-color-dark);
+        }
+
+        #confirmRestartPopup button:active {
+            background-color: var (--primary-color-dark);
+            box-shadow: 0 2px #666;
+            transform: translateY(2px);
+        }
+
+        #editParticipantsPopup {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            border: 1px solid #ccc;
+            padding: 20px;
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            z-index: 30;
+            border-radius: 10px;
+            width: 80%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        #editParticipantsPopup h2 {
+            margin-top: 0;
+            color: var (--primary-color);
+            text-align: center;
+        }
+
+        #editParticipantsPopup .popup-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #editParticipantsPopup input,
+        #editParticipantsPopup button {
+            padding: 10px;
+            font-size: 16px;
+            margin: 10px 0;
+        }
+
+        #editParticipantsPopup button {
+            background-color: var (--primary-color);
+            color: var (--text-color);
+            border: none;
+            cursor: pointer;
+            border-radius: 20px;
+            box-shadow: 0 4px #999;
+            transition: all 0.3s ease;
+        }
+
+        #editParticipantsPopup button:hover {
+            background-color: var (--primary-color-dark);
+        }
+
+        #editParticipantsPopup button:active {
+            background-color: var (--primary-color-dark);
+            box-shadow: 0 2px #666;
+            transform: translateY(2px);
+        }
+
+        #editParticipantsPopup .close-button {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: transparent;
+            border: none;
+            font-size: 20px;
+            cursor: pointer;
+        }
+
+        #reorderParticipantsContainer {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #reorderParticipantsContainer ul {
+            list-style: none;
+            padding: 0;
+            width: 100%;
+        }
+
+        #reorderParticipantsContainer li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            cursor: grab;
+        }
+
+        #reorderParticipantsContainer li.dragging {
+            opacity: 0.5;
+        }
+
+        #renameParticipantsContainer {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        #renameParticipantsContainer ul {
+            list-style: none;
+            padding: 0;
+            width: 100%;
+        }
+
+        #renameParticipantsContainer li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-bottom: 10px;
+        }
+
+        #renameParticipantsContainer input {
+            flex-grow: 1;
+            margin-right: 10px;
+        }
+
+        #renameParticipantsContainer button {
+            padding: 5px 10px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="controls">
+        <button id="endDiscussionButton" style="display:none;" onclick="endDiscussion()">End Discussion</button>
+        <button id="toggleLogButton" onclick="toggleLog()">Show Discussion Log</button>
+        <button id="copyLogButton" style="display:none;" onclick="copyLog()">Copy Discussion Log</button>
+        <button id="restartDiscussionButton" style="display:none;" onclick="confirmRestartDiscussion()">Restart Discussion</button>
+        <button id="generateReportButton" style="display:none;" onclick="generateReport()">Generate Report</button>
+        <button id="toggleReportButton" style="display:none;" onclick="toggleReport()">Show/Hide Report</button>
+        <button id="copyReportButton" style="display:none;" onclick="copyReport()">Copy Report</button>
+        <button id="colorSchemeButton" onclick="openColorSchemePopup()">Change Color Scheme</button>
+        <button id="editParticipantsButton" style="display:none;" onclick="openEditParticipantsPopup()">Edit Participants</button>
+        <div id="replayControls" style="display:none;">
+            <h2>Order Replay</h2>
+            <button onclick="replayDiscussion(2)">2x Speed</button>
+            <button onclick="replayDiscussion(4)">4x Speed</button>
+            <button onclick="replayDiscussion(8)">8x Speed</button>
+            <h2>Timed Replay</h2>
+            <button onclick="replayDiscussionTimed(8)">8x Speed</button>
+            <button onclick="replayDiscussionTimed(16)">16x Speed</button>
+            <button onclick="replayDiscussionTimed(32)">32x Speed</button>
+        </div>
+    </div>
+
+    <div id="mainContent">
+        <h1>Harkness Discussion Tracker</h1>
+        <div id="discussionTitleDisplay"></div>
+        <div id="discussionDateDisplay"></div>
+
+        <div id="discussionDetails">
+            <label for="discussionTitle">Discussion Title:</label>
+            <input type="text" id="discussionTitle" required>
+            <button onclick="startDiscussion()">Start Discussion</button>
+        </div>
+
+        <form id="participantForm" style="display:none;">
+            <label for="name">Participant Name:</label>
+            <input type="text" id="name" required>
+            <button type="submit">Add Participant</button>
+            <button type="button" onclick="doneAddingParticipants()">Done adding participants</button>
+        </form>
+
+        <div id="circle">
+            <canvas id="connectionCanvas" width="800" height="800"></canvas>
+            <button class="pause-button" onclick="pauseTimer()">Pause</button>
+        </div>
+    </div>
+
+    <div id="logAndReport">
+        <div id="logContainer">
+            <h2>Discussion Log</h2>
+            <table id="logTable">
+                <thead>
+                    <tr>
+                        <th>Participant</th>
+                        <th>Timestamp</th>
+                        <th>Rating</th>
+                        <th>Comment</th>
+                        <th>Duration</th>
+                        <th>Edit</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Logs will be added here -->
+                </tbody>
+            </table>
+        </div>
+
+        <div id="reportContainer">
+            <h2>Report</h2>
+            <table id="reportTable">
+                <thead>
+                    <tr>
+                        <th>Participant</th>
+                        <th>All Ratings</th>
+                        <th>Average</th>
+                        <th>Total Air Time</th>
+                        <th>Domination</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Report will be added here -->
+                </tbody>
+            </table>
+            <h2>Notes</h2>
+            <table id="notesReportTable">
+                <thead>
+                    <tr>
+                        <th>Participant</th>
+                        <th>Notes</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <!-- Notes report will be added here -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div id="ratingBox">
+        <h2>Rate Contribution</h2>
+        <div class="rating-options">
+            <div class="rating-option" onclick="selectRating(1)">1</div>
+            <div class="rating-option" onclick="selectRating(2)">2</div>
+            <div class="rating-option" onclick="selectRating(3)">3</div>
+            <div class="rating-option" onclick="selectRating(4)">4</div>
+            <div class="rating-option" onclick="selectRating(5)">5</div>
+        </div>
+        <label for="comment">Comment:</label>
+        <textarea id="comment" rows="4" cols="30"></textarea>
+        <button class="submit-button" onclick="startTimer()">START TIMER</button>
+    </div>
+
+    <div id="editRatingBox">
+        <h2>Edit Contribution</h2>
+        <div class="rating-options">
+            <div class="rating-option" onclick="selectEditRating(1)">1</div>
+            <div class="rating-option" onclick="selectEditRating(2)">2</div>
+            <div class="rating-option" onclick="selectEditRating(3)">3</div>
+            <div class="rating-option" onclick="selectEditRating(4)">4</div>
+            <div class="rating-option" onclick="selectEditRating(5)">5</div>
+        </div>
+        <label for="editComment">Comment:</label>
+        <textarea id="editComment" rows="4" cols="30"></textarea>
+        <button onclick="saveEdit()">Save</button>
+    </div>
+
+    <div id="notesBox">
+        <h2 id="notesBoxTitle">Notes about</h2>
+        <textarea id="notesText" rows="4" cols="30"></textarea>
+        <button onclick="saveNotes()">Save</button>
+    </div>
+
+    <div id="colorSchemePopup">
+        <h2>Color Scheme</h2>
+        <ul id="colorSchemeList"></ul>
+    </div>
+
+    <div id="confirmRestartPopup">
+        <h2>Confirmation</h2>
+        <p>This will erase all data! Are you sure you wish to proceed?</p>
+        <button onclick="restartDiscussion()">Yes. I have saved my data.</button>
+        <button onclick="closeConfirmRestartPopup()">No. Let me go back.</button>
+    </div>
+
+    <div id="editParticipantsPopup">
+        <h2>Edit Participants</h2>
+        <div class="popup-content">
+            <input type="text" id="newParticipantName" placeholder="Participant Name">
+            <button onclick="addNewParticipant()">Add Participant</button>
+            <button onclick="openReorderParticipants()">Reorder Participants</button>
+            <button onclick="openRenameParticipants()">Rename Participants</button>
+            <button class="close-button" onclick="closeEditParticipantsPopup()">X</button>
+            <div id="reorderParticipantsContainer" style="display: none;">
+                <ul id="reorderParticipantsList"></ul>
+                <button onclick="saveReorderedParticipants()">Save Order</button>
+            </div>
+            <div id="renameParticipantsContainer" style="display: none;">
+                <ul id="renameParticipantsList"></ul>
+                <button onclick="saveRenamedParticipants()">Save Changes</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const participantForm = document.getElementById('participantForm');
+        const circle = document.getElementById('circle');
+        const logContainer = document.getElementById('logContainer');
+        const logTable = document.getElementById('logTable').getElementsByTagName('tbody')[0];
+        const canvas = document.getElementById('connectionCanvas');
+        const ctx = canvas.getContext('2d');
+        const notesBox = document.getElementById('notesBox');
+        const notesText = document.getElementById('notesText');
+        const notesBoxTitle = document.getElementById('notesBoxTitle');
+        const reportContainer = document.getElementById('reportContainer');
+        const colorSchemePopup = document.getElementById('colorSchemePopup');
+        const colorSchemeList = document.getElementById('colorSchemeList');
+        const discussionTitleDisplay = document.getElementById('discussionTitleDisplay');
+        const discussionDateDisplay = document.getElementById('discussionDateDisplay');
+        const replayControls = document.getElementById('replayControls');
+        const confirmRestartPopup = document.getElementById('confirmRestartPopup');
+        const editParticipantsPopup = document.getElementById('editParticipantsPopup');
+        const reorderParticipantsContainer = document.getElementById('reorderParticipantsContainer');
+        const reorderParticipantsList = document.getElementById('reorderParticipantsList');
+        const renameParticipantsContainer = document.getElementById('renameParticipantsContainer');
+        const renameParticipantsList = document.getElementById('renameParticipantsList');
+        let participants = [];
+        let connections = [];
+        const connectionCounts = {};
+        let lastSpokenIndex = null;
+        let currentSpeakerIndex = null;
+        let selectedRating = null;
+        let editingRow = null;
+        let totalStartTime = null;
+        let currentNotesParticipant = null;
+        let teamName = null;
+
+        const nhlTeams = [
+            { name: 'Anaheim Ducks', colors: ['#F47A38', '#B09862'] },
+            { name: 'Arizona Coyotes', colors: ['#8C2633', '#E2D6B5'] },
+            { name: 'Boston Bruins', colors: ['#000000', '#FFB81C'] },
+            { name: 'Buffalo Sabres', colors: ['#002654', '#FCB514'] },
+            { name: 'Calgary Flames', colors: ['#C8102E', '#F1BE48'] },
+            { name: 'Carolina Hurricanes', colors: ['#CC0000', '#A2AAAD'] },
+            { name: 'Chicago Blackhawks', colors: ['#CF0A2C', '#000000'] },
+            { name: 'Colorado Avalanche', colors: ['#6F263D', '#236192'] },
+            { name: 'Columbus Blue Jackets', colors: ['#002654', '#CE1126'] },
+            { name: 'Dallas Stars', colors: ['#006847', '#8F8F8C'] },
+            { name: 'Detroit Red Wings', colors: ['#CE1126', '#FFFFFF'] },
+            { name: 'Edmonton Oilers', colors: ['#041E42', '#FF4C00'] },
+            { name: 'Florida Panthers', colors: ['#041E42', '#C8102E'] },
+            { name: 'Los Angeles Kings', colors: ['#111111', '#A2AAAD'] },
+            { name: 'Minnesota Wild', colors: ['#154734', '#A6192E'] },
+            { name: 'Montreal Canadiens', colors: ['#AF1E2D', '#192168'] },
+            { name: 'Nashville Predators', colors: ['#FFB81C', '#041E42'] },
+            { name: 'New Jersey Devils', colors: ['#CE1126', '#000000'] },
+            { name: 'New York Islanders', colors: ['#00539B', '#F47D30'] },
+            { name: 'New York Rangers', colors: ['#0038A8', '#CE1126'] },
+            { name: 'Ottawa Senators', colors: ['#E31837', '#C69214'] },
+            { name: 'Philadelphia Flyers', colors: ['#F74902', '#000000'] },
+            { name: 'Pittsburgh Penguins', colors: ['#FFB81C', '#000000'] },
+            { name: 'San Jose Sharks', colors: ['#006D75', '#EA7200'] },
+            { name: 'Seattle Kraken', colors: ['#001628', '#99D9D9'] },
+            { name: 'St. Louis Blues', colors: ['#002F87', '#FDB827'] },
+            { name: 'Tampa Bay Lightning', colors: ['#002868', '#767676'] },
+            { name: 'Toronto Maple Leafs', colors: ['#00205B', '#767676'] },
+            { name: 'Vancouver Canucks', colors: ['#001F5B', '#00843D'] },
+            { name: 'Vegas Golden Knights', colors: ['#B4975A', '#333F42'] },
+            { name: 'Washington Capitals', colors: ['#041E42', '#C8102E'] },
+            { name: 'Winnipeg Jets', colors: ['#041E42', '#AC162C'] }
+        ];
+
+        function updateColorScheme(primary, secondary, team) {
+            document.documentElement.style.setProperty('--primary-color', primary);
+            document.documentElement.style.setProperty('--primary-color-dark', darkenColor(primary));
+            document.documentElement.style.setProperty('--secondary-color', secondary);
+            document.documentElement.style.setProperty('--secondary-color-dark', darkenColor(secondary));
+            teamName = team;
+
+            if (secondary === '#FFFFFF') {
+                document.documentElement.style.setProperty('--text-color', '#000000');
+            } else {
+                document.documentElement.style.setProperty('--text-color', '#FFFFFF');
+            }
+        }
+
+        function darkenColor(color) {
+            const amount = 0.2;
+            const [r, g, b] = color.match(/\w\w/g).map(c => parseInt(c, 16));
+            return `#${Math.floor(r * (1 - amount)).toString(16).padStart(2, '0')}${Math.floor(g * (1 - amount)).toString(16).padStart(2, '0')}${Math.floor(b * (1 - amount)).toString(16).padStart(2, '0')}`;
+        }
+
+        function openColorSchemePopup() {
+            colorSchemePopup.style.display = 'block';
+        }
+
+        function closeColorSchemePopup() {
+            colorSchemePopup.style.display = 'none';
+        }
+
+        function createColorSchemeList() {
+            colorSchemeList.innerHTML = '';
+            nhlTeams.forEach(team => {
+                const li = document.createElement('li');
+                const primarySwatch = document.createElement('div');
+                primarySwatch.className = 'swatch';
+                primarySwatch.style.backgroundColor = team.colors[0];
+                const secondarySwatch = document.createElement('div');
+                secondarySwatch.className = 'swatch';
+                secondarySwatch.style.backgroundColor = team.colors[1];
+                const teamName = document.createElement('span');
+                teamName.className = 'team-name';
+                teamName.textContent = team.name;
+                const selectButton = document.createElement('button');
+                selectButton.className = 'select-button';
+                selectButton.textContent = 'Select';
+                selectButton.onclick = () => {
+                    updateColorScheme(team.colors[0], team.colors[1], team.name);
+                    closeColorSchemePopup();
+                };
+                li.appendChild(primarySwatch);
+                li.appendChild(secondarySwatch);
+                li.appendChild(teamName);
+                li.appendChild(selectButton);
+                colorSchemeList.appendChild(li);
+            });
+        }
+
+        document.addEventListener('DOMContentLoaded', createColorSchemeList);
+
+        participantForm.addEventListener('submit', function(event) {
+            event.preventDefault();
+            const nameInput = document.getElementById('name');
+            if (participants.length < 22) {
+                addParticipant(nameInput.value);
+                nameInput.value = '';
+            } else {
+                alert("Maximum of 22 participants reached");
+            }
+        });
+
+        document.getElementById('ratingBox').addEventListener('keydown', function(event) {
+            if (event.ctrlKey && event.key === 'Enter') {
+                startTimer();
+            } else if (event.key >= '1' && event.key <= '5') {
+                selectRating(parseInt(event.key));
+            }
+        });
+
+        document.getElementById('editRatingBox').addEventListener('keydown', function(event) {
+            if (event.ctrlKey && event.key === 'Enter') {
+                saveEdit();
+            } else if (event.key >= '1' && event.key <= '5') {
+                selectEditRating(parseInt(event.key));
+            }
+        });
+
+        notesBox.addEventListener('keydown', function(event) {
+            if (event.ctrlKey && event.key === 'Enter') {
+                saveNotes();
+            }
+        });
+
+        function startDiscussion() {
+            const titleInput = document.getElementById('discussionTitle').value;
+
+            if (titleInput) {
+                const date = new Date().toLocaleDateString();
+                discussionTitleDisplay.textContent = `${titleInput} - ${date}`;
+
+                document.getElementById('discussionDetails').style.display = 'none';
+                participantForm.style.display = 'block';
+            } else {
+                alert("Please enter a title.");
+            }
+        }
+
+        function addParticipant(name) {
+            participants.push({ name, x: 0, y: 0, ratings: [], startTimes: [], endTimes: [], comments: [], notes: [], speakCount: 0 });
+            logParticipant(name);
+        }
+
+        function logParticipant(name) {
+            const row = logTable.insertRow();
+            const participantCell = row.insertCell(0);
+            const timestampCell = row.insertCell(1);
+            const ratingCell = row.insertCell(2);
+            const commentCell = row.insertCell(3);
+            const durationCell = row.insertCell(4);
+            const editCell = row.insertCell(5);
+
+            participantCell.textContent = name;
+            timestampCell.textContent = '';
+            ratingCell.textContent = '';
+            commentCell.textContent = '';
+            durationCell.textContent = '';
+            editCell.innerHTML = `<button class="edit-button" onclick="openEditContribution(this)">Edit</button>`;
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        function placeParticipants() {
+            const numParticipants = participants.length;
+            const radius = numParticipants > 15 ? 490 : 380;
+            const diameter = radius * 2;
+            circle.style.width = `${diameter}px`;
+            circle.style.height = `${diameter}px`;
+            canvas.width = diameter;
+            canvas.height = diameter;
+
+            for (let i = 0; i < numParticipants; i++) {
+                const angle = (i / numParticipants) * (2 * Math.PI);
+                const x = radius + radius * Math.cos(angle);
+                const y = radius + radius * Math.sin(angle);
+
+                const participantDiv = document.createElement('div');
+                participantDiv.className = 'participant';
+                participantDiv.style.left = `${x}px`;
+                participantDiv.style.top = `${y}px`;
+                participantDiv.innerHTML = `
+                    <p id="participant${i}"><span id="speakCount${i}">0</span><br>${participants[i].name}</p>
+                    <button onclick="recordSpeaking(${i})">Speak</button>
+                    <button class="notes-button" onclick="openNotesBox(${i})">Notes</button>
+                `;
+
+                circle.appendChild(participantDiv);
+                participants[i].x = x;
+                participants[i].y = y;
+            }
+        }
+
+        window.recordSpeaking = function(index) {
+            const now = new Date();
+            const participant = participants[index];
+
+            participant.speakCount += 1;
+            document.getElementById(`speakCount${index}`).textContent = participant.speakCount;
+
+            if (lastSpokenIndex !== null) {
+                const lastParticipant = participants[lastSpokenIndex];
+                const duration = (now - lastParticipant.startTimes[lastParticipant.startTimes.length - 1]) / 1000;
+                lastParticipant.endTimes.push(duration);
+                updateLog(lastSpokenIndex, duration);
+                document.getElementById(`participant${lastSpokenIndex}`).style.backgroundColor = 'var(--primary-color)';
+                document.getElementById(`participant${lastSpokenIndex}`).style.color = 'var(--text-color)';
+            } else {
+                totalStartTime = now;
+            }
+
+            if (currentSpeakerIndex !== null && currentSpeakerIndex === index) {
+                const currentParticipant = participants[currentSpeakerIndex];
+                const duration = (now - currentParticipant.startTimes[currentParticipant.startTimes.length - 1]) / 1000;
+                currentParticipant.endTimes.push(duration);
+                updateLog(currentSpeakerIndex, duration);
+                lastSpokenIndex = null;
+                currentSpeakerIndex = null;
+                document.getElementById('ratingBox').style.display = 'none';
+            } else {
+                currentSpeakerIndex = index;
+                const currentParticipant = participants[index];
+                currentParticipant.startTimes.push(now);
+
+                if (lastSpokenIndex !== null) {
+                    const last = participants[lastSpokenIndex];
+                    const connectionKey = `${lastSpokenIndex}-${index}`;
+                    const reverseConnectionKey = `${index}-${lastSpokenIndex}`;
+
+                    if (connectionCounts[connectionKey]) {
+                        connectionCounts[connectionKey]++;
+                    } else if (connectionCounts[reverseConnectionKey]) {
+                        connectionCounts[reverseConnectionKey]++;
+                    } else {
+                        connectionCounts[connectionKey] = 1;
+                    }
+
+                    const thickness = connectionCounts[connectionKey] || connectionCounts[reverseConnectionKey];
+                    connections.push({ from: last.name, to: currentParticipant.name, thickness });
+                    drawLine(last.x, last.y, currentParticipant.x, currentParticipant.y, thickness, 'var(--secondary-color)');
+                }
+                lastSpokenIndex = index;
+                resetRating();
+                document.getElementById('ratingBox').style.display = 'block';
+                document.getElementById('comment').focus();
+                document.getElementById(`participant${index}`).style.backgroundColor = 'var(--secondary-color)';
+                if (teamName === 'Tampa Bay Lightning' || teamName === 'Toronto Maple Leafs') {
+                    document.getElementById(`participant${index}`).classList.add('lightning-highlight');
+                }
+                setTimeout(() => {
+                    document.querySelector('.submit-button').click();
+                }, 100);
+            }
+        };
+
+        function drawLine(x1, y1, x2, y2, thickness, color) {
+            ctx.lineWidth = thickness;
+            ctx.strokeStyle = color;
+            ctx.beginPath();
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+        }
+
+        function doneAddingParticipants() {
+            participantForm.style.display = 'none';
+            placeParticipants();
+            document.getElementById('endDiscussionButton').style.display = 'inline';
+            document.getElementById('editParticipantsButton').style.display = 'inline';
+        }
+
+        function endDiscussion() {
+            const now = new Date();
+            if (currentSpeakerIndex !== null && totalStartTime !== null) {
+                const lastParticipant = participants[currentSpeakerIndex];
+                const duration = (now - lastParticipant.startTimes[lastParticipant.startTimes.length - 1]) / 1000;
+                lastParticipant.endTimes.push(duration);
+                updateLog(currentSpeakerIndex, duration);
+                document.getElementById(`participant${currentSpeakerIndex}`).style.backgroundColor = 'var(--primary-color)';
+                document.getElementById(`participant${currentSpeakerIndex}`).style.color = 'var(--text-color)';
+            }
+            document.getElementById('ratingBox').style.display = 'none';
+            replayControls.style.display = 'block';
+            document.getElementById('copyLogButton').style.display = 'inline';
+            document.getElementById('restartDiscussionButton').style.display = 'inline';
+            document.getElementById('generateReportButton').style.display = 'inline';
+        }
+
+        function highlightParticipant(index) {
+            participants.forEach((participant, idx) => {
+                const participantElement = document.getElementById(`participant${idx}`);
+                if (idx === index) {
+                    participantElement.style.backgroundColor = 'var(--secondary-color)';
+                    if (teamName === 'Tampa Bay Lightning' || teamName === 'Toronto Maple Leafs') {
+                        participantElement.classList.add('lightning-highlight');
+                    }
+                } else {
+                    participantElement.style.backgroundColor = 'var(--primary-color)';
+                    participantElement.style.color = 'var(--text-color)';
+                    participantElement.classList.remove('lightning-highlight', 'leafs-highlight');
+                }
+            });
+        }
+
+        function replayDiscussion(speed) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            let i = 0;
+
+            function drawNextLine() {
+                if (i < connections.length) {
+                    const { from, to, thickness } = connections[i];
+                    const fromParticipant = participants.find(p => p.name === from);
+                    const toParticipant = participants.find(p => p.name === to);
+                    const nextSpeakerIndex = participants.indexOf(toParticipant);
+
+                    highlightParticipant(nextSpeakerIndex);
+
+                    drawLine(fromParticipant.x, fromParticipant.y, toParticipant.x, toParticipant.y, thickness, 'var(--secondary-color)');
+                    setTimeout(() => {
+                        drawLine(fromParticipant.x, fromParticipant.y, toParticipant.x, toParticipant.y, thickness, 'var(--text-color)');
+                        i++;
+                        if (i < connections.length) {
+                            drawNextLine();
+                        }
+                    }, 1000 / speed);
+                }
+            }
+            drawNextLine();
+        }
+
+        function replayDiscussionTimed(speed) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            let i = 0;
+            let endTimesCopy = participants.map(p => [...p.endTimes]);
+
+            function drawNextLine() {
+                if (i < connections.length) {
+                    const { from, to, thickness } = connections[i];
+                    const fromParticipant = participants.find(p => p.name === from);
+                    const toParticipant = participants.find(p => p.name === to);
+                    const nextSpeakerIndex = participants.indexOf(toParticipant);
+
+                    highlightParticipant(nextSpeakerIndex);
+
+                    const duration = endTimesCopy[nextSpeakerIndex].shift() || 1;
+                    const proportionalSpeed = (duration / speed) * 1000;
+
+                    drawLine(fromParticipant.x, fromParticipant.y, toParticipant.x, toParticipant.y, thickness, 'var(--secondary-color)');
+                    setTimeout(() => {
+                        drawLine(fromParticipant.x, fromParticipant.y, toParticipant.x, toParticipant.y, thickness, 'var(--text-color)');
+                        i++;
+                        if (i < connections.length) {
+                            drawNextLine();
+                        }
+                    }, proportionalSpeed);
+                }
+            }
+            drawNextLine();
+        }
+
+        function updateLog(index, duration) {
+            const rows = logTable.rows;
+            for (let i = rows.length - 1; i >= 0; i--) {
+                if (rows[i].cells[0].textContent === participants[index].name && !rows[i].cells[4].textContent) {
+                    rows[i].cells[4].textContent = duration.toFixed(2) + "s";
+                    break;
+                }
+            }
+            logContainer.scrollTop = logContainer.scrollHeight;
+        }
+
+        function selectRating(rating) {
+            selectedRating = rating;
+            document.querySelectorAll('.rating-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            document.querySelector(`.rating-option:nth-child(${rating})`).classList.add('selected');
+        }
+
+        function resetRating() {
+            selectedRating = null;
+            document.querySelectorAll('.rating-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+        }
+
+        function startTimer() {
+            document.getElementById('ratingBox').style.display = 'none';
+            if (currentSpeakerIndex !== null) {
+                const row = logTable.insertRow();
+                const participantCell = row.insertCell(0);
+                const timestampCell = row.insertCell(1);
+                const ratingCell = row.insertCell(2);
+                const commentCell = row.insertCell(3);
+                const durationCell = row.insertCell(4);
+                const editCell = row.insertCell(5);
+
+                const participant = participants[currentSpeakerIndex];
+                participant.ratings.push(selectedRating);
+                participant.comments.push(document.getElementById('comment').value);
+
+                participantCell.textContent = participant.name;
+                timestampCell.textContent = new Date().toLocaleString();
+                ratingCell.textContent = selectedRating !== null ? selectedRating : '';
+                commentCell.textContent = document.getElementById('comment').value;
+                durationCell.textContent = '';
+                editCell.innerHTML = `<button class="edit-button" onclick="openEditContribution(this)">Edit</button>`;
+
+                document.getElementById('comment').value = '';
+                resetRating();
+                openEditContribution(row);
+            }
+        }
+
+        function openEditContribution(button) {
+            const row = button.closest('tr');
+            editingRow = row;
+            const rating = row.cells[2].textContent;
+            const comment = row.cells[3].textContent;
+
+            document.querySelectorAll('#editRatingBox .rating-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            if (rating) {
+                document.querySelector(`#editRatingBox .rating-option:nth-child(${rating})`).classList.add('selected');
+            }
+
+            document.getElementById('editComment').value = comment;
+            document.getElementById('editRatingBox').style.display = 'block';
+            document.getElementById('editComment').focus();
+        }
+
+        function selectEditRating(rating) {
+            document.querySelectorAll('#editRatingBox .rating-option').forEach(option => {
+                option.classList.remove('selected');
+            });
+            document.querySelector(`#editRatingBox .rating-option:nth-child(${rating})`).classList.add('selected');
+        }
+
+        function saveEdit() {
+            const rating = document.querySelector('#editRatingBox .rating-option.selected') ? document.querySelector('#editRatingBox .rating-option.selected').textContent : '';
+            const comment = document.getElementById('editComment').value;
+            if (editingRow) {
+                editingRow.cells[2].textContent = rating;
+                editingRow.cells[3].textContent = comment;
+
+                const participantName = editingRow.cells[0].textContent;
+                const participant = participants.find(p => p.name === participantName);
+                const contributionIndex = Array.from(logTable.rows).indexOf(editingRow) - 1;
+
+                if (rating) {
+                    participant.ratings[contributionIndex] = parseInt(rating);
+                }
+                participant.comments[contributionIndex] = comment;
+
+                editingRow = null;
+            }
+            document.getElementById('editRatingBox').style.display = 'none';
+        }
+
+        function openNotesBox(index) {
+            currentNotesParticipant = participants[index];
+            notesBoxTitle.textContent = `Notes about ${currentNotesParticipant.name}`;
+            notesText.value = '';
+            notesBox.style.display = 'block';
+            notesText.focus();
+        }
+
+        function saveNotes() {
+            const note = notesText.value;
+            if (currentNotesParticipant && note) {
+                currentNotesParticipant.notes.push(note);
+            }
+            notesBox.style.display = 'none';
+        }
+
+        function toggleLog() {
+            if (logContainer.style.display === 'none') {
+                logContainer.style.display = 'block';
+                document.getElementById('toggleLogButton').innerText = "Hide Discussion Log";
+            } else {
+                logContainer.style.display = 'none';
+                document.getElementById('toggleLogButton').innerText = "Show Discussion Log";
+            }
+        }
+
+        function toggleReport() {
+            if (reportContainer.style.display === 'none') {
+                reportContainer.style.display = 'block';
+                document.getElementById('toggleReportButton').innerText = "Hide Report";
+            } else {
+                reportContainer.style.display = 'none';
+                document.getElementById('toggleReportButton').innerText = "Show Report";
+            }
+        }
+
+        function copyLog() {
+            const range = document.createRange();
+            range.selectNode(logContainer);
+            window.getSelection().removeAllRanges();
+            window.getSelection().addRange(range);
+            document.execCommand('copy');
+            alert('Discussion log copied to clipboard');
+        }
+
+        function confirmRestartDiscussion() {
+            confirmRestartPopup.style.display = 'block';
+        }
+
+        function closeConfirmRestartPopup() {
+            confirmRestartPopup.style.display = 'none';
+        }
+
+        function restartDiscussion() {
+            location.reload();
+        }
+
+     function generateReport() {
+    const reportTable = document.getElementById('reportTable').getElementsByTagName('tbody')[0];
+    const notesReportTable = document.getElementById('notesReportTable').getElementsByTagName('tbody')[0];
+    reportTable.innerHTML = '';
+    notesReportTable.innerHTML = '';
+
+    const totalDuration = participants.reduce((sum, participant) => sum + participant.endTimes.reduce((a, b) => a + b, 0), 0);
+
+    participants.forEach(participant => {
+        const row = reportTable.insertRow();
+        const participantCell = row.insertCell(0);
+        const allRatingsCell = row.insertCell(1);
+        const avgRatingCell = row.insertCell(2);
+        const totalAirTimeCell = row.insertCell(3);
+        const dominationCell = row.insertCell(4);
+
+        const ratings = participant.ratings.filter(rating => rating !== null && rating !== undefined);
+        const avgRating = ratings.length > 0 ? (ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(2) : 'N/A';
+        const totalAirTime = participant.endTimes.reduce((a, b) => a + b, 0);
+        const minutes = Math.floor(totalAirTime / 60);
+        const seconds = totalAirTime % 60;
+        const formattedAirTime = `${minutes}m ${seconds.toFixed(2)}s`;
+        const domination = totalDuration > 0 ? ((totalAirTime / totalDuration) * 100).toFixed(2) + "%" : "0%";
+
+        participantCell.textContent = participant.name;
+        allRatingsCell.textContent = ratings.join(', ');
+        avgRatingCell.textContent = avgRating;
+        totalAirTimeCell.textContent = formattedAirTime;
+        dominationCell.textContent = domination;
+
+        const notesRow = notesReportTable.insertRow();
+        const notesParticipantCell = notesRow.insertCell(0);
+        const notesCell = notesRow.insertCell(1);
+        notesParticipantCell.textContent = participant.name;
+        notesCell.textContent = participant.notes.join(' - [] - ');
+    });
+
+    reportContainer.style.display = 'block';
+    document.getElementById('copyReportButton').style.display = 'inline';
+    document.getElementById('toggleReportButton').style.display = 'inline';
+}
+
+
+
+        function copyReport() {
+            const range = document.createRange();
+            range.selectNode(reportContainer);
+            window.getSelection().removeAllRanges();
+            window.getSelection().addRange(range);
+            document.execCommand('copy');
+            alert('Report copied to clipboard');
+        }
+
+        function pauseTimer() {
+            if (currentSpeakerIndex !== null) {
+                const now = new Date();
+                const currentParticipant = participants[currentSpeakerIndex];
+                const duration = (now - currentParticipant.startTimes[currentParticipant.startTimes.length - 1]) / 1000;
+                currentParticipant.endTimes.push(duration);
+                updateLog(currentSpeakerIndex, duration);
+                document.getElementById(`participant${currentSpeakerIndex}`).style.backgroundColor = 'var(--primary-color)';
+                document.getElementById(`participant${currentSpeakerIndex}`).style.color = 'var(--text-color)';
+                currentSpeakerIndex = null;
+                document.getElementById('ratingBox').style.display = 'none';
+            }
+        }
+
+        function redrawConnections() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            connections.forEach(({ from, to, thickness }) => {
+                const fromParticipant = participants.find(p => p.name === from);
+                const toParticipant = participants.find(p => p.name === to);
+                if (fromParticipant && toParticipant) {
+                    drawLine(fromParticipant.x, fromParticipant.y, toParticipant.x, toParticipant.y, thickness, 'var(--secondary-color)');
+                }
+            });
+        }
+
+        function openEditParticipantsPopup() {
+            editParticipantsPopup.style.display = 'block';
+        }
+
+        function closeEditParticipantsPopup() {
+            editParticipantsPopup.style.display = 'none';
+        }
+
+        function addNewParticipant() {
+            const newParticipantName = document.getElementById('newParticipantName').value;
+            if (newParticipantName) {
+                addParticipant(newParticipantName);
+                clearParticipants();
+                placeParticipants();
+                redrawConnections();
+                document.getElementById('newParticipantName').value = '';
+                closeEditParticipantsPopup();
+            } else {
+                alert("Please enter a name.");
+            }
+        }
+
+        function clearParticipants() {
+            const participantDivs = document.querySelectorAll('.participant');
+            participantDivs.forEach(div => div.remove());
+        }
+
+        function openReorderParticipants() {
+            reorderParticipantsContainer.style.display = 'block';
+            renameParticipantsContainer.style.display = 'none';
+            reorderParticipantsList.innerHTML = '';
+
+            participants.forEach((participant, index) => {
+                const listItem = document.createElement('li');
+                listItem.draggable = true;
+                listItem.innerHTML = `
+                    <span>${participant.name}</span>
+                `;
+                listItem.dataset.index = index;
+                listItem.addEventListener('dragstart', handleDragStart);
+                listItem.addEventListener('dragover', handleDragOver);
+                listItem.addEventListener('drop', handleDrop);
+                listItem.addEventListener('dragend', handleDragEnd);
+                reorderParticipantsList.appendChild(listItem);
+            });
+        }
+
+        let dragSrcEl = null;
+
+        function handleDragStart(e) {
+            dragSrcEl = this;
+            this.style.opacity = '0.5';
+        }
+
+        function handleDragOver(e) {
+            e.preventDefault();
+            return false;
+        }
+
+        function handleDrop(e) {
+            e.stopPropagation();
+            if (dragSrcEl !== this) {
+                const srcIndex = dragSrcEl.dataset.index;
+                const targetIndex = this.dataset.index;
+                [participants[srcIndex], participants[targetIndex]] = [participants[targetIndex], participants[srcIndex]];
+                openReorderParticipants();
+            }
+            return false;
+        }
+
+        function handleDragEnd(e) {
+            this.style.opacity = '1';
+        }
+
+        function saveReorderedParticipants() {
+            clearParticipants();
+            placeParticipants();
+            redrawConnections();
+            reorderParticipantsContainer.style.display = 'none';
+        }
+
+        function openRenameParticipants() {
+            renameParticipantsContainer.style.display = 'block';
+            reorderParticipantsContainer.style.display = 'none';
+            renameParticipantsList.innerHTML = '';
+
+            participants.forEach((participant, index) => {
+                const listItem = document.createElement('li');
+                listItem.innerHTML = `
+                    <input type="text" value="${participant.name}" id="renameInput${index}">
+                    <button onclick="renameParticipant(${index})">Save</button>
+                `;
+                renameParticipantsList.appendChild(listItem);
+            });
+        }
+
+        function renameParticipant(index) {
+            const newName = document.getElementById(`renameInput${index}`).value;
+            if (newName) {
+                participants[index].name = newName;
+                clearParticipants();
+                placeParticipants();
+                redrawConnections();
+            } else {
+                alert("Please enter a valid name.");
+            }
+        }
+
+        function saveRenamedParticipants() {
+            clearParticipants();
+            placeParticipants();
+            redrawConnections();
+            renameParticipantsContainer.style.display = 'none';
+        }
+    </script>
+</body>
+
+</html>
+
+
+
