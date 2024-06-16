@@ -21,6 +21,7 @@
             color: #333;
             display: flex;
             justify-content: center;
+            position: relative;
         }
 
         h1 {
@@ -832,6 +833,14 @@
             padding: 10px;
             font-size: 18px;
         }
+
+        /* Style for the PayPal button */
+        .paypal-button {
+            position: fixed;
+            bottom: 20px;
+            left: 20px;
+            z-index: 10;
+        }
     </style>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
@@ -1011,6 +1020,16 @@
             </div>
         </div>
     </div>
+
+<form action="https://www.paypal.com/donate" method="post" target="_top">
+<input type="hidden" name="business" value="HWPP6BEXENHCQ" />
+<input type="hidden" name="no_recurring" value="1" />
+<input type="hidden" name="item_name" value="This will forever be free for my fellow educators. If this is helpful and you are so inclined, buy me some caffeine! Thank you!" />
+<input type="hidden" name="currency_code" value="USD" />
+<input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif" border="0" name="submit" title="PayPal - The safer, easier way to pay online!" alt="Donate with PayPal button" />
+<img alt="" border="0" src="https://www.paypal.com/en_US/i/scr/pixel.gif" width="1" height="1" />
+</form>
+
 
     <script>
         const participantForm = document.getElementById('participantForm');
@@ -1804,19 +1823,8 @@
         }
 
         function saveRenamedParticipants() {
-            clearParticipants();
-            placeParticipants();
-            redrawConnections();
             renameParticipantsContainer.style.display = 'none';
-        }
-
-        function exportScreenshot() {
-            html2canvas(document.body).then(canvas => {
-                const link = document.createElement('a');
-                link.href = canvas.toDataURL();
-                link.download = 'discussion_tracker_screenshot.png';
-                link.click();
-            });
+            closeEditParticipantsPopup();
         }
     </script>
 </body>
