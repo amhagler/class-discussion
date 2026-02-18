@@ -29,6 +29,9 @@
       /* dynamic gap (JS will set this on .stage) */
       --stage-gap-base: 28px;
       --stage-gap-dynamic: 0px;
+
+      /* notes button size */
+      --aux-d: 44px;
     }
 
     *{ box-sizing:border-box; }
@@ -254,26 +257,6 @@
     }
     .centerOverlay > *{ pointer-events:auto; }
 
-    .nowSpeaking{
-      position:absolute;
-      top: 14px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 6;
-      padding: 8px 12px;
-      border-radius: 999px;
-      background: rgba(255,255,255,.75);
-      border: 1px solid rgba(0,0,0,.10);
-      color: var(--muted);
-      font-size: 12px;
-      font-weight: 300;
-      backdrop-filter: blur(10px);
-    }
-    .nowSpeaking strong{
-      color: var(--secondary-color);
-      font-weight: 700;
-    }
-
     /* Pause button centered, circular */
     .pause-center{
       position:absolute;
@@ -318,8 +301,8 @@
       z-index: 10;
       text-align:center;
       width: var(--pill-w);
-      --hkx: 0px;
-      --hky: 0px;
+      --nx: 0px;   /* notes button x */
+      --ny: 0px;   /* notes button y */
     }
 
     .pill{
@@ -388,73 +371,62 @@
       100%{ transform: translateY(-1px) scale(1.03); }
     }
 
-    /* Hotkey badge OUTSIDE the pill (computed by JS via --hkx/--hky) */
-    .hotkey-badge{
+    /* Notes button OUTSIDE circle (positioned by JS via --nx/--ny) */
+    .notes-out{
       position:absolute;
       left: 50%;
       top: 50%;
-      transform: translate(-50%,-50%) translate(var(--hkx), var(--hky));
+      transform: translate(-50%,-50%) translate(var(--nx), var(--ny));
       z-index: 12;
-      width: 26px;
-      height: 26px;
-      border-radius: 999px;
+      width: var(--aux-d);
+      height: var(--aux-d);
+      border-radius: 50%;
+      border: 1px solid rgba(0,0,0,.10);
+      background: rgba(255,255,255,.86);
+      box-shadow: 0 10px 22px rgba(0,0,0,.12);
+      backdrop-filter: blur(12px);
+      cursor: pointer;
       display:flex;
       align-items:center;
       justify-content:center;
-      font-size: 12px;
-      font-weight: 900;
-      color: rgba(31,35,40,.90);
-      background: rgba(255,255,255,.88);
-      border: 1px solid rgba(0,0,0,.10);
-      box-shadow: 0 10px 20px rgba(0,0,0,.10);
-      pointer-events:none;
       user-select:none;
+      transition: transform .12s ease, box-shadow .12s ease, background .2s ease;
     }
-    .hotkey-badge .k{
-      display:inline-block;
+    .notes-out:hover{
+      transform: translate(-50%,-50%) translate(var(--nx), var(--ny)) scale(1.03);
+      box-shadow: 0 16px 36px rgba(0,0,0,.16);
+      background: rgba(255,255,255,.94);
+    }
+    .notes-out:active{
+      transform: translate(-50%,-50%) translate(var(--nx), var(--ny)) scale(1.00);
+      box-shadow: 0 10px 22px rgba(0,0,0,.12);
+    }
+    .notes-out .icon{
+      font-size: 18px;
+      line-height: 1;
+      color: rgba(31,35,40,.90);
       transform: translateY(-.5px);
     }
 
-    /* Percentage display OUTSIDE pill (only when heatmap active) */
-    .pct-out{
-      display:none;
-      margin-top: 6px;
-      font-size: 12px;
-      font-weight: 800;
-      color: rgba(31,35,40,.78);
-      background: rgba(255,255,255,.70);
-      border: 1px solid rgba(0,0,0,.10);
-      border-radius: 999px;
-      padding: 6px 8px;
-      backdrop-filter: blur(10px);
-      box-shadow: 0 10px 20px rgba(0,0,0,.10);
-    }
-    .pct-out.show{ display:inline-flex; }
-
-    .pbtn-row{
+    /* Hotkey indicator INSIDE the notes button */
+    .notes-out .hk{
+      position:absolute;
+      right: -6px;
+      top: -6px;
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
       display:flex;
-      gap:8px;
-      justify-content:center;
-      margin-top: 8px;
-    }
-    .pbtn{
-      padding: 7px 10px;
-      border-radius: 12px;
-      border: none;
-      cursor:pointer;
-      font-size: 12px;
-      display:inline-flex;
       align-items:center;
-      gap:6px;
-      box-shadow: 0 2px 0 rgba(0,0,0,.14);
-      transition: transform .12s ease, box-shadow .12s ease, background .2s ease;
-      user-select:none;
+      justify-content:center;
+      font-size: 11px;
+      font-weight: 900;
+      color: rgba(31,35,40,.92);
+      background: rgba(255,255,255,.92);
+      border: 1px solid rgba(0,0,0,.10);
+      box-shadow: 0 10px 18px rgba(0,0,0,.12);
+      pointer-events:none;
     }
-    .pbtn:hover{ transform: translateY(-1px); box-shadow: 0 10px 20px rgba(0,0,0,.14); }
-    .pbtn:active{ transform: translateY(0px); box-shadow: 0 2px 0 rgba(0,0,0,.14); }
-    .pbtn.speak{ background: rgba(0,0,0,.06); color: var(--ink); border: 1px solid rgba(0,0,0,.10); }
-    .pbtn.speak:hover{ background: rgba(35,97,146,.10); }
-    .pbtn.notes{ background: var(--secondary-color); color: var(--text-color); }
 
     /* Rating box centered INSIDE circle */
     .modal-card{
@@ -673,7 +645,7 @@
     @media (max-width: 900px){
       #circle{ width: 92vw; height: 92vw; max-width: 860px; max-height: 860px; }
       #colorSchemeList{ grid-template-columns: repeat(2, minmax(0,1fr)); }
-      :root{ --pill-w: 112px; --pill-h: 54px; }
+      :root{ --pill-w: 112px; --pill-h: 54px; --aux-d: 42px; }
     }
 
     .scheme{
@@ -886,6 +858,7 @@
         background:#fff !important;
       }
       .title-area{ margin: 0 0 12px !important; padding-bottom: 0 !important; }
+      .notes-out{ display:none !important; }
     }
   </style>
 </head>
@@ -947,7 +920,7 @@
         <button class="btn secondary" onclick="startDiscussion()">▶ Start</button>
       </div>
       <div class="tiny-note">
-        Tip: Enter starts. Later, click a pill to record speaking. Speak button remains as backup.
+        Tip: Enter starts. Later, click a pill to record speaking.
       </div>
     </div>
 
@@ -969,10 +942,6 @@
       <div id="circle">
         <canvas id="heatCanvas" width="860" height="860"></canvas>
         <canvas id="connectionCanvas" width="860" height="860"></canvas>
-
-        <div class="nowSpeaking" id="nowSpeaking" style="display:none;">
-          Now speaking: <strong id="nowSpeakingName"></strong>
-        </div>
 
         <div id="pauseCenter" class="pause-center">
           <button class="pause-circle" title="Pause (ends current speaking segment)" onclick="pauseTimer()">
@@ -1224,8 +1193,9 @@
     const discussionTitleDisplay = document.getElementById('discussionTitleDisplay');
     const discussionDateDisplay = document.getElementById('discussionDateDisplay');
 
-    const nowSpeaking = document.getElementById('nowSpeaking');
-    const nowSpeakingName = document.getElementById('nowSpeakingName');
+    // “Now speaking” removed — keep these null-safe
+    const nowSpeaking = null;
+    const nowSpeakingName = null;
 
     const heatStatusText = document.getElementById('heatStatusText');
 
@@ -1665,12 +1635,12 @@
     }
 
     function updateDynamicStageGap(){
-      const any = circle.querySelector('.participant');
-      if (!any){
+      const anyPill = circle.querySelector('.pill');
+      if (!anyPill){
         document.documentElement.style.setProperty('--stage-gap-dynamic', '0px');
         return;
       }
-      const h = any.getBoundingClientRect().height;
+      const h = anyPill.getBoundingClientRect().height;
       const half = h / 2;
       const extra = Math.ceil(half + 18);
       document.documentElement.style.setProperty('--stage-gap-dynamic', `${extra}px`);
@@ -1722,10 +1692,15 @@
     }
 
     // ---------- PARTICIPANT PLACEMENT ----------
+    function cssNumVar(name, fallback){
+      const v = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+      const n = parseFloat(v);
+      return Number.isFinite(n) ? n : fallback;
+    }
+
     function placeParticipants(){
       updateStageSize();
       const num = participants.length;
-      const r = circleRadius;
 
       clearParticipants();
 
@@ -1733,10 +1708,16 @@
         participants[i].hotkeyLabel = hotkeyForIndex(i);
       }
 
+      // Place pills to "hug" the circle rim:
+      // center radius is slightly inside the circle, so the pill overlaps the rim neatly.
+      const pillH = cssNumVar('--pill-h', 56);
+      const inset = pillH * 0.22; // tweak: 0.20–0.28 if you want more/less overlap
+      const rPlace = Math.max(0, circleRadius - inset);
+
       for (let i=0;i<num;i++){
         const angle = (i / num) * (Math.PI*2) - Math.PI/2;
-        const x = centerX + r * Math.cos(angle);
-        const y = centerY + r * Math.sin(angle);
+        const x = centerX + rPlace * Math.cos(angle);
+        const y = centerY + rPlace * Math.sin(angle);
 
         const p = participants[i];
 
@@ -1747,18 +1728,15 @@
         div.style.top = `${y}px`;
 
         div.innerHTML = `
-          <div class="hotkey-badge" id="hotkey${p.id}" aria-hidden="true">
-            <span class="k">${escapeHtml(p.hotkeyLabel || '')}</span>
-          </div>
           <div id="pill${p.id}" class="pill" title="Click to record speaking">
-            <div class="count" id="speakCount${p.id}">0</div>
+            <div class="count" id="speakCount${p.id}">${p.speakCount || 0}</div>
             <div class="name" id="name${p.id}" title="${escapeHtml(p.name)}">${escapeHtml(p.name)}</div>
           </div>
-          <div class="pct-out" id="pct${p.id}">0%</div>
-          <div class="pbtn-row">
-            <button class="pbtn speak" title="Speak (backup button)" onclick="event.stopPropagation(); recordSpeakingById('${p.id}')">🗣 Speak</button>
-            <button class="pbtn notes" onclick="event.stopPropagation(); openNotesBoxById('${p.id}')">📝 Notes</button>
-          </div>
+
+          <button class="notes-out" title="Notes" onclick="event.stopPropagation(); openNotesBoxById('${p.id}')">
+            <span class="icon">📝</span>
+            <span class="hk" aria-hidden="true">${escapeHtml(p.hotkeyLabel || '')}</span>
+          </button>
         `;
         circle.appendChild(div);
 
@@ -1770,7 +1748,7 @@
 
       requestAnimationFrame(() => {
         updateDynamicStageGap();
-        positionHotkeyBadgesOutsidePills();
+        positionNotesButtonsOutsideCircle();
         applySelectedHighlight();
         redrawConnections();
         if (heatmapActive) showHeatmap();
@@ -1781,12 +1759,11 @@
       circle.querySelectorAll('.participant').forEach(el => el.remove());
     }
 
-    function positionHotkeyBadgesOutsidePills(){
-      // Place badge just outside the pill boundary, outward from center.
-      // Uses the rendered pill size so it never overlaps the name.
-      const circleRect = circle.getBoundingClientRect();
-      const badgeR = 13; // 26px/2
-      const gap = Math.max(6, Math.min(12, circleDiameter * 0.012));
+    function positionNotesButtonsOutsideCircle(){
+      // Place notes button outside pill, outward from center, so it clearly sits outside the circle rim.
+      const auxD = cssNumVar('--aux-d', 44);
+      const auxR = auxD / 2;
+      const gap = Math.max(8, Math.min(14, circleDiameter * 0.014));
 
       participants.forEach(p => {
         const container = circle.querySelector(`.participant[data-pid="${p.id}"]`);
@@ -1799,24 +1776,22 @@
         const w = pillRect.width;
         const h = pillRect.height;
 
-        // outward direction based on ideal placement (stored p.x/p.y)
+        // outward direction based on placement
         const vx = (p.x - centerX);
         const vy = (p.y - centerY);
         const len = Math.hypot(vx,vy) || 1;
         const ux = vx / len;
         const uy = vy / len;
 
-        // Support function for rectangle-ish pill: how far to edge in direction (ux,uy)
+        // approximate edge distance for pill (rectangle-ish)
         const edgeDist = Math.abs(ux) * (w/2) + Math.abs(uy) * (h/2);
+        const dist = edgeDist + auxR + gap;
 
-        const dist = edgeDist + badgeR + gap;
+        const nx = Math.round(ux * dist);
+        const ny = Math.round(uy * dist);
 
-        // convert to container-local translate: container is centered on pill center
-        const hkx = Math.round(ux * dist);
-        const hky = Math.round(uy * dist);
-
-        container.style.setProperty('--hkx', hkx + 'px');
-        container.style.setProperty('--hky', hky + 'px');
+        container.style.setProperty('--nx', nx + 'px');
+        container.style.setProperty('--ny', ny + 'px');
       });
     }
 
@@ -1913,14 +1888,8 @@
 
     // ---------- SPEAKING / LOGIC ----------
     function setNowSpeaking(id){
-      if (!id){
-        nowSpeaking.style.display = 'none';
-        nowSpeakingName.textContent = '';
-      }else{
-        const p = getParticipantById(id);
-        nowSpeaking.style.display = 'block';
-        nowSpeakingName.textContent = p ? p.name : '';
-      }
+      // removed (kept for replay compatibility)
+      return;
     }
 
     function setActivePill(activeId){
@@ -2201,37 +2170,58 @@
       }
     });
 
-    // ---------- LINE GEOMETRY (DOM-anchored for perfect alignment) ----------
-    function getPillCenter(pid){
+    // ---------- LINE GEOMETRY (connect to pill OUTLINE) ----------
+    function getPillMetrics(pid){
       const pill = document.getElementById(`pill${pid}`);
       if (!pill) return null;
       const pillRect = pill.getBoundingClientRect();
       const circleRect = circle.getBoundingClientRect();
-      const x = (pillRect.left + pillRect.width/2) - circleRect.left;
-      const y = (pillRect.top + pillRect.height/2) - circleRect.top;
-      return { x, y };
+      const cx = (pillRect.left + pillRect.width/2) - circleRect.left;
+      const cy = (pillRect.top + pillRect.height/2) - circleRect.top;
+      const rx = pillRect.width / 2;
+      const ry = pillRect.height / 2;
+      return { cx, cy, rx, ry };
     }
 
-    function getInnerAnchor(fromId, toId){
-      const c1 = getPillCenter(fromId);
-      const c2 = getPillCenter(toId);
-      if (!c1 || !c2) return {x1:0,y1:0,x2:0,y2:0};
+    // Approx pill boundary as ellipse (very good visually for rounded pill)
+    function ellipseBoundaryPoint(from, to){
+      const dx = to.cx - from.cx;
+      const dy = to.cy - from.cy;
+      const denom = Math.sqrt((dx*dx)/(from.rx*from.rx) + (dy*dy)/(from.ry*from.ry)) || 1;
+      const t = 1 / denom;
+      return { x: from.cx + dx * t, y: from.cy + dy * t };
+    }
 
-      const offset = Math.max(30, Math.min(44, circleDiameter * 0.055));
+    function getOuterAnchors(fromId, toId){
+      const a = getPillMetrics(fromId);
+      const b = getPillMetrics(toId);
+      if (!a || !b) return {x1:0,y1:0,x2:0,y2:0};
 
-      const vfx = centerX - c1.x;
-      const vfy = centerY - c1.y;
-      const vfl = Math.hypot(vfx, vfy) || 1;
-      const ax1 = c1.x + (vfx / vfl) * offset;
-      const ay1 = c1.y + (vfy / vfl) * offset;
+      // boundary points on each pill, facing the other pill
+      const p1 = ellipseBoundaryPoint(a, b);
+      const p2 = ellipseBoundaryPoint(b, a);
 
-      const vtx = centerX - c2.x;
-      const vty = centerY - c2.y;
-      const vtl = Math.hypot(vtx, vty) || 1;
-      const ax2 = c2.x + (vtx / vtl) * offset;
-      const ay2 = c2.y + (vty / vtl) * offset;
+      // tiny inset so stroke doesn't look like it floats off the edge
+      const inset = Math.max(1.5, Math.min(3.5, circleDiameter * 0.004));
 
-      return { x1: ax1, y1: ay1, x2: ax2, y2: ay2 };
+      const vx1 = a.cx - b.cx;
+      const vy1 = a.cy - b.cy;
+      const l1 = Math.hypot(vx1, vy1) || 1;
+      const ux1 = vx1 / l1;
+      const uy1 = vy1 / l1;
+
+      const vx2 = b.cx - a.cx;
+      const vy2 = b.cy - a.cy;
+      const l2 = Math.hypot(vx2, vy2) || 1;
+      const ux2 = vx2 / l2;
+      const uy2 = vy2 / l2;
+
+      return {
+        x1: p1.x + ux1 * inset,
+        y1: p1.y + uy1 * inset,
+        x2: p2.x + ux2 * inset,
+        y2: p2.y + uy2 * inset
+      };
     }
 
     function redrawConnections(){
@@ -2239,7 +2229,7 @@
       clipToCircle(ctx);
 
       for (const c of connections){
-        const { x1,y1,x2,y2 } = getInnerAnchor(c.fromId, c.toId);
+        const { x1,y1,x2,y2 } = getOuterAnchors(c.fromId, c.toId);
         drawLineInstant(x1,y1,x2,y2,c.thickness,'var(--secondary-color)', true);
       }
 
@@ -2266,7 +2256,7 @@
     }
 
     function animateConnection(fromId, toId, thickness, cssColor, durationMs, onDone){
-      const { x1,y1,x2,y2 } = getInnerAnchor(fromId,toId);
+      const { x1,y1,x2,y2 } = getOuterAnchors(fromId,toId);
 
       const color = getComputedStyle(document.documentElement)
         .getPropertyValue(cssColor.replace('var(','').replace(')','')).trim() || cssColor;
@@ -2284,7 +2274,7 @@
 
         for (let i=0;i<connections.length-1;i++){
           const c = connections[i];
-          const a = getInnerAnchor(c.fromId,c.toId);
+          const a = getOuterAnchors(c.fromId,c.toId);
           drawLineInstant(a.x1,a.y1,a.x2,a.y2,c.thickness,'var(--secondary-color)', true);
         }
 
@@ -2379,7 +2369,7 @@
 
     function animateReplaySegment(fromId,toId,thickness,durationMs,onDone){
       const start = performance.now();
-      const { x1,y1,x2,y2 } = getInnerAnchor(fromId,toId);
+      const { x1,y1,x2,y2 } = getOuterAnchors(fromId,toId);
 
       function frame(t){
         const p = Math.min(1, (t - start) / durationMs);
@@ -2865,15 +2855,7 @@
       const { arr, maxPct } = computeDominationPercents();
       const pctMap = new Map(arr.map(o => [o.id, o.pct]));
 
-      participants.forEach(p => {
-        const el = document.getElementById(`pct${p.id}`);
-        if (el){
-          const pct = pctMap.get(p.id) || 0;
-          el.textContent = `${pct.toFixed(1)}%`;
-          el.classList.add('show');
-        }
-      });
-
+      // Percent badges removed by request — heatmap only.
       renderHeatmapAngularBlended(maxPct, pctMap);
     }
 
@@ -2881,11 +2863,6 @@
       heatmapActive = false;
       heatStatusText.textContent = 'Heatmap: off';
       heatCtx.clearRect(0,0,heatCanvas.width,heatCanvas.height);
-
-      participants.forEach(p => {
-        const el = document.getElementById(`pct${p.id}`);
-        if (el) el.classList.remove('show');
-      });
 
       if (!silent) redrawConnections();
     }
