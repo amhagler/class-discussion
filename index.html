@@ -1,1832 +1,2096 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Discussion Tracker</title>
-    <style>
-        :root {
-            --primary-color: #6F263D;
-            --primary-color-dark: #5c1f32;
-            --secondary-color: #236192;
-            --secondary-color-dark: #1b4e6f;
-            --text-color: #FFFFFF;
-        }
-
-        body {
-            font-family: Arial, sans-serif;
-            margin: 20px;
-            background-color: #f4f4f9;
-            color: #333;
-            display: flex;
-            justify-content: center;
-            position: relative;
-        }
-
-        h1 {
-            text-align: center;
-            color: var(--primary-color);
-            font-size: 2.5em;
-        }
-
-        #discussionTitleDisplay {
-            text-align: center;
-            color: var(--primary-color);
-            margin-top: 10px;
-            font-size: 2.5em;
-        }
-
-        #discussionDateDisplay {
-            text-align: center;
-            color: var(--primary-color);
-            font-size: 1.5em;
-        }
-
-        #controls {
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-            margin-right: 20px;
-        }
-
-        #participantForm,
-        #replayControls {
-            text-align: center;
-            margin-bottom: 20px;
-        }
-
-        #participantForm label,
-        #participantForm input,
-        #participantForm button {
-            display: block;
-            margin: 10px auto;
-        }
-
-        #participantForm input,
-        #participantForm button {
-            padding: 10px;
-            font-size: 16px;
-        }
-
-        #participantForm button {
-            background-color: var(--primary-color);
-            color: var(--text-color);
-            border: none;
-            cursor: pointer;
-            border-radius: 20px;
-            box-shadow: 0 4px #999;
-            transition: all 0.3s ease;
-        }
-
-        #participantForm button:hover {
-            background-color: var(--primary-color-dark);
-        }
-
-        #participantForm button:active {
-            background-color: var(--primary-color-dark);
-            box-shadow: 0 2px #666;
-            transform: translateY(2px);
-        }
-
-        #controls button {
-            background-color: var(--primary-color);
-            color: var(--text-color);
-            border: none;
-            padding: 10px 20px;
-            font-size: 16px;
-            cursor: pointer;
-            margin: 10px;
-            border-radius: 20px;
-            box-shadow: 0 4px #999;
-            transition: all 0.3s ease;
-            width: 200px;
-        }
-
-        #controls button:hover {
-            background-color: var(--primary-color-dark);
-        }
-
-        #controls button:active {
-            background-color: var(--primary-color-dark);
-            box-shadow: 0 2px #666;
-            transform: translateY(2px);
-        }
-
-        #mainContent {
-            text-align: center;
-            flex-grow: 1;
-        }
-
-        #circle {
-            position: relative;
-            width: 800px;
-            height: 800px;
-            margin: 100px auto 20px;
-            border-radius: 50%;
-            border: 2px solid #ccc;
-            background-color: #fff;
-        }
-
-        .participant {
-            position: absolute;
-            text-align: center;
-            transform: translate(-50%, -50%);
-        }
-
-        .participant p {
-            margin: 0;
-            padding: 10px;
-            background-color: var(--primary-color);
-            color: var(--text-color);
-            border-radius: 50px / 25px;
-            width: 100px;
-            height: 50px;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-        }
-
-        .participant button {
-            margin-top: 5px;
-            padding: 5px;
-            background-color: var(--primary-color);
-            color: var(--text-color);
-            border: none;
-            cursor: pointer;
-            border-radius: 20px;
-            box-shadow: 0 4px #999;
-            transition: all 0.3s ease;
-        }
-
-        .participant button.notes-button {
-            background-color: var(--secondary-color);
-            margin-top: 10px;
-        }
-
-        .participant button:hover {
-            background-color: var(--primary-color-dark);
-        }
-
-        .participant button.notes-button:hover {
-            background-color: var(--secondary-color-dark);
-        }
-
-        .participant button:active {
-            background-color: var(--primary-color-dark);
-            box-shadow: 0 2px #666;
-            transform: translateY(2px);
-        }
-
-        .participant button.notes-button:active {
-            background-color: var(--secondary-color-dark);
-        }
-
-        #ratingBox {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            border: 1px solid #ccc;
-            padding: 20px;
-            background-color: white;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            z-index: 10;
-            border-radius: 10px;
-        }
-
-        #ratingBox h2 {
-            margin-top: 0;
-            color: var(--primary-color);
-        }
-
-        #ratingBox label,
-        #ratingBox textarea,
-        #ratingBox button {
-            display: block;
-            width: 100%;
-            margin: 10px 0;
-        }
-
-        #ratingBox .rating-options {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        #ratingBox .rating-option {
-            background-color: #ccc;
-            padding: 10px;
-            border-radius: 50%;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        #ratingBox .rating-option.selected {
-            background-color: var(--primary-color);
-            color: var(--text-color);
-        }
-
-        #ratingBox .rating-option:hover {
-            background-color: var(--primary-color-dark);
-        }
-
-        #ratingBox textarea {
-            padding: 10px;
-            font-size: 16px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-
-        #ratingBox .submit-button {
-            background-color: var(--primary-color);
-            color: var(--text-color);
-            border: none;
-            padding: 10px;
-            font-size: 16px;
-            cursor: pointer;
-            border-radius: 20px;
-            box-shadow: 0 4px #999;
-            transition: all 0.3s ease;
-        }
-
-        #ratingBox .submit-button:hover {
-            background-color: var(--primary-color-dark);
-        }
-
-        #ratingBox .submit-button:active {
-            background-color: var(--primary-color-dark);
-            box-shadow: 0 2px #666;
-            transform: translateY(2px);
-        }
-
-        #logContainer {
-            margin-top: 20px;
-            display: none;
-            max-height: 400px;
-            overflow-y: auto;
-            border: 2px solid var(--secondary-color);
-            padding: 10px;
-            resize: both;
-            overflow: auto;
-            width: 60%;
-            direction: rtl;
-        }
-
-        #logContainer * {
-            direction: ltr;
-        }
-
-        #logContainer h2 {
-            color: var(--primary-color);
-        }
-
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 20px 0;
-        }
-
-        table,
-        th,
-        td {
-            border: 1px solid #ccc;
-        }
-
-        th,
-        td {
-            padding: 12px;
-            text-align: left;
-        }
-
-        th {
-            background-color: var(--primary-color);
-            color: var(--text-color);
-        }
-
-        td {
-            background-color: #fff;
-        }
-
-        .edit-button {
-            background-color: var(--primary-color);
-            color: var(--text-color);
-            border: none;
-            padding: 5px 10px;
-            cursor: pointer;
-            border-radius: 5px;
-            box-shadow: 0 4px #999;
-            transition: all 0.3s ease;
-        }
-
-        .edit-button:hover {
-            background-color: var(--primary-color-dark);
-        }
-
-        .edit-button:active {
-            background-color: var(--primary-color-dark);
-            box-shadow: 0 2px #666;
-            transform: translateY(2px);
-        }
-
-        canvas {
-            position: absolute;
-            top: 0;
-            left: 0;
-        }
-
-        #editRatingBox {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            border: 1px solid #ccc;
-            padding: 20px;
-            background-color: white;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            z-index: 10;
-            border-radius: 10px;
-        }
-
-        #editRatingBox h2 {
-            margin-top: 0;
-            color: var(--primary-color);
-        }
-
-        #editRatingBox label,
-        #editRatingBox input,
-        #editRatingBox textarea,
-        #editRatingBox button {
-            display: block;
-            width: 100%;
-            margin: 10px 0;
-        }
-
-        #editRatingBox .rating-options {
-            display: flex;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        #editRatingBox .rating-option {
-            background-color: #ccc;
-            padding: 10px;
-            border-radius: 50%;
-            cursor: pointer;
-            transition: all 0.3s ease;
-        }
-
-        #editRatingBox .rating-option.selected {
-            background-color: var(--primary-color);
-            color: var(--text-color);
-        }
-
-        #editRatingBox .rating-option:hover {
-            background-color: var(--primary-color-dark);
-        }
-
-        #editRatingBox textarea {
-            padding: 10px;
-            font-size: 16px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-
-        #editRatingBox button {
-            background-color: var(--primary-color);
-            color: var(--text-color);
-            border: none;
-            padding: 10px;
-            font-size: 16px;
-            cursor: pointer;
-            border-radius: 20px;
-            box-shadow: 0 4px #999;
-            transition: all 0.3s ease;
-        }
-
-        #editRatingBox button:hover {
-            background-color: var(--primary-color-dark);
-        }
-
-        #editRatingBox button:active {
-            background-color: var(--primary-color-dark);
-            box-shadow: 0 2px #666;
-            transform: translateY(2px);
-        }
-
-        #reportContainer {
-            position: fixed;
-            bottom: 60px;
-            right: 0;
-            display: none;
-            max-height: 400px;
-            overflow-y: auto;
-            border: 2px solid var(--secondary-color);
-            padding: 10px;
-            resize: both;
-            overflow: auto;
-            width: 60%;
-            direction: rtl;
-        }
-
-        #reportContainer * {
-            direction: ltr;
-        }
-
-        #reportContainer h2 {
-            color: var(--primary-color);
-        }
-
-        #notesBox {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            border: 1px solid #ccc;
-            padding: 20px;
-            background-color: white;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            z-index: 10;
-            border-radius: 10px;
-        }
-
-        #notesBox h2 {
-            margin-top: 0;
-            color: var(--primary-color);
-        }
-
-        #notesBox textarea {
-            padding: 10px;
-            font-size: 16px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-        }
-
-        #notesBox button {
-            background-color: var(--primary-color);
-            color: var(--text-color);
-            border: none;
-            padding: 10px;
-            font-size: 16px;
-            cursor: pointer;
-            border-radius: 20px;
-            box-shadow: 0 4px #999;
-            transition: all 0.3s ease;
-            margin-top: 10px;
-        }
-
-        #notesBox button:hover {
-            background-color: var(--primary-color-dark);
-        }
-
-        #notesBox button:active {
-            background-color: var(--primary-color-dark);
-            box-shadow: 0 2px #666;
-            transform: translateY(2px);
-        }
-
-        .pause-button {
-            position: absolute;
-            top: 50%;
-            left: calc(100% + 100px);
-            transform: translateY(-50%);
-            background-color: var(--secondary-color);
-            color: var(--text-color);
-            border: none;
-            padding: 15px;
-            font-size: 16px;
-            cursor: pointer;
-            border-radius: 50%;
-            box-shadow: 0 4px #999;
-            transition: all 0.3s ease;
-            z-index: 5;
-        }
-
-        .pause-button:hover {
-            background-color: var(--secondary-color-dark);
-        }
-
-        .pause-button:active {
-            background-color: var(--secondary-color-dark);
-            box-shadow: 0 2px #666;
-            transform: translateY(2px);
-        }
-
-        #colorSchemePopup {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            border: 1px solid #ccc;
-            padding: 20px;
-            background-color: white;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            z-index: 20;
-            border-radius: 10px;
-            width: 80%;
-            max-width: 800px;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-
-        #colorSchemePopup h2 {
-            margin-top: 0;
-            color: var(--primary-color);
-            text-align: center;
-        }
-
-        #colorSchemeList {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 10px;
-            justify-content: space-between;
-        }
-
-        #colorSchemeList li {
-            list-style: none;
-            width: calc(12.5% - 10px);
-            text-align: center;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 10px;
-            background-color: #f9f9f9;
-        }
-
-        .swatch {
-            width: 40px;
-            height: 40px;
-            margin: 5px auto;
-            border-radius: 50%;
-        }
-
-        .team-name {
-            display: block;
-            margin: 10px 0;
-            font-size: 14px;
-        }
-
-        .select-button {
-            background-color: var(--primary-color);
-            color: var(--text-color);
-            border: none;
-            padding: 5px 10px;
-            cursor: pointer;
-            border-radius: 10px;
-            transition: all 0.3s ease;
-            width: 100%;
-        }
-
-        .select-button:hover {
-            background-color: var(--primary-color-dark);
-        }
-
-        .select-button:active {
-            background-color: var(--primary-color-dark);
-            box-shadow: 0 2px #666;
-            transform: translateY(2px);
-        }
-
-        #customColorPopup {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            border: 1px solid #ccc;
-            padding: 20px;
-            background-color: white;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            z-index: 30;
-            border-radius: 10px;
-            width: 80%;
-            max-width: 600px;
-            text-align: center;
-        }
-
-        #customColorPopup h2 {
-            margin-top: 0;
-            color: var(--primary-color);
-        }
-
-        #customColorPopup label,
-        #customColorPopup input {
-            display: block;
-            width: 80%;
-            margin: 10px auto;
-        }
-
-        #customColorPopup input[type="color"] {
-            width: 100%;
-            height: 60px;
-            padding: 0;
-            border: none;
-        }
-
-        #customColorPopup .color-code {
-            margin: 10px 0;
-            font-size: 18px;
-            color: var(--primary-color);
-        }
-
-        #logAndReport {
-            margin-left: 20px;
-            display: flex;
-            flex-direction: column;
-            align-items: flex-start;
-        }
-
-        #replayControls {
-            margin-top: 20px;
-            text-align: center;
-        }
-
-        #replayControls button {
-            margin: 5px 0;
-        }
-
-        /* Specific styles for Tampa Bay Lightning and Toronto Maple Leafs */
-        .lightning-highlight,
-        .leafs-highlight {
-            color: #000000 !important;
-        }
-
-        #confirmRestartPopup {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            border: 1px solid #ccc;
-            padding: 20px;
-            background-color: white;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            z-index: 30;
-            border-radius: 10px;
-            width: 50%;
-            max-width: 400px;
-            text-align: center;
-        }
-
-        #confirmRestartPopup h2 {
-            margin-top: 0;
-            color: var(--primary-color);
-        }
-
-        #confirmRestartPopup button {
-            background-color: var(--primary-color);
-            color: var(--text-color);
-            border: none;
-            padding: 10px;
-            font-size: 16px;
-            cursor: pointer;
-            border-radius: 20px;
-            box-shadow: 0 4px #999;
-            transition: all 0.3s ease;
-            margin: 10px 5px;
-        }
-
-        #confirmRestartPopup button:hover {
-            background-color: var(--primary-color-dark);
-        }
-
-        #confirmRestartPopup button:active {
-            background-color: var(--primary-color-dark);
-            box-shadow: 0 2px #666;
-            transform: translateY(2px);
-        }
-
-        #editParticipantsPopup {
-            display: none;
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            border: 1px solid #ccc;
-            padding: 20px;
-            background-color: white;
-            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            z-index: 30;
-            border-radius: 10px;
-            width: 80%;
-            max-width: 600px;
-            max-height: 80vh;
-            overflow-y: auto;
-        }
-
-        #editParticipantsPopup h2 {
-            margin-top: 0;
-            color: var(--primary-color);
-            text-align: center;
-        }
-
-        #editParticipantsPopup .popup-content {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        #editParticipantsPopup input,
-        #editParticipantsPopup button {
-            padding: 10px;
-            font-size: 16px;
-            margin: 10px 0;
-        }
-
-        #editParticipantsPopup button {
-            background-color: var(--primary-color);
-            color: var(--text-color);
-            border: none;
-            cursor: pointer;
-            border-radius: 20px;
-            box-shadow: 0 4px #999;
-            transition: all 0.3s ease;
-        }
-
-        #editParticipantsPopup button:hover {
-            background-color: var(--primary-color-dark);
-        }
-
-        #editParticipantsPopup button:active {
-            background-color: var(--primary-color-dark);
-            box-shadow: 0 2px #666;
-            transform: translateY(2px);
-        }
-
-        #editParticipantsPopup .close-button {
-            position: absolute;
-            top: 10px;
-            right: 10px;
-            background-color: transparent;
-            border: none;
-            font-size: 20px;
-            cursor: pointer;
-        }
-
-        #reorderParticipantsContainer {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        #reorderParticipantsContainer ul {
-            list-style: none;
-            padding: 0;
-            width: 100%;
-        }
-
-        #reorderParticipantsContainer li {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            margin-bottom: 10px;
-            cursor: grab;
-        }
-
-        #reorderParticipantsContainer li.dragging {
-            opacity: 0.5;
-        }
-
-        #renameParticipantsContainer {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-
-        #renameParticipantsContainer ul {
-            list-style: none;
-            padding: 0;
-            width: 100%;
-        }
-
-        #renameParticipantsContainer li {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            margin-bottom: 10px;
-        }
-
-        #renameParticipantsContainer input {
-            flex-grow: 1;
-            margin-right: 10px;
-        }
-
-        #renameParticipantsContainer button {
-            padding: 5px 10px;
-            font-size: 14px;
-        }
-
-        /* Larger discussion title input */
-        #discussionTitle {
-            width: 80%;
-            padding: 10px;
-            font-size: 18px;
-        }
-
-        /* Style for the PayPal button */
-        .paypal-button {
-            position: fixed;
-            bottom: 20px;
-            left: 20px;
-            z-index: 10;
-        }
-    </style>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Discussion Tracker</title>
+  <style>
+    :root{
+      --primary-color:#6F263D;
+      --primary-color-dark:#5c1f32;
+      --secondary-color:#236192;
+      --secondary-color-dark:#1b4e6f;
+      --text-color:#FFFFFF;
+
+      --bg:#f4f4f9;
+      --panel:#ffffffcc;
+      --panel-strong:#ffffff;
+      --ink:#1f2328;
+      --muted:#6b7280;
+
+      --shadow: 0 10px 30px rgba(0,0,0,.12);
+      --shadow-sm: 0 6px 18px rgba(0,0,0,.10);
+      --radius: 18px;
+
+      --pill-w: 118px;
+      --pill-h: 56px;
+      --pill-pad: 10px;
+
+      /* dynamic gap (JS will set this on .stage) */
+      --stage-gap-base: 28px;
+      --stage-gap-dynamic: 0px;
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      font-family: Arial, sans-serif;
+      background: radial-gradient(1200px 700px at 10% 10%, #fff, var(--bg));
+      color: var(--ink);
+    }
+
+    /* Top bar */
+    .topbar{
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      backdrop-filter: blur(10px);
+      background: linear-gradient(to bottom, rgba(255,255,255,.85), rgba(255,255,255,.65));
+      border-bottom: 1px solid rgba(0,0,0,.08);
+    }
+    .topbar-inner{
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 12px 16px;
+      display:flex;
+      align-items:center;
+      gap:12px;
+      flex-wrap:wrap;
+      justify-content:space-between;
+    }
+    .brand{
+      display:flex;
+      align-items:baseline;
+      gap:10px;
+      min-width: 260px;
+    }
+    .brand h1{
+      margin:0;
+      font-size: 20px;
+      letter-spacing:.2px;
+      color: var(--primary-color);
+    }
+    .brand .sub{
+      font-size:12px;
+      color: var(--muted);
+      font-weight: 300;
+    }
+
+    .controls{
+      display:flex;
+      align-items:center;
+      flex-wrap:wrap;
+      gap:8px;
+      justify-content:flex-end;
+    }
+
+    .btn{
+      border: none;
+      background: var(--primary-color);
+      color: var(--text-color);
+      padding: 10px 12px;
+      border-radius: 14px;
+      cursor: pointer;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      box-shadow: 0 2px 0 rgba(0,0,0,.18);
+      transition: transform .12s ease, box-shadow .12s ease, background .2s ease, opacity .2s ease;
+      user-select:none;
+      font-size: 14px;
+      line-height: 1;
+      white-space: nowrap;
+    }
+    .btn:hover{ transform: translateY(-1px); box-shadow: 0 8px 20px rgba(0,0,0,.14); background: var(--primary-color-dark); }
+    .btn:active{ transform: translateY(0px); box-shadow: 0 2px 0 rgba(0,0,0,.18); }
+    .btn.secondary{ background: var(--secondary-color); }
+    .btn.secondary:hover{ background: var(--secondary-color-dark); }
+    .btn.ghost{
+      background: rgba(255,255,255,.65);
+      color: var(--primary-color);
+      border: 1px solid rgba(0,0,0,.10);
+      box-shadow:none;
+    }
+    .btn.ghost:hover{
+      background: rgba(255,255,255,.9);
+      box-shadow: 0 10px 24px rgba(0,0,0,.10);
+      transform: translateY(-1px);
+    }
+    .btn:disabled{
+      opacity:.45;
+      cursor:not-allowed;
+      transform:none !important;
+      box-shadow:none !important;
+    }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      min-width: 22px;
+      height: 18px;
+      padding: 0 6px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.25);
+      border: 1px solid rgba(255,255,255,.35);
+      font-size: 12px;
+      font-weight: 700;
+      line-height: 1;
+    }
+
+    /* Main layout */
+    .wrap{
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 18px 16px 120px;
+      position: relative;
+    }
+
+    /* Title/date ABOVE circle, clearly separated */
+    .title-area{
+      width: 100%;
+      text-align:center;
+      margin: 10px 0 46px; /* more bottom space */
+      padding-bottom: 10px; /* extra separation */
+    }
+    #discussionTitleDisplay{
+      font-size: 28px;
+      color: var(--primary-color);
+      margin: 0;
+      font-weight: 800;
+      letter-spacing:.2px;
+      line-height: 1.15;
+    }
+    #discussionDateDisplay{
+      font-size: 14px;
+      margin-top: 10px;
+      color: var(--muted);
+      font-weight: 300;
+    }
+
+    /* Setup panels */
+    .setup-card{
+      width: min(720px, 96%);
+      margin: 0 auto 18px;
+      background: var(--panel);
+      border: 1px solid rgba(0,0,0,.10);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      backdrop-filter: blur(12px);
+      padding: 14px;
+    }
+    .setup-row{
+      display:flex;
+      gap:10px;
+      align-items:center;
+      justify-content:center;
+      flex-wrap:wrap;
+    }
+    label{ font-size: 13px; color: var(--muted); font-weight: 300; }
+    input[type="text"]{
+      padding: 12px 12px;
+      font-size: 16px;
+      border-radius: 14px;
+      border: 1px solid rgba(0,0,0,.14);
+      outline:none;
+      width: min(520px, 92vw);
+      background: rgba(255,255,255,.85);
+    }
+    input[type="text"]:focus{
+      border-color: rgba(35,97,146,.55);
+      box-shadow: 0 0 0 4px rgba(35,97,146,.10);
+    }
+
+    /* Circle + canvas */
+    .stage{
+      display:flex;
+      justify-content:center;
+      /* ✅ JS will set stage marginTop dynamically based on pill height */
+      margin-top: calc(var(--stage-gap-base) + var(--stage-gap-dynamic));
+    }
+    #circle{
+      position: relative;
+      width: 860px;
+      height: 860px;
+      border-radius: 50%;
+      border: 2px solid rgba(0,0,0,.10);
+      background: rgba(255,255,255,.78);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(10px);
+      overflow: visible;
+    }
+
+    canvas{
+      position:absolute;
+      inset:0;
+      z-index:1;
+      pointer-events:none;
+    }
+
+    /* Center overlay inside circle */
+    .centerOverlay{
+      position:absolute;
+      inset:0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      z-index: 5;
+      pointer-events:none;
+    }
+    .centerOverlay > *{ pointer-events:auto; }
+
+    .nowSpeaking{
+      position:absolute;
+      top: 14px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 6;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,.75);
+      border: 1px solid rgba(0,0,0,.10);
+      color: var(--muted);
+      font-size: 12px;
+      font-weight: 300;
+      backdrop-filter: blur(10px);
+    }
+    .nowSpeaking strong{
+      color: var(--secondary-color);
+      font-weight: 700;
+    }
+
+    /* Pause button centered, circular */
+    .pause-center{
+      position:absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%,-50%);
+      z-index: 4;
+      pointer-events:auto;
+    }
+    .pause-center.hidden{ display:none; }
+    .pause-circle{
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      border: 1px solid rgba(0,0,0,.12);
+      background: rgba(255,255,255,.72);
+      backdrop-filter: blur(10px);
+      box-shadow: var(--shadow-sm);
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      transition: transform .12s ease, box-shadow .12s ease, background .2s ease;
+      user-select:none;
+    }
+    .pause-circle:hover{
+      transform: scale(1.03);
+      box-shadow: 0 14px 32px rgba(0,0,0,.16);
+      background: rgba(255,255,255,.86);
+    }
+    .pause-icon{
+      font-size: 22px;
+      color: var(--primary-color);
+      line-height: 1;
+      font-weight: 800;
+    }
+
+    /* Participants */
+    .participant{
+      position:absolute;
+      transform: translate(-50%, -50%);
+      z-index: 10;
+      text-align:center;
+      width: var(--pill-w);
+    }
+
+    .pill{
+      width: var(--pill-w);
+      height: var(--pill-h);
+      border-radius: 999px;
+      padding: var(--pill-pad);
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      justify-content:center;
+      gap: 3px;
+
+      background: linear-gradient(135deg, rgba(255,255,255,.25), rgba(255,255,255,.10));
+      border: 1px solid rgba(255,255,255,.35);
+      box-shadow: 0 10px 22px rgba(0,0,0,.10);
+      backdrop-filter: blur(10px);
+
+      background-color: var(--primary-color);
+      color: var(--text-color);
+      transition: transform .14s ease, box-shadow .14s ease, background-color .18s ease, filter .18s ease;
+      will-change: transform;
+    }
+
+    .pill .count{
+      font-size: 12px;
+      font-weight: 700;
+      opacity: .95;
+      line-height: 1;
+    }
+    .pill .name{
+      font-size: 16px;
+      font-weight: 800;
+      line-height: 1.05;
+      letter-spacing:.2px;
+      max-width: 100%;
+      overflow:hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .pill.active{
+      background-color: var(--secondary-color);
+      filter: saturate(1.05);
+      transform: translateY(-1px) scale(1.03);
+      box-shadow: 0 16px 34px rgba(0,0,0,.16);
+    }
+    .pill.pulse{ animation: microPulse .26s ease-out; }
+    @keyframes microPulse{
+      0%{ transform: translateY(-1px) scale(1.00); }
+      60%{ transform: translateY(-2px) scale(1.05); }
+      100%{ transform: translateY(-1px) scale(1.03); }
+    }
+
+    .pbtn-row{
+      display:flex;
+      gap:8px;
+      justify-content:center;
+      margin-top: 8px;
+    }
+    .pbtn{
+      padding: 7px 10px;
+      border-radius: 12px;
+      border: none;
+      cursor:pointer;
+      font-size: 12px;
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      box-shadow: 0 2px 0 rgba(0,0,0,.14);
+      transition: transform .12s ease, box-shadow .12s ease, background .2s ease;
+      user-select:none;
+    }
+    .pbtn:hover{ transform: translateY(-1px); box-shadow: 0 10px 20px rgba(0,0,0,.14); }
+    .pbtn:active{ transform: translateY(0px); box-shadow: 0 2px 0 rgba(0,0,0,.14); }
+    .pbtn.speak{ background: var(--primary-color); color: var(--text-color); }
+    .pbtn.notes{ background: var(--secondary-color); color: var(--text-color); }
+
+    /* Rating box centered INSIDE circle */
+    .modal-card{
+      width: min(440px, 86vw);
+      background: rgba(255,255,255,.86);
+      border: 1px solid rgba(0,0,0,.10);
+      border-radius: 18px;
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+      padding: 14px;
+    }
+    .modal-card h2{
+      margin: 0 0 10px;
+      color: var(--primary-color);
+      font-size: 18px;
+    }
+    .rating-options{
+      display:flex;
+      gap:10px;
+      justify-content:center;
+      margin: 10px 0 12px;
+    }
+    .rating-option{
+      width: 40px;
+      height: 40px;
+      border-radius: 50%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      cursor:pointer;
+      background: rgba(0,0,0,.08);
+      border: 1px solid rgba(0,0,0,.10);
+      transition: transform .12s ease, background .2s ease;
+      user-select:none;
+      font-weight: 800;
+      color: var(--ink);
+    }
+    .rating-option:hover{ transform: translateY(-1px); background: rgba(0,0,0,.12); }
+    .rating-option.selected{
+      background: var(--primary-color);
+      color: var(--text-color);
+      border-color: rgba(0,0,0,.0);
+    }
+    textarea{
+      width: 100%;
+      border-radius: 14px;
+      border: 1px solid rgba(0,0,0,.14);
+      padding: 10px 12px;
+      font-size: 14px;
+      outline:none;
+      background: rgba(255,255,255,.90);
+      resize: vertical;
+    }
+    textarea:focus{
+      border-color: rgba(35,97,146,.55);
+      box-shadow: 0 0 0 4px rgba(35,97,146,.10);
+    }
+
+    /* Overlays */
+    #colorSchemePopup,
+    #customColorPopup,
+    #confirmRestartPopup,
+    #editParticipantsPopup,
+    #editRatingBox,
+    #notesBox{
+      display:none;
+      position:fixed;
+      inset:0;
+      z-index: 200;
+      background: rgba(0,0,0,.35);
+      backdrop-filter: blur(6px);
+      align-items:center;
+      justify-content:center;
+      padding: 18px;
+    }
+    .popup{
+      width: min(920px, 94vw);
+      max-height: 86vh;
+      overflow:auto;
+      background: rgba(255,255,255,.92);
+      border: 1px solid rgba(0,0,0,.10);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+      padding: 14px;
+    }
+    .popup h2{
+      margin: 0 0 10px;
+      color: var(--primary-color);
+      font-size: 18px;
+    }
+
+    #colorSchemeList{
+      display:grid;
+      grid-template-columns: repeat(4, minmax(0,1fr));
+      gap:10px;
+      padding:0;
+      margin:0;
+      list-style:none;
+    }
+
+    /* ✅ Replay Dock (side, attractive) */
+    #replayDock{
+      display:none;
+      position: fixed;
+      right: 18px;
+      top: 124px;
+      z-index: 120;
+      width: 240px;
+      border-radius: 20px;
+      background: rgba(255,255,255,.88);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(0,0,0,.10);
+      box-shadow: 0 16px 44px rgba(0,0,0,.18);
+      padding: 12px;
+    }
+    #replayDock .dock-title{
+      margin: 0 0 8px;
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--primary-color);
+    }
+    #replayDock .dock-sub{
+      margin: 10px 0 8px;
+      font-size: 12px;
+      font-weight: 300;
+      color: var(--muted);
+    }
+    #replayDock .dock-row{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+    }
+    #replayDock .dock-btn{
+      flex: 1 1 30%;
+      justify-content:center;
+      padding: 10px 10px;
+      border-radius: 16px;
+      border: 1px solid rgba(0,0,0,.10);
+      background: rgba(0,0,0,.04);
+      color: var(--ink);
+      font-weight: 800;
+      cursor:pointer;
+      transition: transform .12s ease, box-shadow .12s ease, background .2s ease;
+      box-shadow: 0 2px 0 rgba(0,0,0,.10);
+    }
+    #replayDock .dock-btn:hover{
+      transform: translateY(-1px);
+      box-shadow: 0 14px 30px rgba(0,0,0,.14);
+      background: rgba(35,97,146,.10);
+    }
+
+    @media (max-width: 1100px){
+      #replayDock{
+        right: 12px;
+        top: auto;
+        bottom: 12px;
+        width: min(420px, calc(100vw - 24px));
+      }
+    }
+
+    @media (max-width: 900px){
+      #circle{ width: 92vw; height: 92vw; max-width: 860px; max-height: 860px; }
+      #colorSchemeList{ grid-template-columns: repeat(2, minmax(0,1fr)); }
+      :root{ --pill-w: 112px; --pill-h: 54px; }
+    }
+
+    .scheme{
+      border: 1px solid rgba(0,0,0,.10);
+      border-radius: 16px;
+      background: rgba(255,255,255,.70);
+      padding: 10px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+    .swatches{ display:flex; gap:10px; align-items:center; justify-content:flex-start; }
+    .swatch{
+      width: 30px; height: 30px; border-radius: 50%;
+      border: 1px solid rgba(0,0,0,.10);
+    }
+    .scheme .team-name{ font-size: 13px; color: var(--ink); font-weight: 800; }
+    .scheme .select-button{
+      width: 100%;
+      border:none;
+      border-radius: 14px;
+      padding: 10px 12px;
+      cursor:pointer;
+      background: var(--primary-color);
+      color: var(--text-color);
+      transition: transform .12s ease, box-shadow .12s ease, background .2s ease;
+      box-shadow: 0 2px 0 rgba(0,0,0,.14);
+    }
+    .scheme .select-button:hover{
+      transform: translateY(-1px);
+      box-shadow: 0 10px 20px rgba(0,0,0,.14);
+      background: var(--primary-color-dark);
+    }
+
+    /* Bottom drawer */
+    .drawer-backdrop{
+      position: fixed;
+      inset:0;
+      z-index: 140;
+      background: rgba(0,0,0,.22);
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity .18s ease;
+    }
+    .drawer-backdrop.open{ opacity: 1; pointer-events: auto; }
+
+    .drawer{
+      position: fixed;
+      left: 50%;
+      transform: translateX(-50%);
+      bottom: 0;
+      z-index: 150;
+      width: min(1200px, 100%);
+      border-radius: 22px 22px 0 0;
+      background: rgba(255,255,255,.90);
+      backdrop-filter: blur(14px);
+      border: 1px solid rgba(0,0,0,.10);
+      box-shadow: 0 -14px 40px rgba(0,0,0,.18);
+      max-height: 78vh;
+      height: 48vh;
+      display:flex;
+      flex-direction:column;
+      overflow:hidden;
+      translate: 0 105%;
+      transition: translate .22s ease;
+    }
+    .drawer.open{ translate: 0 0; }
+
+    .drawer-header{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(0,0,0,.08);
+    }
+    .handle{
+      width: 44px;
+      height: 5px;
+      border-radius: 999px;
+      background: rgba(0,0,0,.18);
+      margin: 0 auto;
+    }
+    .tabs{ display:flex; align-items:center; gap:8px; }
+    .tab{
+      border:none;
+      cursor:pointer;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(0,0,0,.06);
+      color: var(--ink);
+      font-weight: 800;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+      transition: transform .12s ease, background .2s ease;
+    }
+    .tab:hover{ transform: translateY(-1px); background: rgba(0,0,0,.10); }
+    .tab.active{ background: var(--secondary-color); color: var(--text-color); }
+
+    .drawer-actions{
+      display:flex;
+      gap:8px;
+      align-items:center;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+    .drawer-body{ padding: 10px 12px 12px; overflow:auto; }
+
+    table{
+      width: 100%;
+      border-collapse: collapse;
+      overflow:hidden;
+      border-radius: 16px;
+      border: 1px solid rgba(0,0,0,.10);
+      background: rgba(255,255,255,.95);
+    }
+    thead th{
+      position: sticky;
+      top: 0;
+      background: linear-gradient(180deg, var(--primary-color), var(--primary-color-dark));
+      color: var(--text-color);
+      font-weight: 800;
+      font-size: 13px;
+      text-align:left;
+      padding: 10px;
+      z-index: 1;
+    }
+    tbody td{
+      padding: 10px;
+      border-top: 1px solid rgba(0,0,0,.08);
+      font-size: 13px;
+    }
+    tbody tr:nth-child(even) td{ background: rgba(0,0,0,.03); }
+
+    .edit-button{
+      border:none;
+      border-radius: 12px;
+      padding: 8px 10px;
+      background: var(--primary-color);
+      color: var(--text-color);
+      cursor:pointer;
+      transition: transform .12s ease, box-shadow .12s ease, background .2s ease;
+      box-shadow: 0 2px 0 rgba(0,0,0,.14);
+      font-size: 12px;
+      white-space:nowrap;
+    }
+    .edit-button:hover{
+      transform: translateY(-1px);
+      box-shadow: 0 10px 20px rgba(0,0,0,.14);
+      background: var(--primary-color-dark);
+    }
+
+    .section-title{
+      margin: 10px 0 8px;
+      font-size: 14px;
+      color: var(--muted);
+      font-weight: 300;
+    }
+
+    .mini-popup{
+      width: min(520px, 94vw);
+      background: rgba(255,255,255,.92);
+      border: 1px solid rgba(0,0,0,.10);
+      border-radius: 20px;
+      box-shadow: var(--shadow);
+      padding: 14px;
+      position: relative;
+    }
+    .mini-popup h2{ margin:0 0 10px; color: var(--primary-color); font-size:18px; }
+    .mini-actions{ display:flex; gap:8px; justify-content:flex-end; margin-top:10px; }
+    .close-x{
+      position:absolute;
+      top: 16px;
+      right: 18px;
+      background: transparent;
+      border: none;
+      cursor:pointer;
+      font-size: 22px;
+      color: rgba(0,0,0,.55);
+    }
+  </style>
 </head>
 
 <body>
-    <div id="controls">
-        <button id="endDiscussionButton" style="display:none;" onclick="endDiscussion()">End Discussion</button>
-        <button id="toggleLogButton" onclick="toggleLog()">Show Discussion Log</button>
-        <button id="copyLogButton" style="display:none;" onclick="copyLog()">Copy Discussion Log</button>
-        <button id="restartDiscussionButton" style="display:none;" onclick="confirmRestartDiscussion()">Restart Discussion</button>
-        <button id="generateReportButton" style="display:none;" onclick="generateReport()">Generate Report</button>
-        <button id="toggleReportButton" style="display:none;" onclick="toggleReport()">Show/Hide Report</button>
-        <button id="copyReportButton" style="display:none;" onclick="copyReport()">Copy Report</button>
-        <button id="colorSchemeButton" onclick="openColorSchemePopup()">Change Color Scheme</button>
-        <button id="editParticipantsButton" style="display:none;" onclick="openEditParticipantsPopup()">Edit Participants</button>
-        <button id="exportScreenshotButton" style="display:none;" onclick="exportScreenshot()">Export Screenshot</button>
-        <div id="replayControls" style="display:none;">
-            <h2>Order Replay</h2>
-            <button onclick="replayDiscussion(2)">2x Speed</button>
-            <button onclick="replayDiscussion(4)">4x Speed</button>
-            <button onclick="replayDiscussion(8)">8x Speed</button>
-            <h2>Timed Replay</h2>
-            <button onclick="replayDiscussionTimed(8)">8x Speed</button>
-            <button onclick="replayDiscussionTimed(16)">16x Speed</button>
-            <button onclick="replayDiscussionTimed(32)">32x Speed</button>
-        </div>
-    </div>
-
-    <div id="mainContent">
+  <div class="topbar">
+    <div class="topbar-inner">
+      <div class="brand">
         <h1>Discussion Tracker</h1>
-        <div id="discussionTitleDisplay"></div>
-        <div id="discussionDateDisplay"></div>
+        <div class="sub">live facilitation + post-discussion analysis</div>
+      </div>
 
-        <div id="discussionDetails">
-            <label for="discussionTitle">Discussion Title:</label>
-            <input type="text" id="discussionTitle" required>
-            <button onclick="startDiscussion()">Start Discussion</button>
+      <div class="controls">
+        <button id="endDiscussionButton" class="btn secondary" style="display:none;" onclick="endDiscussion()">
+          ⏹ End
+        </button>
+
+        <button id="toggleDrawerButton" class="btn ghost" onclick="toggleDrawer()">
+          ☰ Open Panel
+        </button>
+
+        <button id="copyBothButton" class="btn" style="display:none;" onclick="copyBoth()">
+          ⧉ Copy Both
+        </button>
+
+        <button id="restartDiscussionButton" class="btn" style="display:none;" onclick="confirmRestartDiscussion()">
+          ↻ Restart
+        </button>
+
+        <button id="generateReportButton" class="btn secondary" style="display:none;" onclick="generateReport()">
+          ✨ Generate Report
+        </button>
+
+        <button id="colorSchemeButton" class="btn ghost" onclick="openColorSchemePopup()">
+          🎨 Colors
+        </button>
+
+        <button id="editParticipantsButton" class="btn ghost" style="display:none;" onclick="openEditParticipantsPopup()">
+          👥 Participants
+        </button>
+
+        <button id="exportScreenshotButton" class="btn ghost" style="display:none;" onclick="exportScreenshot()">
+          📷 Screenshot
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <div class="wrap">
+    <!-- Title/date live ABOVE circle -->
+    <div class="title-area" id="titleArea">
+      <div id="discussionTitleDisplay"></div>
+      <div id="discussionDateDisplay"></div>
+    </div>
+
+    <div id="discussionDetails" class="setup-card">
+      <div class="setup-row">
+        <label for="discussionTitle">Discussion Title:</label>
+        <input type="text" id="discussionTitle" placeholder="e.g., Arab Spring Seminar (B Block)" required />
+        <button class="btn secondary" onclick="startDiscussion()">▶ Start</button>
+      </div>
+    </div>
+
+    <div id="participantFormWrap" class="setup-card" style="display:none;">
+      <form id="participantForm">
+        <div class="setup-row">
+          <label for="name">Participant Name:</label>
+          <input type="text" id="name" placeholder="Add a student..." required />
+          <button class="btn" type="submit">＋ Add</button>
+          <button class="btn secondary" type="button" onclick="doneAddingParticipants()">✓ Done</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="stage" id="stage">
+      <div id="circle">
+        <canvas id="connectionCanvas" width="860" height="860"></canvas>
+
+        <div class="nowSpeaking" id="nowSpeaking" style="display:none;">
+          Now speaking: <strong id="nowSpeakingName"></strong>
         </div>
 
-        <form id="participantForm" style="display:none;">
-            <label for="name">Participant Name:</label>
-            <input type="text" id="name" required>
-            <button type="submit">Add Participant</button>
-            <button type="button" onclick="doneAddingParticipants()">Done adding participants</button>
-        </form>
-
-        <div id="circle">
-            <canvas id="connectionCanvas" width="800" height="800"></canvas>
-            <button class="pause-button" onclick="pauseTimer()">Pause</button>
-        </div>
-    </div>
-
-    <div id="logAndReport">
-        <div id="logContainer">
-            <h2>Discussion Log</h2>
-            <table id="logTable">
-                <thead>
-                    <tr>
-                        <th>Participant</th>
-                        <th>Timestamp</th>
-                        <th>Rating</th>
-                        <th>Comment</th>
-                        <th>Duration</th>
-                        <th>Edit</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Logs will be added here -->
-                </tbody>
-            </table>
+        <!-- Centered pause button -->
+        <div id="pauseCenter" class="pause-center">
+          <button class="pause-circle" title="Pause (ends current speaking segment)" onclick="pauseTimer()">
+            <span class="pause-icon">⏸</span>
+          </button>
         </div>
 
-        <div id="reportContainer">
-            <h2>Report</h2>
-            <table id="reportTable">
-                <thead>
-                    <tr>
-                        <th>Participant</th>
-                        <th>All Ratings</th>
-                        <th>Average</th>
-                        <th>Total Air Time</th>
-                        <th>Domination</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Report will be added here -->
-                </tbody>
-            </table>
-            <h2>Notes</h2>
-            <table id="notesReportTable">
-                <thead>
-                    <tr>
-                        <th>Participant</th>
-                        <th>Notes</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <!-- Notes report will be added here -->
-                </tbody>
-            </table>
-        </div>
-    </div>
-
-    <div id="ratingBox">
-        <h2>Rate Contribution</h2>
-        <div class="rating-options">
-            <div class="rating-option" onclick="selectRating(1)">1</div>
-            <div class="rating-option" onclick="selectRating(2)">2</div>
-            <div class="rating-option" onclick="selectRating(3)">3</div>
-            <div class="rating-option" onclick="selectRating(4)">4</div>
-            <div class="rating-option" onclick="selectRating(5)">5</div>
-        </div>
-        <label for="comment">Comment:</label>
-        <textarea id="comment" rows="4" cols="30"></textarea>
-        <button class="submit-button" onclick="startTimer()">START TIMER</button>
-    </div>
-
-    <div id="editRatingBox">
-        <h2>Edit Contribution</h2>
-        <div class="rating-options">
-            <div class="rating-option" onclick="selectEditRating(1)">1</div>
-            <div class="rating-option" onclick="selectEditRating(2)">2</div>
-            <div class="rating-option" onclick="selectEditRating(3)">3</div>
-            <div class="rating-option" onclick="selectEditRating(4)">4</div>
-            <div class="rating-option" onclick="selectEditRating(5)">5</div>
-        </div>
-        <label for="editComment">Comment:</label>
-        <textarea id="editComment" rows="4" cols="30"></textarea>
-        <button onclick="saveEdit()">Save</button>
-    </div>
-
-    <div id="notesBox">
-        <h2 id="notesBoxTitle">Notes about</h2>
-        <textarea id="notesText" rows="4" cols="30"></textarea>
-        <button onclick="saveNotes()">Save</button>
-    </div>
-
-    <div id="colorSchemePopup">
-        <h2>Color Scheme</h2>
-        <ul id="colorSchemeList"></ul>
-    </div>
-
-    <div id="customColorPopup">
-        <h2>Select Your Own Colors</h2>
-        <label for="primaryColor">Primary Color:</label>
-        <input type="color" id="primaryColor" oninput="updatePrimaryColorCode()">
-        <div id="primaryColorCode" class="color-code">#000000</div>
-        <label for="secondaryColor">Secondary Color:</label>
-        <input type="color" id="secondaryColor" oninput="updateSecondaryColorCode()">
-        <div id="secondaryColorCode" class="color-code">#000000</div>
-        <button onclick="applyCustomColors()">Apply</button>
-        <button onclick="closeCustomColorPopup()">Cancel</button>
-    </div>
-
-    <div id="confirmRestartPopup">
-        <h2>Confirmation</h2>
-        <p>This will erase all data! Are you sure you wish to proceed?</p>
-        <button onclick="restartDiscussion()">Yes. I have saved my data.</button>
-        <button onclick="closeConfirmRestartPopup()">No. Let me go back.</button>
-    </div>
-
-    <div id="editParticipantsPopup">
-        <h2>Edit Participants</h2>
-        <div class="popup-content">
-            <input type="text" id="newParticipantName" placeholder="Participant Name">
-            <button onclick="addNewParticipant()">Add Participant</button>
-            <button onclick="openReorderParticipants()">Reorder Participants</button>
-            <button onclick="openRenameParticipants()">Rename Participants</button>
-            <button class="close-button" onclick="closeEditParticipantsPopup()">X</button>
-            <div id="reorderParticipantsContainer" style="display: none;">
-                <ul id="reorderParticipantsList"></ul>
-                <button onclick="saveReorderedParticipants()">Save Order</button>
+        <div class="centerOverlay">
+          <div id="ratingBox" class="modal-card" style="display:none;">
+            <h2>Rate Contribution</h2>
+            <div class="rating-options">
+              <div class="rating-option" onclick="selectRating(1)">1</div>
+              <div class="rating-option" onclick="selectRating(2)">2</div>
+              <div class="rating-option" onclick="selectRating(3)">3</div>
+              <div class="rating-option" onclick="selectRating(4)">4</div>
+              <div class="rating-option" onclick="selectRating(5)">5</div>
             </div>
-            <div id="renameParticipantsContainer" style="display: none;">
-                <ul id="renameParticipantsList"></ul>
-                <button onclick="saveRenamedParticipants()">Save Changes</button>
+            <label for="comment">Comment:</label>
+            <textarea id="comment" rows="3" placeholder="Optional quick note..."></textarea>
+            <div style="display:flex;justify-content:flex-end;margin-top:10px;">
+              <button class="btn secondary" onclick="startTimer()">✅ Save</button>
             </div>
+            <div style="margin-top:8px;color:var(--muted);font-size:12px;font-weight:300;">
+              Tip: Ctrl+Enter saves. Keys 1–5 select rating.
+            </div>
+          </div>
         </div>
+      </div>
     </div>
 
-<form action="https://www.paypal.com/donate" method="post" target="_top">
-<input type="hidden" name="business" value="HWPP6BEXENHCQ" />
-<input type="hidden" name="no_recurring" value="1" />
-<input type="hidden" name="item_name" value="This will forever be free for my fellow educators. If this is helpful and you are so inclined, buy me some caffeine! Thank you!" />
-<input type="hidden" name="currency_code" value="USD" />
-<input type="image" src="https://www.paypalobjects.com/en_US/i/btn/btn_donateCC_LG.gif" border="0" name="submit" title="PayPal - The safer, easier way to pay online!" alt="Donate with PayPal button" />
-<img alt="" border="0" src="https://www.paypal.com/en_US/i/scr/pixel.gif" width="1" height="1" />
-</form>
+    <!-- ✅ Side Replay Dock -->
+    <div id="replayDock" aria-hidden="true">
+      <div class="dock-title">Replay</div>
 
+      <div class="dock-sub">Order Replay</div>
+      <div class="dock-row">
+        <button class="dock-btn" onclick="replayDiscussion(2)">2×</button>
+        <button class="dock-btn" onclick="replayDiscussion(4)">4×</button>
+        <button class="dock-btn" onclick="replayDiscussion(8)">8×</button>
+      </div>
 
-    <script>
-        const participantForm = document.getElementById('participantForm');
-        const circle = document.getElementById('circle');
-        const logContainer = document.getElementById('logContainer');
-        const logTable = document.getElementById('logTable').getElementsByTagName('tbody')[0];
-        const canvas = document.getElementById('connectionCanvas');
-        const ctx = canvas.getContext('2d');
-        const notesBox = document.getElementById('notesBox');
-        const notesText = document.getElementById('notesText');
-        const notesBoxTitle = document.getElementById('notesBoxTitle');
-        const reportContainer = document.getElementById('reportContainer');
-        const colorSchemePopup = document.getElementById('colorSchemePopup');
-        const colorSchemeList = document.getElementById('colorSchemeList');
-        const customColorPopup = document.getElementById('customColorPopup');
-        const primaryColorInput = document.getElementById('primaryColor');
-        const secondaryColorInput = document.getElementById('secondaryColor');
-        const primaryColorCode = document.getElementById('primaryColorCode');
-        const secondaryColorCode = document.getElementById('secondaryColorCode');
-        const discussionTitleDisplay = document.getElementById('discussionTitleDisplay');
-        const discussionDateDisplay = document.getElementById('discussionDateDisplay');
-        const replayControls = document.getElementById('replayControls');
-        const confirmRestartPopup = document.getElementById('confirmRestartPopup');
-        const editParticipantsPopup = document.getElementById('editParticipantsPopup');
-        const reorderParticipantsContainer = document.getElementById('reorderParticipantsContainer');
-        const reorderParticipantsList = document.getElementById('reorderParticipantsList');
-        const renameParticipantsContainer = document.getElementById('renameParticipantsContainer');
-        const renameParticipantsList = document.getElementById('renameParticipantsList');
-        let participants = [];
-        let connections = [];
-        const connectionCounts = {};
-        let lastSpokenIndex = null;
-        let currentSpeakerIndex = null;
-        let selectedRating = null;
-        let editingRow = null;
-        let totalStartTime = null;
-        let currentNotesParticipant = null;
-        let teamName = null;
+      <div class="dock-sub">Timed Replay</div>
+      <div class="dock-row">
+        <button class="dock-btn" onclick="replayDiscussionTimed(8)">8×</button>
+        <button class="dock-btn" onclick="replayDiscussionTimed(16)">16×</button>
+        <button class="dock-btn" onclick="replayDiscussionTimed(32)">32×</button>
+      </div>
+    </div>
+  </div>
 
-        const nhlTeams = [
-            { name: 'Anaheim Ducks', colors: ['#F47A38', '#B09862'] },
-            { name: 'Arizona Coyotes', colors: ['#8C2633', '#E2D6B5'] },
-            { name: 'Boston Bruins', colors: ['#000000', '#FFB81C'] },
-            { name: 'Buffalo Sabres', colors: ['#002654', '#FCB514'] },
-            { name: 'Calgary Flames', colors: ['#C8102E', '#F1BE48'] },
-            { name: 'Carolina Hurricanes', colors: ['#CC0000', '#A2AAAD'] },
-            { name: 'Chicago Blackhawks', colors: ['#CF0A2C', '#000000'] },
-            { name: 'Colorado Avalanche', colors: ['#6F263D', '#236192'] },
-            { name: 'Columbus Blue Jackets', colors: ['#002654', '#CE1126'] },
-            { name: 'Dallas Stars', colors: ['#006847', '#8F8F8C'] },
-            { name: 'Detroit Red Wings', colors: ['#CE1126', '#FFFFFF'] },
-            { name: 'Edmonton Oilers', colors: ['#041E42', '#FF4C00'] },
-            { name: 'Florida Panthers', colors: ['#041E42', '#C8102E'] },
-            { name: 'Los Angeles Kings', colors: ['#111111', '#A2AAAD'] },
-            { name: 'Minnesota Wild', colors: ['#154734', '#A6192E'] },
-            { name: 'Montreal Canadiens', colors: ['#AF1E2D', '#192168'] },
-            { name: 'Nashville Predators', colors: ['#FFB81C', '#041E42'] },
-            { name: 'New Jersey Devils', colors: ['#CE1126', '#000000'] },
-            { name: 'New York Islanders', colors: ['#00539B', '#F47D30'] },
-            { name: 'New York Rangers', colors: ['#0038A8', '#CE1126'] },
-            { name: 'Ottawa Senators', colors: ['#E31837', '#C69214'] },
-            { name: 'Philadelphia Flyers', colors: ['#F74902', '#000000'] },
-            { name: 'Pittsburgh Penguins', colors: ['#FFB81C', '#000000'] },
-            { name: 'San Jose Sharks', colors: ['#006D75', '#EA7200'] },
-            { name: 'Seattle Kraken', colors: ['#001628', '#99D9D9'] },
-            { name: 'St. Louis Blues', colors: ['#002F87', '#FDB827'] },
-            { name: 'Tampa Bay Lightning', colors: ['#002868', '#767676'] },
-            { name: 'Toronto Maple Leafs', colors: ['#00205B', '#767676'] },
-            { name: 'Vancouver Canucks', colors: ['#001F5B', '#00843D'] },
-            { name: 'Vegas Golden Knights', colors: ['#B4975A', '#333F42'] },
-            { name: 'Washington Capitals', colors: ['#041E42', '#C8102E'] },
-            { name: 'Winnipeg Jets', colors: ['#041E42', '#AC162C'] }
-        ];
+  <!-- Drawer -->
+  <div id="drawerBackdrop" class="drawer-backdrop" onclick="closeDrawer()"></div>
 
-        function updateColorScheme(primary, secondary, team) {
-            document.documentElement.style.setProperty('--primary-color', primary);
-            document.documentElement.style.setProperty('--primary-color-dark', darkenColor(primary));
-            document.documentElement.style.setProperty('--secondary-color', secondary);
-            document.documentElement.style.setProperty('--secondary-color-dark', darkenColor(secondary));
-            teamName = team;
+  <div id="drawer" class="drawer" aria-hidden="true">
+    <div class="drawer-header">
+      <div style="display:flex;flex-direction:column;gap:6px;min-width: 180px;">
+        <div class="handle"></div>
+        <div class="tabs">
+          <button id="tabLog" class="tab active" onclick="switchTab('log')">
+            Log <span id="logCount" class="badge">0</span>
+          </button>
+          <button id="tabReport" class="tab" onclick="switchTab('report')" disabled>
+            Report <span id="reportReady" class="badge">—</span>
+          </button>
+        </div>
+      </div>
 
-            if (secondary === '#FFFFFF') {
-                document.documentElement.style.setProperty('--text-color', '#000000');
-            } else {
-                document.documentElement.style.setProperty('--text-color', '#FFFFFF');
-            }
-        }
+      <div class="drawer-actions">
+        <button id="copyLogButton" class="btn" style="display:none;" onclick="copyLog()">⧉ Copy Log</button>
+        <button id="copyReportButton" class="btn" style="display:none;" onclick="copyReport()">⧉ Copy Report</button>
+        <button id="drawerCloseButton" class="btn ghost" onclick="closeDrawer()">✕ Close</button>
+      </div>
+    </div>
 
-        function darkenColor(color) {
-            const amount = 0.2;
-            const [r, g, b] = color.match(/\w\w/g).map(c => parseInt(c, 16));
-            return `#${Math.floor(r * (1 - amount)).toString(16).padStart(2, '0')}${Math.floor(g * (1 - amount)).toString(16).padStart(2, '0')}${Math.floor(b * (1 - amount)).toString(16).padStart(2, '0')}`;
-        }
+    <div class="drawer-body">
+      <div id="logPanel">
+        <div class="section-title">Discussion Log</div>
+        <table id="logTable">
+          <thead>
+            <tr>
+              <th>Participant</th>
+              <th>Timestamp</th>
+              <th>Rating</th>
+              <th>Comment</th>
+              <th>Duration</th>
+              <th>Edit</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
 
-        function openColorSchemePopup() {
-            colorSchemePopup.style.display = 'block';
-        }
+      <div id="reportPanel" style="display:none;">
+        <div class="section-title">Report</div>
+        <table id="reportTable">
+          <thead>
+            <tr>
+              <th>Participant</th>
+              <th>All Ratings</th>
+              <th>Average</th>
+              <th>Total Air Time</th>
+              <th>Domination</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
 
-        function closeColorSchemePopup() {
-            colorSchemePopup.style.display = 'none';
-        }
+        <div class="section-title">Notes</div>
+        <table id="notesReportTable">
+          <thead>
+            <tr>
+              <th>Participant</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 
-        function openCustomColorPopup() {
-            customColorPopup.style.display = 'block';
-        }
+  <!-- Popups -->
+  <div id="editRatingBox">
+    <div class="mini-popup" role="dialog" aria-modal="true">
+      <h2>Edit Contribution</h2>
+      <div class="rating-options">
+        <div class="rating-option" onclick="selectEditRating(1)">1</div>
+        <div class="rating-option" onclick="selectEditRating(2)">2</div>
+        <div class="rating-option" onclick="selectEditRating(3)">3</div>
+        <div class="rating-option" onclick="selectEditRating(4)">4</div>
+        <div class="rating-option" onclick="selectEditRating(5)">5</div>
+      </div>
+      <label for="editComment">Comment:</label>
+      <textarea id="editComment" rows="4"></textarea>
+      <div class="mini-actions">
+        <button class="btn secondary" onclick="saveEdit()">✅ Save</button>
+        <button class="btn ghost" onclick="closeEditBox()">✕ Cancel</button>
+      </div>
+    </div>
+  </div>
 
-        function closeCustomColorPopup() {
-            customColorPopup.style.display = 'none';
-        }
+  <div id="notesBox">
+    <div class="mini-popup" role="dialog" aria-modal="true">
+      <h2 id="notesBoxTitle">Notes</h2>
+      <textarea id="notesText" rows="5" placeholder="Quick notes..."></textarea>
+      <div class="mini-actions">
+        <button class="btn secondary" onclick="saveNotes()">✅ Save</button>
+        <button class="btn ghost" onclick="closeNotesBox()">✕ Cancel</button>
+      </div>
+    </div>
+  </div>
 
-        function createColorSchemeList() {
-            colorSchemeList.innerHTML = '';
-            nhlTeams.forEach(team => {
-                const li = document.createElement('li');
-                const primarySwatch = document.createElement('div');
-                primarySwatch.className = 'swatch';
-                primarySwatch.style.backgroundColor = team.colors[0];
-                const secondarySwatch = document.createElement('div');
-                secondarySwatch.className = 'swatch';
-                secondarySwatch.style.backgroundColor = team.colors[1];
-                const teamName = document.createElement('span');
-                teamName.className = 'team-name';
-                teamName.textContent = team.name;
-                const selectButton = document.createElement('button');
-                selectButton.className = 'select-button';
-                selectButton.textContent = 'Select';
-                selectButton.onclick = () => {
-                    updateColorScheme(team.colors[0], team.colors[1], team.name);
-                    closeColorSchemePopup();
-                };
-                li.appendChild(primarySwatch);
-                li.appendChild(secondarySwatch);
-                li.appendChild(teamName);
-                li.appendChild(selectButton);
-                colorSchemeList.appendChild(li);
-            });
+  <div id="colorSchemePopup">
+    <div class="popup">
+      <h2>Color Scheme</h2>
+      <ul id="colorSchemeList"></ul>
+      <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px;">
+        <button class="btn ghost" onclick="closeColorSchemePopup()">✕ Close</button>
+      </div>
+    </div>
+  </div>
 
-            // Add "Select your own" option
-            const customLi = document.createElement('li');
-            const customSwatch = document.createElement('div');
-            customSwatch.className = 'swatch';
-            customSwatch.style.backgroundColor = '#000000';
-            const customSwatch2 = document.createElement('div');
-            customSwatch2.className = 'swatch';
-            customSwatch2.style.backgroundColor = '#000000';
-            customLi.appendChild(customSwatch);
-            customLi.appendChild(customSwatch2);
-            customLi.style.width = 'calc(12.5% - 10px)';
-            const customButton = document.createElement('button');
-            customButton.className = 'select-button';
-            customButton.textContent = 'Select your own';
-            customButton.onclick = () => {
-                openCustomColorPopup();
-                closeColorSchemePopup();
-            };
-            customLi.appendChild(customButton);
-            colorSchemeList.appendChild(customLi);
-        }
+  <div id="customColorPopup">
+    <div class="mini-popup">
+      <h2>Select Your Own Colors</h2>
+      <label for="primaryColor">Primary Color:</label>
+      <input type="color" id="primaryColor" oninput="updatePrimaryColorCode()" style="width:100%;height:54px;border:none;background:transparent;"/>
+      <div id="primaryColorCode" style="margin:8px 0;color:var(--muted);font-weight:300;">#000000</div>
+      <label for="secondaryColor">Secondary Color:</label>
+      <input type="color" id="secondaryColor" oninput="updateSecondaryColorCode()" style="width:100%;height:54px;border:none;background:transparent;"/>
+      <div id="secondaryColorCode" style="margin:8px 0;color:var(--muted);font-weight:300;">#000000</div>
+      <div class="mini-actions">
+        <button class="btn secondary" onclick="applyCustomColors()">✅ Apply</button>
+        <button class="btn ghost" onclick="closeCustomColorPopup()">✕ Cancel</button>
+      </div>
+    </div>
+  </div>
 
-        function applyCustomColors() {
-            const primaryColor = primaryColorInput.value;
-            const secondaryColor = secondaryColorInput.value;
-            updateColorScheme(primaryColor, secondaryColor, 'Custom');
-            closeCustomColorPopup();
-        }
+  <div id="confirmRestartPopup">
+    <div class="mini-popup">
+      <h2>Confirmation</h2>
+      <p style="margin:8px 0;color:var(--muted);font-weight:300;">This will erase all data! Are you sure you wish to proceed?</p>
+      <div class="mini-actions">
+        <button class="btn secondary" onclick="restartDiscussion()">Yes. I have saved my data.</button>
+        <button class="btn ghost" onclick="closeConfirmRestartPopup()">No. Let me go back.</button>
+      </div>
+    </div>
+  </div>
 
-        function updatePrimaryColorCode() {
-            primaryColorCode.textContent = primaryColorInput.value;
-        }
+  <div id="editParticipantsPopup">
+    <div class="popup" style="position:relative;">
+      <button class="close-x" onclick="closeEditParticipantsPopup()">✕</button>
+      <h2>Edit Participants</h2>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
+        <input type="text" id="newParticipantName" placeholder="Participant Name" />
+        <button class="btn" onclick="addNewParticipant()">＋ Add</button>
+        <button class="btn ghost" onclick="openReorderParticipants()">↕ Reorder</button>
+        <button class="btn ghost" onclick="openRenameParticipants()">✎ Rename</button>
+      </div>
 
-        function updateSecondaryColorCode() {
-            secondaryColorCode.textContent = secondaryColorInput.value;
-        }
+      <div id="reorderParticipantsContainer" style="display:none;margin-top:14px;">
+        <div class="section-title">Drag to reorder</div>
+        <ul id="reorderParticipantsList" style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px;"></ul>
+        <div style="display:flex;justify-content:flex-end;margin-top:10px;">
+          <button class="btn secondary" onclick="saveReorderedParticipants()">✅ Save Order</button>
+        </div>
+      </div>
 
-        document.addEventListener('DOMContentLoaded', createColorSchemeList);
+      <div id="renameParticipantsContainer" style="display:none;margin-top:14px;">
+        <div class="section-title">Rename</div>
+        <ul id="renameParticipantsList" style="list-style:none;padding:0;margin:0;display:flex;flex-direction:column;gap:8px;"></ul>
+        <div style="display:flex;justify-content:flex-end;margin-top:10px;">
+          <button class="btn secondary" onclick="saveRenamedParticipants()">✅ Done</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
-        participantForm.addEventListener('submit', function(event) {
-            event.preventDefault();
-            const nameInput = document.getElementById('name');
-            if (participants.length < 22) {
-                addParticipant(nameInput.value);
-                nameInput.value = '';
-            } else {
-                alert("Maximum of 22 participants reached");
-            }
-        });
+  <script>
+    // ---------- DOM ----------
+    const participantFormWrap = document.getElementById('participantFormWrap');
+    const participantForm = document.getElementById('participantForm');
+    const circle = document.getElementById('circle');
+    const stage = document.getElementById('stage');
+    const titleArea = document.getElementById('titleArea');
+    const canvas = document.getElementById('connectionCanvas');
+    const ctx = canvas.getContext('2d');
+    const ratingBox = document.getElementById('ratingBox');
+    const pauseCenter = document.getElementById('pauseCenter');
+    const replayDock = document.getElementById('replayDock');
 
-        document.getElementById('ratingBox').addEventListener('keydown', function(event) {
-            if (event.ctrlKey && event.key === 'Enter') {
-                startTimer();
-            } else if (event.key >= '1' && event.key <= '5') {
-                selectRating(parseInt(event.key));
-            }
-        });
+    const logTableBody = document.querySelector('#logTable tbody');
+    const reportTableBody = document.querySelector('#reportTable tbody');
+    const notesReportTableBody = document.querySelector('#notesReportTable tbody');
 
-        document.getElementById('editRatingBox').addEventListener('keydown', function(event) {
-            if (event.ctrlKey && event.key === 'Enter') {
-                saveEdit();
-            } else if (event.key >= '1' && event.key <= '5') {
-                selectEditRating(parseInt(event.key));
-            }
-        });
+    const discussionTitleDisplay = document.getElementById('discussionTitleDisplay');
+    const discussionDateDisplay = document.getElementById('discussionDateDisplay');
 
-        notesBox.addEventListener('keydown', function(event) {
-            if (event.ctrlKey && event.key === 'Enter') {
-                saveNotes();
-            }
-        });
+    const nowSpeaking = document.getElementById('nowSpeaking');
+    const nowSpeakingName = document.getElementById('nowSpeakingName');
 
-        document.getElementById('discussionTitle').addEventListener('keydown', function(event) {
-            if (event.key === 'Enter') {
-                event.preventDefault();
-                startDiscussion();
-            }
-        });
+    // Drawer
+    const drawer = document.getElementById('drawer');
+    const drawerBackdrop = document.getElementById('drawerBackdrop');
+    const tabLog = document.getElementById('tabLog');
+    const tabReport = document.getElementById('tabReport');
+    const logPanel = document.getElementById('logPanel');
+    const reportPanel = document.getElementById('reportPanel');
+    const logCount = document.getElementById('logCount');
+    const reportReady = document.getElementById('reportReady');
 
-        function startDiscussion() {
-            const titleInput = document.getElementById('discussionTitle').value;
+    // Buttons
+    const endDiscussionButton = document.getElementById('endDiscussionButton');
+    const editParticipantsButton = document.getElementById('editParticipantsButton');
+    const copyLogButton = document.getElementById('copyLogButton');
+    const copyReportButton = document.getElementById('copyReportButton');
+    const copyBothButton = document.getElementById('copyBothButton');
+    const restartDiscussionButton = document.getElementById('restartDiscussionButton');
+    const generateReportButton = document.getElementById('generateReportButton');
+    const exportScreenshotButton = document.getElementById('exportScreenshotButton');
 
-            if (titleInput) {
-                const date = new Date().toLocaleDateString();
-                discussionTitleDisplay.textContent = `${titleInput} - ${date}`;
+    // Edit popup
+    const editRatingOverlay = document.getElementById('editRatingBox');
+    const editComment = document.getElementById('editComment');
 
-                document.getElementById('discussionDetails').style.display = 'none';
-                participantForm.style.display = 'block';
-            } else {
-                alert("Please enter a title.");
-            }
-        }
+    // Notes popup
+    const notesOverlay = document.getElementById('notesBox');
+    const notesText = document.getElementById('notesText');
+    const notesBoxTitle = document.getElementById('notesBoxTitle');
 
-        function addParticipant(name) {
-            participants.push({ name, x: 0, y: 0, ratings: [], startTimes: [], endTimes: [], comments: [], notes: [], speakCount: 0 });
-            logParticipant(name);
-        }
+    // Color scheme popup
+    const colorSchemePopup = document.getElementById('colorSchemePopup');
+    const colorSchemeList = document.getElementById('colorSchemeList');
+    const customColorPopup = document.getElementById('customColorPopup');
+    const primaryColorInput = document.getElementById('primaryColor');
+    const secondaryColorInput = document.getElementById('secondaryColor');
+    const primaryColorCode = document.getElementById('primaryColorCode');
+    const secondaryColorCode = document.getElementById('secondaryColorCode');
 
-        function logParticipant(name) {
-            const row = logTable.insertRow();
-            const participantCell = row.insertCell(0);
-            const timestampCell = row.insertCell(1);
-            const ratingCell = row.insertCell(2);
-            const commentCell = row.insertCell(3);
-            const durationCell = row.insertCell(4);
-            const editCell = row.insertCell(5);
+    // Restart popup
+    const confirmRestartPopup = document.getElementById('confirmRestartPopup');
 
-            participantCell.textContent = name;
-            timestampCell.textContent = '';
-            ratingCell.textContent = '';
-            commentCell.textContent = '';
-            durationCell.textContent = '';
-            editCell.innerHTML = `<button class="edit-button" onclick="openEditContribution(this)">Edit</button>`;
-            logContainer.scrollTop = logContainer.scrollHeight;
-        }
+    // Edit participants popup
+    const editParticipantsPopup = document.getElementById('editParticipantsPopup');
+    const reorderParticipantsContainer = document.getElementById('reorderParticipantsContainer');
+    const reorderParticipantsList = document.getElementById('reorderParticipantsList');
+    const renameParticipantsContainer = document.getElementById('renameParticipantsContainer');
+    const renameParticipantsList = document.getElementById('renameParticipantsList');
 
-        function placeParticipants() {
-            const numParticipants = participants.length;
-            const radius = numParticipants > 15 ? 490 : 380;
-            const diameter = radius * 2;
-            circle.style.width = `${diameter}px`;
-            circle.style.height = `${diameter}px`;
-            canvas.width = diameter;
-            canvas.height = diameter;
+    // ---------- STATE ----------
+    let participants = [];
+    let connections = [];
+    const connectionCounts = {};
+    let lastSpokenIndex = null;
+    let currentSpeakerIndex = null;
+    let selectedRating = null;
+    let editingRow = null;
+    let currentNotesParticipant = null;
+    let teamName = null;
 
-            for (let i = 0; i < numParticipants; i++) {
-                const angle = (i / numParticipants) * (2 * Math.PI);
-                const x = radius + radius * Math.cos(angle);
-                const y = radius + radius * Math.sin(angle);
+    // geometry
+    let circleDiameter = 860;
+    let circleRadius = circleDiameter / 2;
+    let centerX = circleRadius;
+    let centerY = circleRadius;
 
-                const participantDiv = document.createElement('div');
-                participantDiv.className = 'participant';
-                participantDiv.style.left = `${x}px`;
-                participantDiv.style.top = `${y}px`;
-                participantDiv.innerHTML = `
-                    <p id="participant${i}"><span id="speakCount${i}">0</span><br>${participants[i].name}</p>
-                    <button onclick="recordSpeaking(${i})">Speak</button>
-                    <button class="notes-button" onclick="openNotesBox(${i})">Notes</button>
-                `;
+    function clipToCircle(){
+      ctx.save();
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, circleRadius - 2, 0, Math.PI*2);
+      ctx.clip();
+    }
+    function unclip(){ ctx.restore(); }
 
-                circle.appendChild(participantDiv);
-                participants[i].x = x;
-                participants[i].y = y;
-            }
-        }
+    // ---------- TEAMS ----------
+    const nhlTeams = [
+      { name: 'Anaheim Ducks', colors: ['#F47A38', '#B09862'] },
+      { name: 'Boston Bruins', colors: ['#000000', '#FFB81C'] },
+      { name: 'Buffalo Sabres', colors: ['#002654', '#FCB514'] },
+      { name: 'Calgary Flames', colors: ['#C8102E', '#F1BE48'] },
+      { name: 'Carolina Hurricanes', colors: ['#CC0000', '#A2AAAD'] },
+      { name: 'Chicago Blackhawks', colors: ['#CF0A2C', '#000000'] },
+      { name: 'Colorado Avalanche', colors: ['#6F263D', '#236192'] },
+      { name: 'Columbus Blue Jackets', colors: ['#002654', '#CE1126'] },
+      { name: 'Dallas Stars', colors: ['#006847', '#8F8F8C'] },
+      { name: 'Detroit Red Wings', colors: ['#CE1126', '#FFFFFF'] },
+      { name: 'Edmonton Oilers', colors: ['#041E42', '#FF4C00'] },
+      { name: 'Florida Panthers', colors: ['#041E42', '#C8102E'] },
+      { name: 'Los Angeles Kings', colors: ['#111111', '#A2AAAD'] },
+      { name: 'Minnesota Wild', colors: ['#154734', '#A6192E'] },
+      { name: 'Montreal Canadiens', colors: ['#AF1E2D', '#192168'] },
+      { name: 'Nashville Predators', colors: ['#FFB81C', '#041E42'] },
+      { name: 'New Jersey Devils', colors: ['#CE1126', '#000000'] },
+      { name: 'New York Islanders', colors: ['#00539B', '#F47D30'] },
+      { name: 'New York Rangers', colors: ['#0038A8', '#CE1126'] },
+      { name: 'Ottawa Senators', colors: ['#E31837', '#C69214'] },
+      { name: 'Philadelphia Flyers', colors: ['#F74902', '#000000'] },
+      { name: 'Pittsburgh Penguins', colors: ['#FFB81C', '#000000'] },
+      { name: 'San Jose Sharks', colors: ['#006D75', '#EA7200'] },
+      { name: 'Seattle Kraken', colors: ['#001628', '#99D9D9'] },
+      { name: 'St. Louis Blues', colors: ['#002F87', '#FDB827'] },
+      { name: 'Tampa Bay Lightning', colors: ['#002868', '#767676'] },
+      { name: 'Toronto Maple Leafs', colors: ['#00205B', '#767676'] },
+      { name: 'Utah Mammoth', colors: ['#111827', '#A855F7'] },
+      { name: 'Vancouver Canucks', colors: ['#001F5B', '#00843D'] },
+      { name: 'Vegas Golden Knights', colors: ['#B4975A', '#333F42'] },
+      { name: 'Washington Capitals', colors: ['#041E42', '#C8102E'] },
+      { name: 'Winnipeg Jets', colors: ['#041E42', '#AC162C'] },
+      { name: 'UCLA (Blue & Gold)', colors: ['#2774AE', '#FFD100'] }
+    ];
 
-        window.recordSpeaking = function(index) {
-            const now = new Date();
-            const participant = participants[index];
+    // ---------- COLOR SCHEME ----------
+    function darkenColor(color){
+      const amount = 0.2;
+      const [r,g,b] = color.match(/\w\w/g).map(c => parseInt(c,16));
+      return `#${Math.floor(r*(1-amount)).toString(16).padStart(2,'0')}${Math.floor(g*(1-amount)).toString(16).padStart(2,'0')}${Math.floor(b*(1-amount)).toString(16).padStart(2,'0')}`;
+    }
+    function updateColorScheme(primary, secondary, team){
+      document.documentElement.style.setProperty('--primary-color', primary);
+      document.documentElement.style.setProperty('--primary-color-dark', darkenColor(primary));
+      document.documentElement.style.setProperty('--secondary-color', secondary);
+      document.documentElement.style.setProperty('--secondary-color-dark', darkenColor(secondary));
+      teamName = team;
 
-            participant.speakCount += 1;
-            document.getElementById(`speakCount${index}`).textContent = participant.speakCount;
+      if (secondary.toUpperCase() === '#FFFFFF' || secondary.toUpperCase() === '#FFD100') {
+        document.documentElement.style.setProperty('--text-color', '#000000');
+      } else {
+        document.documentElement.style.setProperty('--text-color', '#FFFFFF');
+      }
+    }
 
-            if (lastSpokenIndex !== null) {
-                const lastParticipant = participants[lastSpokenIndex];
-                const duration = (now - lastParticipant.startTimes[lastParticipant.startTimes.length - 1]) / 1000;
-                lastParticipant.endTimes.push(duration);
-                updateLog(lastSpokenIndex, duration);
-                document.getElementById(`participant${lastSpokenIndex}`).style.backgroundColor = 'var(--primary-color)';
-                document.getElementById(`participant${lastSpokenIndex}`).style.color = 'var(--text-color)';
-            } else {
-                totalStartTime = now;
-            }
+    function openColorSchemePopup(){ colorSchemePopup.style.display='flex'; }
+    function closeColorSchemePopup(){ colorSchemePopup.style.display='none'; }
+    function openCustomColorPopup(){ customColorPopup.style.display='flex'; }
+    function closeCustomColorPopup(){ customColorPopup.style.display='none'; }
+    function updatePrimaryColorCode(){ primaryColorCode.textContent = primaryColorInput.value; }
+    function updateSecondaryColorCode(){ secondaryColorCode.textContent = secondaryColorInput.value; }
+    function applyCustomColors(){
+      updateColorScheme(primaryColorInput.value, secondaryColorInput.value, 'Custom');
+      closeCustomColorPopup();
+    }
 
-            if (currentSpeakerIndex !== null && currentSpeakerIndex === index) {
-                const currentParticipant = participants[currentSpeakerIndex];
-                const duration = (now - currentParticipant.startTimes[currentParticipant.startTimes.length - 1]) / 1000;
-                currentParticipant.endTimes.push(duration);
-                updateLog(currentSpeakerIndex, duration);
-                lastSpokenIndex = null;
-                currentSpeakerIndex = null;
-                document.getElementById('ratingBox').style.display = 'none';
-            } else {
-                currentSpeakerIndex = index;
-                const currentParticipant = participants[index];
-                currentParticipant.startTimes.push(now);
+    function createColorSchemeList(){
+      colorSchemeList.innerHTML = '';
+      const ucla = nhlTeams.find(t => t.name.startsWith('UCLA'));
+      const coreTeams = nhlTeams.filter(t => t !== ucla);
 
-                if (lastSpokenIndex !== null) {
-                    const last = participants[lastSpokenIndex];
-                    const connectionKey = `${lastSpokenIndex}-${index}`;
-                    const reverseConnectionKey = `${index}-${lastSpokenIndex}`;
+      coreTeams.forEach(team => addSchemeCard(team));
+      if (ucla) addSchemeCard(ucla);
 
-                    if (connectionCounts[connectionKey]) {
-                        connectionCounts[connectionKey]++;
-                    } else if (connectionCounts[reverseConnectionKey]) {
-                        connectionCounts[reverseConnectionKey]++;
-                    } else {
-                        connectionCounts[connectionKey] = 1;
-                    }
+      const li = document.createElement('li');
+      li.className = 'scheme';
+      li.innerHTML = `
+        <div class="swatches">
+          <div class="swatch" style="background:#000"></div>
+          <div class="swatch" style="background:#000"></div>
+        </div>
+        <div class="team-name">Custom</div>
+        <button class="select-button">Select your own</button>
+      `;
+      li.querySelector('button').onclick = () => { openCustomColorPopup(); closeColorSchemePopup(); };
+      colorSchemeList.appendChild(li);
 
-                    const thickness = connectionCounts[connectionKey] || connectionCounts[reverseConnectionKey];
-                    connections.push({ from: last.name, to: currentParticipant.name, thickness });
-                    drawLine(last.x, last.y, currentParticipant.x, currentParticipant.y, thickness, 'var(--secondary-color)');
-                }
-                lastSpokenIndex = index;
-                resetRating();
-                document.getElementById('ratingBox').style.display = 'block';
-                document.getElementById('comment').focus();
-                document.getElementById(`participant${index}`).style.backgroundColor = 'var(--secondary-color)';
-                if (teamName === 'Tampa Bay Lightning' || teamName === 'Toronto Maple Leafs') {
-                    document.getElementById(`participant${index}`).classList.add('lightning-highlight');
-                }
-                setTimeout(() => {
-                    document.querySelector('.submit-button').click();
-                }, 100);
-            }
+      function addSchemeCard(team){
+        const li = document.createElement('li');
+        li.className = 'scheme';
+        li.innerHTML = `
+          <div class="swatches">
+            <div class="swatch" style="background:${team.colors[0]}"></div>
+            <div class="swatch" style="background:${team.colors[1]}"></div>
+          </div>
+          <div class="team-name">${team.name}</div>
+          <button class="select-button">Select</button>
+        `;
+        li.querySelector('button').onclick = () => {
+          updateColorScheme(team.colors[0], team.colors[1], team.name);
+          closeColorSchemePopup();
         };
+        colorSchemeList.appendChild(li);
+      }
+    }
 
-        function drawLine(x1, y1, x2, y2, thickness, color) {
-            ctx.lineWidth = thickness;
-            ctx.strokeStyle = color;
-            ctx.beginPath();
-            ctx.moveTo(x1, y1);
-            ctx.lineTo(x2, y2);
-            ctx.stroke();
+    document.addEventListener('DOMContentLoaded', () => {
+      createColorSchemeList();
+      updateColorScheme('#6F263D','#236192','Colorado Avalanche');
+    });
+
+    // ---------- DRAWER ----------
+    function openDrawer(){
+      drawer.classList.add('open');
+      drawerBackdrop.classList.add('open');
+      drawer.setAttribute('aria-hidden','false');
+    }
+    function closeDrawer(){
+      drawer.classList.remove('open');
+      drawerBackdrop.classList.remove('open');
+      drawer.setAttribute('aria-hidden','true');
+    }
+    function toggleDrawer(){
+      if (drawer.classList.contains('open')) closeDrawer(); else openDrawer();
+    }
+
+    function switchTab(which){
+      if (which === 'log'){
+        tabLog.classList.add('active');
+        tabReport.classList.remove('active');
+        logPanel.style.display = 'block';
+        reportPanel.style.display = 'none';
+        copyLogButton.style.display = 'inline-flex';
+        copyReportButton.style.display = 'none';
+      }else{
+        tabReport.classList.add('active');
+        tabLog.classList.remove('active');
+        logPanel.style.display = 'none';
+        reportPanel.style.display = 'block';
+        copyLogButton.style.display = 'none';
+        copyReportButton.style.display = 'inline-flex';
+      }
+      openDrawer();
+    }
+
+    // ---------- SETUP FLOW ----------
+    document.getElementById('discussionTitle').addEventListener('keydown', (e) => {
+      if (e.key === 'Enter'){ e.preventDefault(); startDiscussion(); }
+    });
+
+    function startDiscussion(){
+      const titleInput = document.getElementById('discussionTitle').value.trim();
+      if (!titleInput){ alert('Please enter a title.'); return; }
+
+      const date = new Date().toLocaleDateString();
+      discussionTitleDisplay.textContent = `${titleInput}`;
+      discussionDateDisplay.textContent = `${date}`;
+
+      document.getElementById('discussionDetails').style.display = 'none';
+      participantFormWrap.style.display = 'block';
+      participantForm.querySelector('#name').focus();
+    }
+
+    participantForm.addEventListener('submit', (event) => {
+      event.preventDefault();
+      const nameInput = document.getElementById('name');
+      const val = nameInput.value.trim();
+      if (!val) return;
+      if (participants.length >= 22){ alert('Maximum of 22 participants reached'); return; }
+      addParticipant(val);
+      nameInput.value = '';
+      nameInput.focus();
+    });
+
+    function addParticipant(name){
+      participants.push({ name, x:0,y:0, ratings:[], startTimes:[], endTimes:[], comments:[], notes:[], speakCount:0 });
+      updateLogCount();
+    }
+
+    function doneAddingParticipants(){
+      participantFormWrap.style.display = 'none';
+      placeParticipants();
+      endDiscussionButton.style.display = 'inline-flex';
+      editParticipantsButton.style.display = 'inline-flex';
+      copyLogButton.style.display = 'inline-flex';
+      switchTab('log');
+      closeDrawer();
+
+      // discussion in progress => pause visible, replay hidden
+      pauseCenter.style.display = 'block';
+      replayDock.style.display = 'none';
+    }
+
+    // ---------- RESPONSIVE CIRCLE SIZE ----------
+    function updateStageSize(){
+      const max = 860;
+      const min = 520;
+      const avail = Math.min(window.innerWidth - 32, max);
+      circleDiameter = Math.max(min, Math.min(max, avail));
+      circle.style.width = circleDiameter + 'px';
+      circle.style.height = circleDiameter + 'px';
+      canvas.width = circleDiameter;
+      canvas.height = circleDiameter;
+      circleRadius = circleDiameter / 2;
+      centerX = circleRadius;
+      centerY = circleRadius;
+    }
+
+    // ✅ Dynamic vertical clearance so top bubble never overlaps date
+    function updateDynamicStageGap(){
+      // Only relevant after participants exist in DOM
+      const any = circle.querySelector('.participant');
+      if (!any){
+        document.documentElement.style.setProperty('--stage-gap-dynamic', '0px');
+        return;
+      }
+
+      // How far a top participant can intrude upward (roughly half its height)
+      const h = any.getBoundingClientRect().height;
+      const half = h / 2;
+
+      // Compute a safe extra gap; add a small cushion
+      const extra = Math.ceil(half + 18);
+
+      document.documentElement.style.setProperty('--stage-gap-dynamic', `${extra}px`);
+    }
+
+    window.addEventListener('resize', () => {
+      updateStageSize();
+      if (participants.length){
+        clearParticipants();
+        placeParticipants();
+        redrawConnections();
+        updateDynamicStageGap();
+      }
+    });
+    updateStageSize();
+
+    // ---------- PARTICIPANT PLACEMENT (on border) ----------
+    function placeParticipants(){
+      updateStageSize();
+      const num = participants.length;
+      const r = circleRadius;
+
+      clearParticipants();
+
+      for (let i=0;i<num;i++){
+        const angle = (i / num) * (Math.PI*2) - Math.PI/2;
+        const x = centerX + r * Math.cos(angle);
+        const y = centerY + r * Math.sin(angle);
+
+        const div = document.createElement('div');
+        div.className = 'participant';
+        div.style.left = `${x}px`;
+        div.style.top = `${y}px`;
+        div.innerHTML = `
+          <div id="pill${i}" class="pill">
+            <div class="count" id="speakCount${i}">0</div>
+            <div class="name" title="${escapeHtml(participants[i].name)}">${escapeHtml(participants[i].name)}</div>
+          </div>
+          <div class="pbtn-row">
+            <button class="pbtn speak" onclick="recordSpeaking(${i})">🗣 Speak</button>
+            <button class="pbtn notes" onclick="openNotesBox(${i})">📝 Notes</button>
+          </div>
+        `;
+        circle.appendChild(div);
+
+        participants[i].x = x;
+        participants[i].y = y;
+      }
+
+      // ✅ after elements exist, compute dynamic clearance
+      requestAnimationFrame(() => {
+        updateDynamicStageGap();
+        redrawConnections();
+      });
+    }
+
+    function clearParticipants(){
+      circle.querySelectorAll('.participant').forEach(el => el.remove());
+    }
+
+    function escapeHtml(str){
+      return str.replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+    }
+
+    // ---------- ONE Ctrl+Enter / ONE click SAVE ----------
+    document.addEventListener('keydown', (e) => {
+      const ratingOpen = ratingBox.style.display !== 'none';
+      if (!ratingOpen) return;
+
+      if (e.ctrlKey && e.key === 'Enter'){
+        e.preventDefault();
+        startTimer();
+        return;
+      }
+
+      if (e.key >= '1' && e.key <= '5'){
+        selectRating(parseInt(e.key,10));
+      }
+    });
+
+    editRatingOverlay.addEventListener('keydown', (e) => {
+      if (e.ctrlKey && e.key === 'Enter'){ saveEdit(); }
+      else if (e.key >= '1' && e.key <= '5'){ selectEditRating(parseInt(e.key,10)); }
+      if (e.key === 'Escape'){ closeEditBox(); }
+    });
+    notesOverlay.addEventListener('keydown', (e) => {
+      if (e.ctrlKey && e.key === 'Enter'){ saveNotes(); }
+      if (e.key === 'Escape'){ closeNotesBox(); }
+    });
+
+    // ---------- SPEAKING / LOGIC ----------
+    function setNowSpeaking(index){
+      if (index === null){
+        nowSpeaking.style.display = 'none';
+        nowSpeakingName.textContent = '';
+      }else{
+        nowSpeaking.style.display = 'block';
+        nowSpeakingName.textContent = participants[index].name;
+      }
+    }
+
+    function setActivePill(index){
+      participants.forEach((p, idx) => {
+        const pill = document.getElementById(`pill${idx}`);
+        if (!pill) return;
+        pill.classList.remove('active','pulse');
+        if (idx === index){
+          pill.classList.add('active','pulse');
+        }
+      });
+    }
+
+    window.recordSpeaking = function(index){
+      const now = new Date();
+      const participant = participants[index];
+
+      participant.speakCount += 1;
+      const countEl = document.getElementById(`speakCount${index}`);
+      if (countEl) countEl.textContent = participant.speakCount;
+
+      if (currentSpeakerIndex !== null && currentSpeakerIndex !== index){
+        const prev = participants[currentSpeakerIndex];
+        const dur = (now - prev.startTimes[prev.startTimes.length - 1]) / 1000;
+        prev.endTimes.push(dur);
+        updateDurationInLog(currentSpeakerIndex, dur);
+      }
+
+      if (currentSpeakerIndex !== null && currentSpeakerIndex === index){
+        const curr = participants[currentSpeakerIndex];
+        const dur = (now - curr.startTimes[curr.startTimes.length - 1]) / 1000;
+        curr.endTimes.push(dur);
+        updateDurationInLog(currentSpeakerIndex, dur);
+        currentSpeakerIndex = null;
+        setActivePill(null);
+        setNowSpeaking(null);
+        ratingBox.style.display = 'none';
+        pauseCenter.classList.remove('hidden');
+        return;
+      }
+
+      currentSpeakerIndex = index;
+      participant.startTimes.push(now);
+
+      if (lastSpokenIndex !== null){
+        const from = participants[lastSpokenIndex];
+        const to = participants[index];
+
+        const key = `${lastSpokenIndex}-${index}`;
+        const rkey = `${index}-${lastSpokenIndex}`;
+        if (connectionCounts[key]) connectionCounts[key] += 1;
+        else if (connectionCounts[rkey]) connectionCounts[rkey] += 1;
+        else connectionCounts[key] = 1;
+
+        const thickness = connectionCounts[key] || connectionCounts[rkey] || 1;
+        connections.push({ from: from.name, to: to.name, thickness });
+
+        animateConnection(lastSpokenIndex, index, thickness, 'var(--secondary-color)', 220, () => {});
+      }
+
+      lastSpokenIndex = index;
+
+      resetRating();
+      ratingBox.style.display = 'block';
+      pauseCenter.classList.add('hidden');
+      document.getElementById('comment').focus();
+
+      setActivePill(index);
+      setNowSpeaking(index);
+    };
+
+    function selectRating(rating){
+      selectedRating = rating;
+      ratingBox.querySelectorAll('.rating-option').forEach(opt => opt.classList.remove('selected'));
+      ratingBox.querySelectorAll('.rating-option')[rating - 1].classList.add('selected');
+    }
+    function resetRating(){
+      selectedRating = null;
+      ratingBox.querySelectorAll('.rating-option').forEach(opt => opt.classList.remove('selected'));
+    }
+
+    function startTimer(){
+      if (currentSpeakerIndex === null) return;
+
+      ratingBox.style.display = 'none';
+      pauseCenter.classList.remove('hidden');
+
+      const participant = participants[currentSpeakerIndex];
+      participant.ratings.push(selectedRating);
+      participant.comments.push(document.getElementById('comment').value);
+
+      const row = logTableBody.insertRow();
+      row.insertCell(0).textContent = participant.name;
+      row.insertCell(1).textContent = new Date().toLocaleString();
+      row.insertCell(2).textContent = selectedRating !== null ? selectedRating : '';
+      row.insertCell(3).textContent = document.getElementById('comment').value;
+      row.insertCell(4).textContent = '';
+      row.insertCell(5).innerHTML = `<button class="edit-button" onclick="openEditContribution(this)">Edit</button>`;
+
+      document.getElementById('comment').value = '';
+      resetRating();
+      updateLogCount();
+    }
+
+    function updateLogCount(){
+      const rows = Array.from(logTableBody.rows);
+      const contribs = rows.filter(r => r.cells[1] && r.cells[1].textContent.trim() !== '').length;
+      logCount.textContent = String(contribs);
+    }
+
+    function updateDurationInLog(index, duration){
+      const name = participants[index].name;
+      const rows = Array.from(logTableBody.rows);
+      for (let i = rows.length - 1; i >= 0; i--){
+        if (
+          rows[i].cells[0].textContent === name &&
+          rows[i].cells[1].textContent.trim() !== '' &&
+          rows[i].cells[4].textContent.trim() === ''
+        ){
+          rows[i].cells[4].textContent = duration.toFixed(2) + "s";
+          break;
+        }
+      }
+    }
+
+    function endDiscussion(){
+      const now = new Date();
+      if (currentSpeakerIndex !== null){
+        const curr = participants[currentSpeakerIndex];
+        const dur = (now - curr.startTimes[curr.startTimes.length - 1]) / 1000;
+        curr.endTimes.push(dur);
+        updateDurationInLog(currentSpeakerIndex, dur);
+      }
+
+      ratingBox.style.display = 'none';
+      currentSpeakerIndex = null;
+      setActivePill(null);
+      setNowSpeaking(null);
+
+      // ✅ When the discussion ends, hide pause button entirely
+      pauseCenter.style.display = 'none';
+
+      // ✅ Show replay dock on the side
+      replayDock.style.display = 'block';
+      replayDock.setAttribute('aria-hidden','false');
+
+      copyBothButton.style.display = 'inline-flex';
+      restartDiscussionButton.style.display = 'inline-flex';
+      generateReportButton.style.display = 'inline-flex';
+      exportScreenshotButton.style.display = 'inline-flex';
+
+      copyLogButton.style.display = 'inline-flex';
+      switchTab('log');
+      openDrawer();
+    }
+
+    // ---------- LINE GEOMETRY ----------
+    function getInnerAnchor(fromIndex, toIndex){
+      const from = participants[fromIndex];
+      const to = participants[toIndex];
+
+      const offset = Math.max(30, Math.min(44, circleDiameter * 0.055));
+
+      const vfx = centerX - from.x;
+      const vfy = centerY - from.y;
+      const vfl = Math.hypot(vfx, vfy) || 1;
+      const ax1 = from.x + (vfx / vfl) * offset;
+      const ay1 = from.y + (vfy / vfl) * offset;
+
+      const vtx = centerX - to.x;
+      const vty = centerY - to.y;
+      const vtl = Math.hypot(vtx, vty) || 1;
+      const ax2 = to.x + (vtx / vtl) * offset;
+      const ay2 = to.y + (vty / vtl) * offset;
+
+      return { x1: ax1, y1: ay1, x2: ax2, y2: ay2 };
+    }
+
+    function redrawConnections(){
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      clipToCircle();
+      for (const c of connections){
+        const fromP = participants.find(p => p.name === c.from);
+        const toP = participants.find(p => p.name === c.to);
+        if (!fromP || !toP) continue;
+        const fromIndex = participants.indexOf(fromP);
+        const toIndex = participants.indexOf(toP);
+        const { x1,y1,x2,y2 } = getInnerAnchor(fromIndex,toIndex);
+        drawLineInstant(x1,y1,x2,y2,c.thickness,'var(--secondary-color)', true);
+      }
+      unclip();
+    }
+
+    function drawLineInstant(x1,y1,x2,y2,thickness,color,glow){
+      ctx.lineWidth = thickness;
+      ctx.strokeStyle = color;
+      ctx.lineCap = 'round';
+
+      if (glow){
+        ctx.shadowColor = 'rgba(35,97,146,.45)';
+        ctx.shadowBlur = Math.min(18, 8 + thickness * 2);
+      }else{
+        ctx.shadowBlur = 0;
+      }
+
+      ctx.beginPath();
+      ctx.moveTo(x1,y1);
+      ctx.lineTo(x2,y2);
+      ctx.stroke();
+      ctx.shadowBlur = 0;
+    }
+
+    function animateConnection(fromIndex, toIndex, thickness, cssColor, durationMs, onDone){
+      const { x1,y1,x2,y2 } = getInnerAnchor(fromIndex,toIndex);
+
+      const color = getComputedStyle(document.documentElement)
+        .getPropertyValue(cssColor.replace('var(','').replace(')','')).trim() || cssColor;
+
+      const start = performance.now();
+      const glow = true;
+
+      function frame(t){
+        const p = Math.min(1, (t - start) / durationMs);
+        const ex = x1 + (x2 - x1) * p;
+        const ey = y1 + (y2 - y1) * p;
+
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        clipToCircle();
+
+        for (let i=0;i<connections.length-1;i++){
+          const c = connections[i];
+          const fp = participants.find(pp => pp.name === c.from);
+          const tp = participants.find(pp => pp.name === c.to);
+          if (!fp || !tp) continue;
+          const fi = participants.indexOf(fp);
+          const ti = participants.indexOf(tp);
+          const a = getInnerAnchor(fi,ti);
+          drawLineInstant(a.x1,a.y1,a.x2,a.y2,c.thickness,'var(--secondary-color)', true);
         }
 
-        function doneAddingParticipants() {
-            participantForm.style.display = 'none';
-            placeParticipants();
-            document.getElementById('endDiscussionButton').style.display = 'inline';
-            document.getElementById('editParticipantsButton').style.display = 'inline';
+        drawLineInstant(x1,y1,ex,ey,thickness,color,glow);
+
+        unclip();
+
+        if (p < 1) requestAnimationFrame(frame);
+        else onDone && onDone();
+      }
+      requestAnimationFrame(frame);
+    }
+
+    // ---------- REPLAY ----------
+    function highlightParticipant(index){
+      setActivePill(index);
+      setNowSpeaking(index);
+    }
+
+    function replayDiscussion(speed){
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      let i = 0;
+
+      function step(){
+        if (i >= connections.length) { setNowSpeaking(null); setActivePill(null); return; }
+
+        const { from, to, thickness } = connections[i];
+        const fromP = participants.find(p => p.name === from);
+        const toP = participants.find(p => p.name === to);
+        if (!fromP || !toP){ i++; step(); return; }
+
+        const fromIndex = participants.indexOf(fromP);
+        const toIndex = participants.indexOf(toP);
+
+        highlightParticipant(fromIndex);
+
+        const dur = Math.max(220, 750 / speed);
+        animateReplaySegment(fromIndex, toIndex, thickness, dur, () => {
+          highlightParticipant(toIndex);
+          i++;
+          setTimeout(step, 120);
+        });
+      }
+
+      step();
+    }
+
+    function replayDiscussionTimed(speed){
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+      let i = 0;
+      const endTimesCopy = participants.map(p => [...p.endTimes]);
+
+      function step(){
+        if (i >= connections.length) { setNowSpeaking(null); setActivePill(null); return; }
+
+        const { from, to, thickness } = connections[i];
+        const fromP = participants.find(p => p.name === from);
+        const toP = participants.find(p => p.name === to);
+        if (!fromP || !toP){ i++; step(); return; }
+
+        const fromIndex = participants.indexOf(fromP);
+        const toIndex = participants.indexOf(toP);
+
+        highlightParticipant(fromIndex);
+
+        const durationSpoken = (endTimesCopy[toIndex].shift() || 1);
+        const dur = Math.max(260, (durationSpoken / speed) * 1000);
+
+        animateReplaySegment(fromIndex, toIndex, thickness, dur, () => {
+          highlightParticipant(toIndex);
+          i++;
+          setTimeout(step, 100);
+        });
+      }
+
+      step();
+    }
+
+    function animateReplaySegment(fromIndex,toIndex,thickness,durationMs,onDone){
+      const start = performance.now();
+      const { x1,y1,x2,y2 } = getInnerAnchor(fromIndex,toIndex);
+
+      function frame(t){
+        const p = Math.min(1, (t - start) / durationMs);
+
+        ctx.clearRect(0,0,canvas.width,canvas.height);
+        clipToCircle();
+
+        if (window.__replayDrawn == null) window.__replayDrawn = [];
+        for (const seg of window.__replayDrawn){
+          drawLineInstant(seg.x1,seg.y1,seg.x2,seg.y2,seg.thickness,'var(--secondary-color)', true);
         }
 
-        function endDiscussion() {
-            const now = new Date();
-            if (currentSpeakerIndex !== null && totalStartTime !== null) {
-                const lastParticipant = participants[currentSpeakerIndex];
-                const duration = (now - lastParticipant.startTimes[lastParticipant.startTimes.length - 1]) / 1000;
-                lastParticipant.endTimes.push(duration);
-                updateLog(currentSpeakerIndex, duration);
-                document.getElementById(`participant${currentSpeakerIndex}`).style.backgroundColor = 'var(--primary-color)';
-                document.getElementById(`participant${currentSpeakerIndex}`).style.color = 'var(--text-color)';
-            }
-            document.getElementById('ratingBox').style.display = 'none';
-            replayControls.style.display = 'block';
-            document.getElementById('copyLogButton').style.display = 'inline';
-            document.getElementById('restartDiscussionButton').style.display = 'inline';
-            document.getElementById('generateReportButton').style.display = 'inline';
-            document.getElementById('exportScreenshotButton').style.display = 'inline'; // Show the screenshot button
+        const ex = x1 + (x2-x1)*p;
+        const ey = y1 + (y2-y1)*p;
+        drawLineInstant(x1,y1,ex,ey,thickness,'var(--secondary-color)', true);
+
+        unclip();
+
+        if (p < 1){
+          requestAnimationFrame(frame);
+        }else{
+          window.__replayDrawn.push({ x1,y1,x2,y2,thickness });
+          onDone && onDone();
         }
+      }
+      requestAnimationFrame(frame);
+    }
 
-        function highlightParticipant(index) {
-            participants.forEach((participant, idx) => {
-                const participantElement = document.getElementById(`participant${idx}`);
-                if (idx === index) {
-                    participantElement.style.backgroundColor = 'var(--secondary-color)';
-                    if (teamName === 'Tampa Bay Lightning' || teamName === 'Toronto Maple Leafs') {
-                        participantElement.classList.add('lightning-highlight');
-                    }
-                } else {
-                    participantElement.style.backgroundColor = 'var(--primary-color)';
-                    participantElement.style.color = 'var(--text-color)';
-                    participantElement.classList.remove('lightning-highlight', 'leafs-highlight');
-                }
-            });
+    function resetReplayCache(){ window.__replayDrawn = []; }
+    const _replayDiscussion = replayDiscussion;
+    replayDiscussion = function(speed){ resetReplayCache(); _replayDiscussion(speed); }
+    const _replayTimed = replayDiscussionTimed;
+    replayDiscussionTimed = function(speed){ resetReplayCache(); _replayTimed(speed); }
+
+    // ---------- REPORT ----------
+    function generateReport(){
+      reportTableBody.innerHTML = '';
+      notesReportTableBody.innerHTML = '';
+
+      const totalDuration = participants.reduce((sum,p) => sum + p.endTimes.reduce((a,b)=>a+b,0), 0);
+
+      participants.forEach(p => {
+        const ratings = p.ratings.filter(r => r !== null && r !== undefined && r !== '');
+        const avg = ratings.length ? (ratings.reduce((a,b)=>a+b,0)/ratings.length).toFixed(2) : 'N/A';
+
+        const air = p.endTimes.reduce((a,b)=>a+b,0);
+        const minutes = Math.floor(air/60);
+        const seconds = air % 60;
+        const formatted = `${minutes}m ${seconds.toFixed(2)}s`;
+        const domination = totalDuration > 0 ? ((air/totalDuration)*100).toFixed(2)+'%' : '0%';
+
+        const row = reportTableBody.insertRow();
+        row.insertCell(0).textContent = p.name;
+        row.insertCell(1).textContent = ratings.join(', ');
+        row.insertCell(2).textContent = avg;
+        row.insertCell(3).textContent = formatted;
+        row.insertCell(4).textContent = domination;
+
+        const nrow = notesReportTableBody.insertRow();
+        nrow.insertCell(0).textContent = p.name;
+        nrow.insertCell(1).textContent = p.notes.join(' - [] - ');
+      });
+
+      tabReport.disabled = false;
+      reportReady.textContent = '✓';
+
+      copyReportButton.style.display = 'inline-flex';
+      copyBothButton.style.display = 'inline-flex';
+
+      switchTab('report');
+      openDrawer();
+    }
+
+    // ---------- COPY ----------
+    function copyNodeAsTSV(tableEl){
+      const rows = Array.from(tableEl.querySelectorAll('tr'));
+      const lines = rows.map(r => {
+        const cells = Array.from(r.children).map(td => (td.innerText || '').replace(/\s+/g,' ').trim());
+        return cells.join('\t');
+      });
+      return lines.join('\n');
+    }
+
+    async function copyToClipboard(text){
+      try{
+        await navigator.clipboard.writeText(text);
+      }catch(e){
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand('copy');
+        ta.remove();
+      }
+    }
+
+    async function copyLog(){
+      const text = copyNodeAsTSV(document.getElementById('logTable'));
+      await copyToClipboard(text);
+      alert('Discussion log copied (TSV).');
+    }
+
+    async function copyReport(){
+      const reportText = copyNodeAsTSV(document.getElementById('reportTable'));
+      const notesText2 = copyNodeAsTSV(document.getElementById('notesReportTable'));
+      await copyToClipboard(reportText + "\n\n" + notesText2);
+      alert('Report copied (TSV).');
+    }
+
+    async function copyBoth(){
+      const logText = copyNodeAsTSV(document.getElementById('logTable'));
+      const reportText = copyNodeAsTSV(document.getElementById('reportTable'));
+      const notesText2 = copyNodeAsTSV(document.getElementById('notesReportTable'));
+      const combined =
+        "REPORT\n" + reportText + "\n\nNOTES\n" + notesText2 + "\n\nLOG\n" + logText;
+      await copyToClipboard(combined);
+      alert('Report + Notes + Log copied (TSV).');
+    }
+
+    // ---------- EDIT CONTRIBUTION ----------
+    function openEditContribution(buttonOrRow){
+      const row = buttonOrRow.closest ? buttonOrRow.closest('tr') : buttonOrRow;
+      editingRow = row;
+
+      const rating = row.cells[2].textContent.trim();
+      const comment = row.cells[3].textContent;
+
+      editRatingOverlay.querySelectorAll('.rating-option').forEach(opt => opt.classList.remove('selected'));
+      if (rating){
+        const n = parseInt(rating,10);
+        if (!Number.isNaN(n)){
+          editRatingOverlay.querySelectorAll('.rating-option')[n-1].classList.add('selected');
         }
+      }
+      editComment.value = comment;
+      editRatingOverlay.style.display = 'flex';
+      editComment.focus();
+    }
 
-        function replayDiscussion(speed) {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            let i = 0;
+    function selectEditRating(rating){
+      editRatingOverlay.querySelectorAll('.rating-option').forEach(opt => opt.classList.remove('selected'));
+      editRatingOverlay.querySelectorAll('.rating-option')[rating-1].classList.add('selected');
+    }
 
-            function drawNextLine() {
-                if (i < connections.length) {
-                    const { from, to, thickness } = connections[i];
-                    const fromParticipant = participants.find(p => p.name === from);
-                    const toParticipant = participants.find(p => p.name === to);
-                    const nextSpeakerIndex = participants.indexOf(toParticipant);
+    function saveEdit(){
+      const selected = editRatingOverlay.querySelector('.rating-option.selected');
+      const rating = selected ? selected.textContent.trim() : '';
+      const comment = editComment.value;
 
-                    highlightParticipant(nextSpeakerIndex);
+      if (editingRow){
+        editingRow.cells[2].textContent = rating;
+        editingRow.cells[3].textContent = comment;
 
-                    drawLine(fromParticipant.x, fromParticipant.y, toParticipant.x, toParticipant.y, thickness, 'var(--secondary-color)');
-                    setTimeout(() => {
-                        drawLine(fromParticipant.x, fromParticipant.y, toParticipant.x, toParticipant.y, thickness, 'var(--text-color)');
-                        i++;
-                        if (i < connections.length) {
-                            drawNextLine();
-                        }
-                    }, 1000 / speed);
-                }
-            }
-            drawNextLine();
+        const participantName = editingRow.cells[0].textContent;
+        const participant = participants.find(p => p.name === participantName);
+
+        const rows = Array.from(logTableBody.rows).filter(r => r.cells[1].textContent.trim() !== '');
+        let nth = -1;
+        for (const r of rows){
+          if (r.cells[0].textContent === participantName) nth++;
+          if (r === editingRow) break;
         }
-
-        function replayDiscussionTimed(speed) {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            let i = 0;
-            let endTimesCopy = participants.map(p => [...p.endTimes]);
-
-            function drawNextLine() {
-                if (i < connections.length) {
-                    const { from, to, thickness } = connections[i];
-                    const fromParticipant = participants.find(p => p.name === from);
-                    const toParticipant = participants.find(p => p.name === to);
-                    const nextSpeakerIndex = participants.indexOf(toParticipant);
-
-                    highlightParticipant(nextSpeakerIndex);
-
-                    const duration = endTimesCopy[nextSpeakerIndex].shift() || 1;
-                    const proportionalSpeed = (duration / speed) * 1000;
-
-                    drawLine(fromParticipant.x, fromParticipant.y, toParticipant.x, toParticipant.y, thickness, 'var(--secondary-color)');
-                    setTimeout(() => {
-                        drawLine(fromParticipant.x, fromParticipant.y, toParticipant.x, toParticipant.y, thickness, 'var(--text-color)');
-                        i++;
-                        if (i < connections.length) {
-                            drawNextLine();
-                        }
-                    }, proportionalSpeed);
-                }
-            }
-            drawNextLine();
+        if (participant && nth >= 0){
+          participant.ratings[nth] = rating ? parseInt(rating,10) : null;
+          participant.comments[nth] = comment;
         }
+      }
 
-        function updateLog(index, duration) {
-            const rows = logTable.rows;
-            for (let i = rows.length - 1; i >= 0; i--) {
-                if (rows[i].cells[0].textContent === participants[index].name && !rows[i].cells[4].textContent) {
-                    rows[i].cells[4].textContent = duration.toFixed(2) + "s";
-                    break;
-                }
-            }
-            logContainer.scrollTop = logContainer.scrollHeight;
-        }
+      editingRow = null;
+      closeEditBox();
+    }
 
-        function selectRating(rating) {
-            selectedRating = rating;
-            document.querySelectorAll('.rating-option').forEach(option => {
-                option.classList.remove('selected');
-            });
-            document.querySelector(`.rating-option:nth-child(${rating})`).classList.add('selected');
-        }
+    function closeEditBox(){ editRatingOverlay.style.display = 'none'; }
 
-        function resetRating() {
-            selectedRating = null;
-            document.querySelectorAll('.rating-option').forEach(option => {
-                option.classList.remove('selected');
-            });
-        }
+    // ---------- NOTES ----------
+    function openNotesBox(index){
+      currentNotesParticipant = participants[index];
+      notesBoxTitle.textContent = `Notes about ${currentNotesParticipant.name}`;
+      notesText.value = '';
+      notesOverlay.style.display = 'flex';
+      notesText.focus();
+    }
+    function saveNotes(){
+      const note = notesText.value.trim();
+      if (currentNotesParticipant && note){
+        currentNotesParticipant.notes.push(note);
+      }
+      closeNotesBox();
+    }
+    function closeNotesBox(){
+      notesOverlay.style.display = 'none';
+      currentNotesParticipant = null;
+    }
 
-        function startTimer() {
-            document.getElementById('ratingBox').style.display = 'none';
-            if (currentSpeakerIndex !== null) {
-                const row = logTable.insertRow();
-                const participantCell = row.insertCell(0);
-                const timestampCell = row.insertCell(1);
-                const ratingCell = row.insertCell(2);
-                const commentCell = row.insertCell(3);
-                const durationCell = row.insertCell(4);
-                const editCell = row.insertCell(5);
+    // ---------- PAUSE ----------
+    function pauseTimer(){
+      if (currentSpeakerIndex !== null){
+        const now = new Date();
+        const curr = participants[currentSpeakerIndex];
+        const dur = (now - curr.startTimes[curr.startTimes.length - 1]) / 1000;
+        curr.endTimes.push(dur);
+        updateDurationInLog(currentSpeakerIndex, dur);
+        currentSpeakerIndex = null;
+        ratingBox.style.display = 'none';
+        pauseCenter.classList.remove('hidden');
+        setActivePill(null);
+        setNowSpeaking(null);
+      }
+    }
 
-                const participant = participants[currentSpeakerIndex];
-                participant.ratings.push(selectedRating);
-                participant.comments.push(document.getElementById('comment').value);
+    // ---------- RESTART ----------
+    function confirmRestartDiscussion(){ confirmRestartPopup.style.display = 'flex'; }
+    function closeConfirmRestartPopup(){ confirmRestartPopup.style.display = 'none'; }
+    function restartDiscussion(){ location.reload(); }
 
-                participantCell.textContent = participant.name;
-                timestampCell.textContent = new Date().toLocaleString();
-                ratingCell.textContent = selectedRating !== null ? selectedRating : '';
-                commentCell.textContent = document.getElementById('comment').value;
-                durationCell.textContent = '';
-                editCell.innerHTML = `<button class="edit-button" onclick="openEditContribution(this)">Edit</button>`;
+    // ---------- EDIT PARTICIPANTS ----------
+    function openEditParticipantsPopup(){ editParticipantsPopup.style.display = 'flex'; }
+    function closeEditParticipantsPopup(){
+      editParticipantsPopup.style.display = 'none';
+      reorderParticipantsContainer.style.display = 'none';
+      renameParticipantsContainer.style.display = 'none';
+    }
 
-                document.getElementById('comment').value = '';
-                resetRating();
-                openEditContribution(row);
-            }
-        }
+    function addNewParticipant(){
+      const inp = document.getElementById('newParticipantName');
+      const name = inp.value.trim();
+      if (!name){ alert('Please enter a name.'); return; }
+      if (participants.length >= 22){ alert('Maximum of 22 participants reached'); return; }
 
-        function openEditContribution(button) {
-            const row = button.closest('tr');
-            editingRow = row;
-            const rating = row.cells[2].textContent;
-            const comment = row.cells[3].textContent;
+      addParticipant(name);
+      placeParticipants();
+      redrawConnections();
+      inp.value = '';
+      closeEditParticipantsPopup();
+    }
 
-            document.querySelectorAll('#editRatingBox .rating-option').forEach(option => {
-                option.classList.remove('selected');
-            });
-            if (rating) {
-                document.querySelector(`#editRatingBox .rating-option:nth-child(${rating})`).classList.add('selected');
-            }
+    function openReorderParticipants(){
+      reorderParticipantsContainer.style.display = 'block';
+      renameParticipantsContainer.style.display = 'none';
+      reorderParticipantsList.innerHTML = '';
 
-            document.getElementById('editComment').value = comment;
-            document.getElementById('editRatingBox').style.display = 'block';
-            document.getElementById('editComment').focus();
-        }
+      participants.forEach((p, idx) => {
+        const li = document.createElement('li');
+        li.draggable = true;
+        li.dataset.index = idx;
+        li.style.display = 'flex';
+        li.style.alignItems = 'center';
+        li.style.justifyContent = 'space-between';
+        li.style.padding = '10px';
+        li.style.border = '1px solid rgba(0,0,0,.10)';
+        li.style.borderRadius = '14px';
+        li.style.background = 'rgba(255,255,255,.80)';
+        li.style.cursor = 'grab';
+        li.innerHTML = `<strong>${escapeHtml(p.name)}</strong><span style="color:var(--muted);font-weight:300;">drag</span>`;
+        li.addEventListener('dragstart', handleDragStart);
+        li.addEventListener('dragover', handleDragOver);
+        li.addEventListener('drop', handleDrop);
+        li.addEventListener('dragend', handleDragEnd);
+        reorderParticipantsList.appendChild(li);
+      });
+    }
 
-        function selectEditRating(rating) {
-            document.querySelectorAll('#editRatingBox .rating-option').forEach(option => {
-                option.classList.remove('selected');
-            });
-            document.querySelector(`#editRatingBox .rating-option:nth-child(${rating})`).classList.add('selected');
-        }
+    let dragSrcEl = null;
+    function handleDragStart(e){ dragSrcEl = this; this.style.opacity = '0.5'; }
+    function handleDragOver(e){ e.preventDefault(); return false; }
+    function handleDrop(e){
+      e.stopPropagation();
+      if (dragSrcEl !== this){
+        const srcIndex = parseInt(dragSrcEl.dataset.index,10);
+        const tgtIndex = parseInt(this.dataset.index,10);
+        [participants[srcIndex], participants[tgtIndex]] = [participants[tgtIndex], participants[srcIndex]];
+        openReorderParticipants();
+      }
+      return false;
+    }
+    function handleDragEnd(e){ this.style.opacity = '1'; }
 
-        function saveEdit() {
-            const rating = document.querySelector('#editRatingBox .rating-option.selected') ? document.querySelector('#editRatingBox .rating-option.selected').textContent : '';
-            const comment = document.getElementById('editComment').value;
-            if (editingRow) {
-                editingRow.cells[2].textContent = rating;
-                editingRow.cells[3].textContent = comment;
+    function saveReorderedParticipants(){
+      placeParticipants();
+      redrawConnections();
+      reorderParticipantsContainer.style.display = 'none';
+    }
 
-                const participantName = editingRow.cells[0].textContent;
-                const participant = participants.find(p => p.name === participantName);
-                const contributionIndex = Array.from(logTable.rows).indexOf(editingRow) - 1;
+    function openRenameParticipants(){
+      renameParticipantsContainer.style.display = 'block';
+      reorderParticipantsContainer.style.display = 'none';
+      renameParticipantsList.innerHTML = '';
 
-                if (rating) {
-                    participant.ratings[contributionIndex] = parseInt(rating);
-                }
-                participant.comments[contributionIndex] = comment;
+      participants.forEach((p, idx) => {
+        const li = document.createElement('li');
+        li.style.display = 'flex';
+        li.style.gap = '10px';
+        li.style.alignItems = 'center';
+        li.innerHTML = `
+          <input type="text" id="renameInput${idx}" value="${escapeHtml(p.name)}" />
+          <button class="btn secondary" type="button" onclick="renameParticipant(${idx})">Save</button>
+        `;
+        renameParticipantsList.appendChild(li);
+      });
+    }
 
-                editingRow = null;
-            }
-            document.getElementById('editRatingBox').style.display = 'none';
-        }
+    function renameParticipant(index){
+      const inp = document.getElementById(`renameInput${index}`);
+      const newName = inp.value.trim();
+      if (!newName){ alert('Please enter a valid name.'); return; }
+      participants[index].name = newName;
+      placeParticipants();
+      redrawConnections();
+      updateLogCount();
+    }
 
-        function openNotesBox(index) {
-            currentNotesParticipant = participants[index];
-            notesBoxTitle.textContent = `Notes about ${currentNotesParticipant.name}`;
-            notesText.value = '';
-            notesBox.style.display = 'block';
-            notesText.focus();
-        }
+    function saveRenamedParticipants(){
+      renameParticipantsContainer.style.display = 'none';
+      closeEditParticipantsPopup();
+    }
 
-        function saveNotes() {
-            const note = notesText.value;
-            if (currentNotesParticipant && note) {
-                currentNotesParticipant.notes.push(note);
-            }
-            notesBox.style.display = 'none';
-        }
+    // ---------- SCREENSHOT ----------
+    async function exportScreenshot(){
+      // no external libs here; simple fallback screenshot instruction
+      alert("Screenshot export requires html2canvas. If you want it back, paste the html2canvas script tag and I’ll restore exportScreenshot().");
+    }
 
-        function toggleLog() {
-            if (logContainer.style.display === 'none') {
-                logContainer.style.display = 'block';
-                document.getElementById('toggleLogButton').innerText = "Hide Discussion Log";
-            } else {
-                logContainer.style.display = 'none';
-                document.getElementById('toggleLogButton').innerText = "Show Discussion Log";
-            }
-        }
-
-        function toggleReport() {
-            if (reportContainer.style.display === 'none') {
-                reportContainer.style.display = 'block';
-                document.getElementById('toggleReportButton').innerText = "Hide Report";
-            } else {
-                reportContainer.style.display = 'none';
-                document.getElementById('toggleReportButton').innerText = "Show Report";
-            }
-        }
-
-        function copyLog() {
-            const range = document.createRange();
-            range.selectNode(logContainer);
-            window.getSelection().removeAllRanges();
-            window.getSelection().addRange(range);
-            document.execCommand('copy');
-            alert('Discussion log copied to clipboard');
-        }
-
-        function confirmRestartDiscussion() {
-            confirmRestartPopup.style.display = 'block';
-        }
-
-        function closeConfirmRestartPopup() {
-            confirmRestartPopup.style.display = 'none';
-        }
-
-        function restartDiscussion() {
-            location.reload();
-        }
-
-        function generateReport() {
-            const reportTable = document.getElementById('reportTable').getElementsByTagName('tbody')[0];
-            const notesReportTable = document.getElementById('notesReportTable').getElementsByTagName('tbody')[0];
-            reportTable.innerHTML = '';
-            notesReportTable.innerHTML = '';
-
-            const totalDuration = participants.reduce((sum, participant) => sum + participant.endTimes.reduce((a, b) => a + b, 0), 0);
-
-            participants.forEach(participant => {
-                const row = reportTable.insertRow();
-                const participantCell = row.insertCell(0);
-                const allRatingsCell = row.insertCell(1);
-                const avgRatingCell = row.insertCell(2);
-                const totalAirTimeCell = row.insertCell(3);
-                const dominationCell = row.insertCell(4);
-
-                const ratings = participant.ratings.filter(rating => rating !== null && rating !== undefined);
-                const avgRating = ratings.length > 0 ? (ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(2) : 'N/A';
-                const totalAirTime = participant.endTimes.reduce((a, b) => a + b, 0);
-                const minutes = Math.floor(totalAirTime / 60);
-                const seconds = totalAirTime % 60;
-                const formattedAirTime = `${minutes}m ${seconds.toFixed(2)}s`;
-                const domination = totalDuration > 0 ? ((totalAirTime / totalDuration) * 100).toFixed(2) + "%" : "0%";
-
-                participantCell.textContent = participant.name;
-                allRatingsCell.textContent = ratings.join(', ');
-                avgRatingCell.textContent = avgRating;
-                totalAirTimeCell.textContent = formattedAirTime;
-                dominationCell.textContent = domination;
-
-                const notesRow = notesReportTable.insertRow();
-                const notesParticipantCell = notesRow.insertCell(0);
-                const notesCell = notesRow.insertCell(1);
-                notesParticipantCell.textContent = participant.name;
-                notesCell.textContent = participant.notes.join(' - [] - ');
-            });
-
-            reportContainer.style.display = 'block';
-            document.getElementById('copyReportButton').style.display = 'inline';
-            document.getElementById('toggleReportButton').style.display = 'inline';
-        }
-
-        function copyReport() {
-            const range = document.createRange();
-            range.selectNode(reportContainer);
-            window.getSelection().removeAllRanges();
-            window.getSelection().addRange(range);
-            document.execCommand('copy');
-            alert('Report copied to clipboard');
-        }
-
-        function pauseTimer() {
-            if (currentSpeakerIndex !== null) {
-                const now = new Date();
-                const currentParticipant = participants[currentSpeakerIndex];
-                const duration = (now - currentParticipant.startTimes[currentParticipant.startTimes.length - 1]) / 1000;
-                currentParticipant.endTimes.push(duration);
-                updateLog(currentSpeakerIndex, duration);
-                document.getElementById(`participant${currentSpeakerIndex}`).style.backgroundColor = 'var(--primary-color)';
-                document.getElementById(`participant${currentSpeakerIndex}`).style.color = 'var(--text-color)';
-                currentSpeakerIndex = null;
-                document.getElementById('ratingBox').style.display = 'none';
-            }
-        }
-
-        function redrawConnections() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height);
-            connections.forEach(({ from, to, thickness }) => {
-                const fromParticipant = participants.find(p => p.name === from);
-                const toParticipant = participants.find(p => p.name === to);
-                if (fromParticipant && toParticipant) {
-                    drawLine(fromParticipant.x, fromParticipant.y, toParticipant.x, toParticipant.y, thickness, 'var(--secondary-color)');
-                }
-            });
-        }
-
-        function openEditParticipantsPopup() {
-            editParticipantsPopup.style.display = 'block';
-        }
-
-        function closeEditParticipantsPopup() {
-            editParticipantsPopup.style.display = 'none';
-        }
-
-        function addNewParticipant() {
-            const newParticipantName = document.getElementById('newParticipantName').value;
-            if (newParticipantName) {
-                addParticipant(newParticipantName);
-                clearParticipants();
-                placeParticipants();
-                redrawConnections();
-                document.getElementById('newParticipantName').value = '';
-                closeEditParticipantsPopup();
-            } else {
-                alert("Please enter a name.");
-            }
-        }
-
-        function clearParticipants() {
-            const participantDivs = document.querySelectorAll('.participant');
-            participantDivs.forEach(div => div.remove());
-        }
-
-        function openReorderParticipants() {
-            reorderParticipantsContainer.style.display = 'block';
-            renameParticipantsContainer.style.display = 'none';
-            reorderParticipantsList.innerHTML = '';
-
-            participants.forEach((participant, index) => {
-                const listItem = document.createElement('li');
-                listItem.draggable = true;
-                listItem.innerHTML = `
-                    <span>${participant.name}</span>
-                `;
-                listItem.dataset.index = index;
-                listItem.addEventListener('dragstart', handleDragStart);
-                listItem.addEventListener('dragover', handleDragOver);
-                listItem.addEventListener('drop', handleDrop);
-                listItem.addEventListener('dragend', handleDragEnd);
-                reorderParticipantsList.appendChild(listItem);
-            });
-        }
-
-        let dragSrcEl = null;
-
-        function handleDragStart(e) {
-            dragSrcEl = this;
-            this.style.opacity = '0.5';
-        }
-
-        function handleDragOver(e) {
-            e.preventDefault();
-            return false;
-        }
-
-        function handleDrop(e) {
-            e.stopPropagation();
-            if (dragSrcEl !== this) {
-                const srcIndex = dragSrcEl.dataset.index;
-                const targetIndex = this.dataset.index;
-                [participants[srcIndex], participants[targetIndex]] = [participants[targetIndex], participants[srcIndex]];
-                openReorderParticipants();
-            }
-            return false;
-        }
-
-        function handleDragEnd(e) {
-            this.style.opacity = '1';
-        }
-
-        function saveReorderedParticipants() {
-            clearParticipants();
-            placeParticipants();
-            redrawConnections();
-            reorderParticipantsContainer.style.display = 'none';
-        }
-
-        function openRenameParticipants() {
-            renameParticipantsContainer.style.display = 'block';
-            reorderParticipantsContainer.style.display = 'none';
-            renameParticipantsList.innerHTML = '';
-
-            participants.forEach((participant, index) => {
-                const listItem = document.createElement('li');
-                listItem.innerHTML = `
-                    <input type="text" value="${participant.name}" id="renameInput${index}">
-                    <button onclick="renameParticipant(${index})">Save</button>
-                `;
-                renameParticipantsList.appendChild(listItem);
-            });
-        }
-
-        function renameParticipant(index) {
-            const newName = document.getElementById(`renameInput${index}`).value;
-            if (newName) {
-                participants[index].name = newName;
-                clearParticipants();
-                placeParticipants();
-                redrawConnections();
-            } else {
-                alert("Please enter a valid name.");
-            }
-        }
-
-        function saveRenamedParticipants() {
-            renameParticipantsContainer.style.display = 'none';
-            closeEditParticipantsPopup();
-        }
-    </script>
+    // Close overlays on background click
+    editRatingOverlay.addEventListener('click', (e) => { if (e.target === editRatingOverlay) closeEditBox(); });
+    notesOverlay.addEventListener('click', (e) => { if (e.target === notesOverlay) closeNotesBox(); });
+    colorSchemePopup.addEventListener('click', (e) => { if (e.target === colorSchemePopup) closeColorSchemePopup(); });
+    customColorPopup.addEventListener('click', (e) => { if (e.target === customColorPopup) closeCustomColorPopup(); });
+    confirmRestartPopup.addEventListener('click', (e) => { if (e.target === confirmRestartPopup) closeConfirmRestartPopup(); });
+    editParticipantsPopup.addEventListener('click', (e) => { if (e.target === editParticipantsPopup) closeEditParticipantsPopup(); });
+  </script>
 </body>
-
 </html>
