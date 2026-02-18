@@ -151,8 +151,8 @@
     .title-area{
       width: 100%;
       text-align:center;
-      margin: 10px 0 46px; /* more bottom space */
-      padding-bottom: 10px; /* extra separation */
+      margin: 10px 0 46px;
+      padding-bottom: 10px;
     }
     #discussionTitleDisplay{
       font-size: 28px;
@@ -235,7 +235,6 @@
       pointer-events:none;
       border-radius: 50%;
     }
-
     canvas#connectionCanvas{
       position:absolute;
       inset:0;
@@ -319,6 +318,8 @@
       z-index: 10;
       text-align:center;
       width: var(--pill-w);
+      --hkx: 0px;
+      --hky: 0px;
     }
 
     .pill{
@@ -341,8 +342,9 @@
       color: var(--text-color);
       transition: transform .14s ease, box-shadow .14s ease, background-color .18s ease, filter .18s ease;
       will-change: transform;
-      cursor: pointer; /* clickable to Speak */
+      cursor: pointer;
       user-select:none;
+      position: relative;
     }
 
     .pill .count{
@@ -363,17 +365,54 @@
       pointer-events:none;
     }
 
+    .pill.selected{
+      box-shadow:
+        0 10px 22px rgba(0,0,0,.10),
+        0 0 0 3px rgba(255,255,255,.55),
+        0 0 0 6px rgba(35,97,146,.35);
+      outline: 2px solid var(--secondary-color);
+      outline-offset: 2px;
+    }
+
     .pill.active{
       background-color: var(--secondary-color);
       filter: saturate(1.05);
       transform: translateY(-1px) scale(1.03);
       box-shadow: 0 16px 34px rgba(0,0,0,.16);
+      outline: none;
     }
     .pill.pulse{ animation: microPulse .26s ease-out; }
     @keyframes microPulse{
       0%{ transform: translateY(-1px) scale(1.00); }
       60%{ transform: translateY(-2px) scale(1.05); }
       100%{ transform: translateY(-1px) scale(1.03); }
+    }
+
+    /* Hotkey badge OUTSIDE the pill (computed by JS via --hkx/--hky) */
+    .hotkey-badge{
+      position:absolute;
+      left: 50%;
+      top: 50%;
+      transform: translate(-50%,-50%) translate(var(--hkx), var(--hky));
+      z-index: 12;
+      width: 26px;
+      height: 26px;
+      border-radius: 999px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size: 12px;
+      font-weight: 900;
+      color: rgba(31,35,40,.90);
+      background: rgba(255,255,255,.88);
+      border: 1px solid rgba(0,0,0,.10);
+      box-shadow: 0 10px 20px rgba(0,0,0,.10);
+      pointer-events:none;
+      user-select:none;
+    }
+    .hotkey-badge .k{
+      display:inline-block;
+      transform: translateY(-.5px);
     }
 
     /* Percentage display OUTSIDE pill (only when heatmap active) */
@@ -419,7 +458,7 @@
 
     /* Rating box centered INSIDE circle */
     .modal-card{
-      width: min(440px, 86vw);
+      width: min(460px, 88vw);
       background: rgba(255,255,255,.86);
       border: 1px solid rgba(0,0,0,.10);
       border-radius: 18px;
@@ -459,6 +498,39 @@
       color: var(--text-color);
       border-color: rgba(0,0,0,.0);
     }
+
+    /* Tag chips (rating modal only) */
+    .tag-row{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px;
+      margin: 10px 0 8px;
+      justify-content:center;
+    }
+    .chip{
+      border: 1px solid rgba(0,0,0,.10);
+      background: rgba(0,0,0,.04);
+      color: var(--ink);
+      border-radius: 999px;
+      padding: 8px 10px;
+      font-size: 12px;
+      font-weight: 800;
+      cursor:pointer;
+      transition: transform .12s ease, box-shadow .12s ease, background .2s ease;
+      user-select:none;
+      box-shadow: 0 2px 0 rgba(0,0,0,.10);
+    }
+    .chip:hover{ transform: translateY(-1px); box-shadow: 0 10px 20px rgba(0,0,0,.12); background: rgba(35,97,146,.08); }
+    .chip.active{
+      background: rgba(35,97,146,.12);
+      border-color: rgba(35,97,146,.28);
+    }
+    .chip .hk{
+      opacity:.7;
+      font-weight:900;
+      margin-left: 6px;
+    }
+
     textarea{
       width: 100%;
       border-radius: 14px;
@@ -515,7 +587,7 @@
       list-style:none;
     }
 
-    /* ✅ Replay Dock (side, attractive) */
+    /* Replay Dock (side, attractive) */
     #replayDock{
       display:none;
       position: fixed;
@@ -569,12 +641,8 @@
       box-shadow: 0 14px 30px rgba(0,0,0,.14);
       background: rgba(35,97,146,.10);
     }
-    #replayDock .dock-btn.primaryish{
-      background: rgba(111,38,61,.08);
-    }
-    #replayDock .dock-btn.primaryish:hover{
-      background: rgba(111,38,61,.14);
-    }
+    #replayDock .dock-btn.primaryish{ background: rgba(111,38,61,.08); }
+    #replayDock .dock-btn.primaryish:hover{ background: rgba(111,38,61,.14); }
 
     .heat-toggle{
       display:inline-flex;
@@ -602,7 +670,6 @@
         width: min(520px, calc(100vw - 24px));
       }
     }
-
     @media (max-width: 900px){
       #circle{ width: 92vw; height: 92vw; max-width: 860px; max-height: 860px; }
       #colorSchemeList{ grid-template-columns: repeat(2, minmax(0,1fr)); }
@@ -740,6 +807,7 @@
       border-top: 1px solid rgba(0,0,0,.08);
       font-size: 13px;
       vertical-align: top;
+      white-space: pre-wrap;
     }
     tbody tr:nth-child(even) td{ background: rgba(0,0,0,.03); }
 
@@ -796,7 +864,6 @@
       color: rgba(0,0,0,.55);
     }
 
-    /* Print tweaks */
     @media print{
       .topbar,
       #replayDock,
@@ -868,7 +935,6 @@
   </div>
 
   <div class="wrap">
-    <!-- Title/date live ABOVE circle -->
     <div class="title-area" id="titleArea">
       <div id="discussionTitleDisplay"></div>
       <div id="discussionDateDisplay"></div>
@@ -901,17 +967,13 @@
 
     <div class="stage" id="stage">
       <div id="circle">
-        <!-- Heatmap layer (under lines) -->
         <canvas id="heatCanvas" width="860" height="860"></canvas>
-
-        <!-- Connection lines layer (above heatmap) -->
         <canvas id="connectionCanvas" width="860" height="860"></canvas>
 
         <div class="nowSpeaking" id="nowSpeaking" style="display:none;">
           Now speaking: <strong id="nowSpeakingName"></strong>
         </div>
 
-        <!-- Centered pause button -->
         <div id="pauseCenter" class="pause-center">
           <button class="pause-circle" title="Pause (ends current speaking segment)" onclick="pauseTimer()">
             <span class="pause-icon">⏸</span>
@@ -921,6 +983,7 @@
         <div class="centerOverlay">
           <div id="ratingBox" class="modal-card" style="display:none;">
             <h2>Rate Contribution</h2>
+
             <div class="rating-options">
               <div class="rating-option" onclick="selectRating(1)">1</div>
               <div class="rating-option" onclick="selectRating(2)">2</div>
@@ -928,20 +991,24 @@
               <div class="rating-option" onclick="selectRating(4)">4</div>
               <div class="rating-option" onclick="selectRating(5)">5</div>
             </div>
+
+            <div class="tag-row" id="tagRow"></div>
+
             <label for="comment">Comment:</label>
             <textarea id="comment" rows="3" placeholder="Optional quick note..."></textarea>
+
             <div style="display:flex;justify-content:flex-end;margin-top:10px;">
               <button class="btn secondary" onclick="startTimer()">✅ Save</button>
             </div>
+
             <div style="margin-top:8px;color:var(--muted);font-size:12px;font-weight:300;">
-              Tip: Ctrl+Enter saves. Keys 1–5 select rating.
+              Tip: Ctrl+Enter saves. Keys 1–5 select rating. Alt+E/B/Q/D/O/R/T toggle tags. Participant hotkeys work only when this box is closed.
             </div>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- ✅ Side Replay Dock -->
     <div id="replayDock" aria-hidden="true">
       <div class="dock-title">
         <span>Replay</span>
@@ -1024,6 +1091,7 @@
               <th>Average</th>
               <th>Total Air Time</th>
               <th>Domination</th>
+              <th>Tag Counts</th>
             </tr>
           </thead>
           <tbody></tbody>
@@ -1043,7 +1111,7 @@
     </div>
   </div>
 
-  <!-- Popups -->
+  <!-- Notes popup -->
   <div id="notesBox">
     <div class="mini-popup" role="dialog" aria-modal="true">
       <h2 id="notesBoxTitle">Notes</h2>
@@ -1058,6 +1126,7 @@
     </div>
   </div>
 
+  <!-- Color Scheme popup -->
   <div id="colorSchemePopup">
     <div class="popup">
       <h2>Color Scheme</h2>
@@ -1205,15 +1274,22 @@
     const renameParticipantsContainer = document.getElementById('renameParticipantsContainer');
     const renameParticipantsList = document.getElementById('renameParticipantsList');
 
+    // Tags (rating modal)
+    const tagRow = document.getElementById('tagRow');
+
     // ---------- STATE ----------
-    let participants = []; // {id,name,x,y,ratings,comments,startTimes,endTimes,notes,speakCount}
-    let connections = [];  // {fromId,toId,fromName,toName,thickness}
+    let participants = [];
+    let connections = [];
     const connectionCounts = {};
     let lastSpokenId = null;
     let currentSpeakerId = null;
     let selectedRating = null;
     let currentNotesParticipantId = null;
     let teamName = null;
+
+    // keyboard selection state
+    let selectedParticipantId = null;
+    let discussionEnded = false;
 
     // geometry
     let circleDiameter = 860;
@@ -1223,6 +1299,27 @@
 
     // heatmap state
     let heatmapActive = false;
+
+    // ✅ tag config + hotkeys (generic)
+    const TAGS = [
+      { key:'Evidence',      label:'✅ Evidence',         hk:'Alt+E' },
+      { key:'BuildsOnOthers',label:'✅ Builds on others', hk:'Alt+B' },
+      { key:'AsksQuestion',  label:'✅ Asks question',    hk:'Alt+Q' },
+      { key:'Dominates',     label:'⚠️ Dominates',        hk:'Alt+D' },
+      { key:'OffTopic',      label:'⚠️ Off-topic',        hk:'Alt+O' },
+      { key:'Repeats',       label:'⚠️ Repeats point',    hk:'Alt+R' },
+      { key:'Breakthrough',  label:'🌟 Breakthrough',     hk:'Alt+T' },
+    ];
+    const TAG_HOTKEYS = new Map([
+      ['E','Evidence'],
+      ['B','BuildsOnOthers'],
+      ['Q','AsksQuestion'],
+      ['D','Dominates'],
+      ['O','OffTopic'],
+      ['R','Repeats'],
+      ['T','Breakthrough'],
+    ]);
+    let selectedTagsForEntry = new Set(); // keys for current rating entry
 
     function clipToCircle(context){
       context.save();
@@ -1238,7 +1335,6 @@
 
     function uuid(){
       if (crypto && crypto.randomUUID) return crypto.randomUUID();
-      // fallback
       return 'p_' + Math.random().toString(16).slice(2) + '_' + Date.now().toString(16);
     }
 
@@ -1283,10 +1379,16 @@
     ];
 
     // ---------- COLOR SCHEME ----------
-    function darkenColor(color){
+    function darkenColor(hex){
       const amount = 0.2;
-      const [r,g,b] = color.match(/\w\w/g).map(c => parseInt(c,16));
-      return `#${Math.floor(r*(1-amount)).toString(16).padStart(2,'0')}${Math.floor(g*(1-amount)).toString(16).padStart(2,'0')}${Math.floor(b*(1-amount)).toString(16).padStart(2,'0')}`;
+      const clean = String(hex).replace('#','').trim();
+      const r = parseInt(clean.slice(0,2),16);
+      const g = parseInt(clean.slice(2,4),16);
+      const b = parseInt(clean.slice(4,6),16);
+      const rr = Math.floor(r*(1-amount)).toString(16).padStart(2,'0');
+      const gg = Math.floor(g*(1-amount)).toString(16).padStart(2,'0');
+      const bb = Math.floor(b*(1-amount)).toString(16).padStart(2,'0');
+      return `#${rr}${gg}${bb}`;
     }
 
     function isWhiteish(hex){
@@ -1312,7 +1414,7 @@
       }
 
       if (heatmapActive){
-        showHeatmap(); // re-render with new colors
+        showHeatmap();
       }
       redrawConnections();
     }
@@ -1357,7 +1459,7 @@
             <div class="swatch" style="background:${team.colors[0]}"></div>
             <div class="swatch" style="background:${team.colors[1]}"></div>
           </div>
-          <div class="team-name">${team.name}</div>
+          <div class="team-name">${escapeHtml(team.name)}</div>
           <button class="select-button">Select</button>
         `;
         li.querySelector('button').onclick = () => {
@@ -1371,6 +1473,7 @@
     document.addEventListener('DOMContentLoaded', () => {
       createColorSchemeList();
       updateColorScheme('#6F263D','#236192','Colorado Avalanche');
+      renderTagChips();
     });
 
     // Optional html2canvas loader
@@ -1385,9 +1488,49 @@
       const s = document.createElement('script');
       s.src = "https://cdn.jsdelivr.net/npm/html2canvas@1.4.1/dist/html2canvas.min.js";
       s.async = true;
-      s.onload = () => {};
       s.onerror = () => { alert("Could not load html2canvas. Screenshot will use Print-to-PDF instead."); };
       document.head.appendChild(s);
+    }
+
+    // ---------- TAG CHIPS (rating modal only) ----------
+    function renderTagChips(){
+      tagRow.innerHTML = '';
+      TAGS.forEach(t => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'chip';
+        btn.dataset.tag = t.key;
+        btn.innerHTML = `${escapeHtml(t.label)} <span class="hk">${escapeHtml(t.hk)}</span>`;
+        btn.onclick = () => toggleTag(t.key, btn);
+        tagRow.appendChild(btn);
+      });
+    }
+
+    function toggleTag(key, el){
+      if (selectedTagsForEntry.has(key)){
+        selectedTagsForEntry.delete(key);
+        el.classList.remove('active');
+      }else{
+        selectedTagsForEntry.add(key);
+        el.classList.add('active');
+      }
+    }
+
+    function syncChipActiveStates(){
+      tagRow.querySelectorAll('.chip').forEach(ch => {
+        const k = ch.dataset.tag;
+        ch.classList.toggle('active', selectedTagsForEntry.has(k));
+      });
+    }
+
+    function clearTagSelection(){
+      selectedTagsForEntry.clear();
+      tagRow.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    }
+
+    function tagsForEntryAsLabels(){
+      const map = new Map(TAGS.map(t => [t.key, t.label.replace(/^.*?\s/, '')])); // remove emoji + space
+      return Array.from(selectedTagsForEntry).map(k => map.get(k) || k);
     }
 
     // ---------- DRAWER ----------
@@ -1447,9 +1590,8 @@
       const nameInput = document.getElementById('name');
       const val = nameInput.value.trim();
       if (!val) return;
-      if (participants.length >= 22){ alert('Maximum of 22 participants reached'); return; }
+      if (participants.length >= 29){ alert('Maximum of 29 participants reached'); return; }
 
-      // duplicate name warning
       const exists = participants.some(p => p.name.trim().toLowerCase() === val.toLowerCase());
       if (exists){
         const ok = confirm('Already exists. Add anyway?');
@@ -1472,13 +1614,20 @@
         startTimes:[],
         endTimes:[],
         notes:[],
-        speakCount:0
+        speakCount:0,
+        tagsPerEntry: [],
+        tagCounts: {},
+        hotkeyLabel: ''
       });
       updateLogCount();
     }
 
     function doneAddingParticipants(){
       participantFormWrap.style.display = 'none';
+
+      discussionEnded = false;
+      selectedParticipantId = null;
+
       placeParticipants();
 
       endDiscussionButton.style.display = 'inline-flex';
@@ -1489,7 +1638,6 @@
       switchTab('log');
       closeDrawer();
 
-      // discussion in progress => pause visible, replay hidden
       pauseCenter.style.display = 'block';
       replayDock.style.display = 'none';
 
@@ -1516,7 +1664,6 @@
       centerY = circleRadius;
     }
 
-    // ✅ Dynamic vertical clearance so top bubble never overlaps date
     function updateDynamicStageGap(){
       const any = circle.querySelector('.participant');
       if (!any){
@@ -1541,13 +1688,50 @@
     });
     updateStageSize();
 
-    // ---------- PARTICIPANT PLACEMENT (on border) ----------
+    // ---------- HOTKEY MAPPING ----------
+    // 1–0 => 1..10
+    // QWERTYUIOP => 11..20
+    // ASDFGHJKL => 21..29
+    const HOTKEY_LAYER_1 = ['1','2','3','4','5','6','7','8','9','0'];
+    const HOTKEY_LAYER_Q = ['Q','W','E','R','T','Y','U','I','O','P'];
+    const HOTKEY_LAYER_A = ['A','S','D','F','G','H','J','K','L'];
+
+    function hotkeyForIndex(idx){
+      const n = idx; // 0-based
+      if (n >= 0 && n < 10) return HOTKEY_LAYER_1[n];
+      if (n >= 10 && n < 20) return HOTKEY_LAYER_Q[n-10];
+      if (n >= 20 && n < 29) return HOTKEY_LAYER_A[n-20];
+      return '';
+    }
+
+    function indexFromKeyEvent(e){
+      // digits: use code so it works regardless of shift/caps/etc
+      if (e.code && e.code.startsWith('Digit')){
+        const d = e.code.replace('Digit',''); // '0'..'9'
+        const idx = HOTKEY_LAYER_1.indexOf(d);
+        return idx >= 0 ? idx : null;
+      }
+      // letters
+      const k = String(e.key || '').toUpperCase();
+      if (k.length !== 1) return null;
+      let idx = HOTKEY_LAYER_Q.indexOf(k);
+      if (idx >= 0) return 10 + idx;
+      idx = HOTKEY_LAYER_A.indexOf(k);
+      if (idx >= 0) return 20 + idx;
+      return null;
+    }
+
+    // ---------- PARTICIPANT PLACEMENT ----------
     function placeParticipants(){
       updateStageSize();
       const num = participants.length;
       const r = circleRadius;
 
       clearParticipants();
+
+      for (let i=0;i<num;i++){
+        participants[i].hotkeyLabel = hotkeyForIndex(i);
+      }
 
       for (let i=0;i<num;i++){
         const angle = (i / num) * (Math.PI*2) - Math.PI/2;
@@ -1561,7 +1745,11 @@
         div.dataset.pid = p.id;
         div.style.left = `${x}px`;
         div.style.top = `${y}px`;
+
         div.innerHTML = `
+          <div class="hotkey-badge" id="hotkey${p.id}" aria-hidden="true">
+            <span class="k">${escapeHtml(p.hotkeyLabel || '')}</span>
+          </div>
           <div id="pill${p.id}" class="pill" title="Click to record speaking">
             <div class="count" id="speakCount${p.id}">0</div>
             <div class="name" id="name${p.id}" title="${escapeHtml(p.name)}">${escapeHtml(p.name)}</div>
@@ -1574,7 +1762,6 @@
         `;
         circle.appendChild(div);
 
-        // Whole pill clickable => Speak
         div.querySelector('.pill').addEventListener('click', () => recordSpeakingById(p.id));
 
         p.x = x;
@@ -1583,6 +1770,8 @@
 
       requestAnimationFrame(() => {
         updateDynamicStageGap();
+        positionHotkeyBadgesOutsidePills();
+        applySelectedHighlight();
         redrawConnections();
         if (heatmapActive) showHeatmap();
       });
@@ -1592,10 +1781,115 @@
       circle.querySelectorAll('.participant').forEach(el => el.remove());
     }
 
-    // ---------- ONE Ctrl+Enter / ONE click SAVE ----------
+    function positionHotkeyBadgesOutsidePills(){
+      // Place badge just outside the pill boundary, outward from center.
+      // Uses the rendered pill size so it never overlaps the name.
+      const circleRect = circle.getBoundingClientRect();
+      const badgeR = 13; // 26px/2
+      const gap = Math.max(6, Math.min(12, circleDiameter * 0.012));
+
+      participants.forEach(p => {
+        const container = circle.querySelector(`.participant[data-pid="${p.id}"]`);
+        if (!container) return;
+
+        const pill = container.querySelector('.pill');
+        if (!pill) return;
+
+        const pillRect = pill.getBoundingClientRect();
+        const w = pillRect.width;
+        const h = pillRect.height;
+
+        // outward direction based on ideal placement (stored p.x/p.y)
+        const vx = (p.x - centerX);
+        const vy = (p.y - centerY);
+        const len = Math.hypot(vx,vy) || 1;
+        const ux = vx / len;
+        const uy = vy / len;
+
+        // Support function for rectangle-ish pill: how far to edge in direction (ux,uy)
+        const edgeDist = Math.abs(ux) * (w/2) + Math.abs(uy) * (h/2);
+
+        const dist = edgeDist + badgeR + gap;
+
+        // convert to container-local translate: container is centered on pill center
+        const hkx = Math.round(ux * dist);
+        const hky = Math.round(uy * dist);
+
+        container.style.setProperty('--hkx', hkx + 'px');
+        container.style.setProperty('--hky', hky + 'px');
+      });
+    }
+
+    // ---------- KEYBOARD SELECTION (select -> speak) ----------
+    function isRatingOpen(){ return ratingBox.style.display !== 'none'; }
+
+    function isOverlayOpen(){
+      const overlays = [notesOverlay, colorSchemePopup, customColorPopup, confirmRestartPopup, editParticipantsPopup];
+      return overlays.some(o => o && o.style.display === 'flex');
+    }
+
+    function isTypingTarget(el){
+      if (!el) return false;
+      const tag = (el.tagName || '').toUpperCase();
+      return tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'SELECT' || el.isContentEditable;
+    }
+
+    function selectParticipantById(id){
+      selectedParticipantId = id;
+      applySelectedHighlight();
+    }
+
+    function applySelectedHighlight(){
+      participants.forEach(p => {
+        const pill = document.getElementById(`pill${p.id}`);
+        if (!pill) return;
+        pill.classList.toggle('selected', p.id === selectedParticipantId && !pill.classList.contains('active'));
+      });
+    }
+
     document.addEventListener('keydown', (e) => {
-      const ratingOpen = ratingBox.style.display !== 'none';
-      if (!ratingOpen) return;
+      if (discussionEnded) return;
+
+      // Tag hotkeys while rating modal is open handled in separate block
+      if (isRatingOpen()) return;
+
+      if (isOverlayOpen()) return;
+
+      if (isTypingTarget(document.activeElement)) return;
+
+      if (!participants.length) return;
+
+      const idx = indexFromKeyEvent(e);
+      if (idx == null) return;
+      if (idx < 0 || idx >= participants.length) return;
+
+      e.preventDefault();
+
+      const pid = participants[idx].id;
+
+      if (selectedParticipantId === pid){
+        recordSpeakingById(pid);
+      }else{
+        selectParticipantById(pid);
+      }
+    });
+
+    // ---------- Rating modal hotkeys (Ctrl+Enter, 1–5, Esc, Alt+tag) ----------
+    document.addEventListener('keydown', (e) => {
+      if (!isRatingOpen()) return;
+
+      // tag toggles (Alt+Letter)
+      if (e.altKey && !e.ctrlKey && !e.metaKey){
+        const k = String(e.key || '').toUpperCase();
+        if (k.length === 1 && TAG_HOTKEYS.has(k)){
+          e.preventDefault();
+          const tagKey = TAG_HOTKEYS.get(k);
+          if (selectedTagsForEntry.has(tagKey)) selectedTagsForEntry.delete(tagKey);
+          else selectedTagsForEntry.add(tagKey);
+          syncChipActiveStates();
+          return;
+        }
+      }
 
       if (e.ctrlKey && e.key === 'Enter'){
         e.preventDefault();
@@ -1608,6 +1902,7 @@
       if (e.key === 'Escape'){
         ratingBox.style.display = 'none';
         pauseCenter.classList.remove('hidden');
+        clearTagSelection();
       }
     });
 
@@ -1637,6 +1932,7 @@
           pill.classList.add('active','pulse');
         }
       });
+      applySelectedHighlight();
     }
 
     window.recordSpeakingById = function(id){
@@ -1645,6 +1941,9 @@
 
       const now = new Date();
       const participant = participants[index];
+
+      selectedParticipantId = id;
+      applySelectedHighlight();
 
       participant.speakCount += 1;
       const countEl = document.getElementById(`speakCount${participant.id}`);
@@ -1673,6 +1972,7 @@
         setNowSpeaking(null);
         ratingBox.style.display = 'none';
         pauseCenter.classList.remove('hidden');
+        clearTagSelection();
         return;
       }
 
@@ -1700,6 +2000,8 @@
       lastSpokenId = id;
 
       resetRating();
+      clearTagSelection();
+
       ratingBox.style.display = 'block';
       pauseCenter.classList.add('hidden');
       document.getElementById('comment').focus();
@@ -1707,7 +2009,6 @@
       setActivePill(id);
       setNowSpeaking(id);
 
-      // if heatmap is on, hide it while actively discussing (clean)
       if (heatmapActive){
         hideHeatmap(true);
       }
@@ -1732,8 +2033,16 @@
       const participant = getParticipantById(currentSpeakerId);
       if (!participant) return;
 
+      const baseComment = document.getElementById('comment').value || '';
+      const tagLabels = tagsForEntryAsLabels();
+
+      participant.tagsPerEntry.push(tagLabels);
+      tagLabels.forEach(lbl => {
+        participant.tagCounts[lbl] = (participant.tagCounts[lbl] || 0) + 1;
+      });
+
       participant.ratings.push(selectedRating);
-      participant.comments.push(document.getElementById('comment').value);
+      participant.comments.push(baseComment);
 
       const seq = participant.ratings.length - 1;
 
@@ -1751,13 +2060,17 @@
 
       const commentCell = row.insertCell(3);
       commentCell.className = 'cell-editable';
-      commentCell.textContent = document.getElementById('comment').value;
+      const appended = tagLabels.length
+        ? (baseComment ? `${baseComment}\nTags: ${tagLabels.join(', ')}` : `Tags: ${tagLabels.join(', ')}`)
+        : baseComment;
+      commentCell.textContent = appended;
       commentCell.title = 'Click to edit comment';
 
       row.insertCell(4).textContent = '';
 
       document.getElementById('comment').value = '';
       resetRating();
+      clearTagSelection();
       updateLogCount();
     }
 
@@ -1789,14 +2102,14 @@
       }
 
       ratingBox.style.display = 'none';
+      clearTagSelection();
+
       currentSpeakerId = null;
       setActivePill(null);
       setNowSpeaking(null);
 
-      // When the discussion ends, hide pause button entirely
       pauseCenter.style.display = 'none';
 
-      // Show replay dock on the side
       replayDock.style.display = 'block';
       replayDock.setAttribute('aria-hidden','false');
 
@@ -1809,8 +2122,11 @@
       switchTab('log');
       openDrawer();
 
-      // clear any stale heatmap display state
       hideHeatmap(true);
+
+      discussionEnded = true;
+      selectedParticipantId = null;
+      applySelectedHighlight();
     }
 
     // ---------- INLINE EDITING (log table) ----------
@@ -1820,11 +2136,9 @@
       const tr = td.closest('tr');
       if (!tr) return;
 
-      // Only rating/comment columns
       const colIndex = td.cellIndex;
       if (colIndex !== 2 && colIndex !== 3) return;
-
-      if (td.querySelector('input,select,textarea')) return; // already editing
+      if (td.querySelector('input,select,textarea')) return;
 
       const pid = tr.dataset.pid;
       const seq = parseInt(tr.dataset.seq || '0', 10);
@@ -1832,7 +2146,6 @@
       if (!p) return;
 
       if (colIndex === 2){
-        // Rating edit: select 1-5 or blank
         const current = (td.textContent || '').trim();
         const sel = document.createElement('select');
         sel.className = 'cell-select';
@@ -1864,7 +2177,6 @@
           if (ev.key === 'Escape'){ ev.preventDefault(); td.innerHTML=''; td.textContent=current; }
         });
       }else{
-        // Comment edit: input
         const current = td.textContent || '';
         const inp = document.createElement('input');
         inp.type = 'text';
@@ -1889,25 +2201,35 @@
       }
     });
 
-    // ---------- LINE GEOMETRY ----------
+    // ---------- LINE GEOMETRY (DOM-anchored for perfect alignment) ----------
+    function getPillCenter(pid){
+      const pill = document.getElementById(`pill${pid}`);
+      if (!pill) return null;
+      const pillRect = pill.getBoundingClientRect();
+      const circleRect = circle.getBoundingClientRect();
+      const x = (pillRect.left + pillRect.width/2) - circleRect.left;
+      const y = (pillRect.top + pillRect.height/2) - circleRect.top;
+      return { x, y };
+    }
+
     function getInnerAnchor(fromId, toId){
-      const from = getParticipantById(fromId);
-      const to = getParticipantById(toId);
-      if (!from || !to) return {x1:0,y1:0,x2:0,y2:0};
+      const c1 = getPillCenter(fromId);
+      const c2 = getPillCenter(toId);
+      if (!c1 || !c2) return {x1:0,y1:0,x2:0,y2:0};
 
       const offset = Math.max(30, Math.min(44, circleDiameter * 0.055));
 
-      const vfx = centerX - from.x;
-      const vfy = centerY - from.y;
+      const vfx = centerX - c1.x;
+      const vfy = centerY - c1.y;
       const vfl = Math.hypot(vfx, vfy) || 1;
-      const ax1 = from.x + (vfx / vfl) * offset;
-      const ay1 = from.y + (vfy / vfl) * offset;
+      const ax1 = c1.x + (vfx / vfl) * offset;
+      const ay1 = c1.y + (vfy / vfl) * offset;
 
-      const vtx = centerX - to.x;
-      const vty = centerY - to.y;
+      const vtx = centerX - c2.x;
+      const vty = centerY - c2.y;
       const vtl = Math.hypot(vtx, vty) || 1;
-      const ax2 = to.x + (vtx / vtl) * offset;
-      const ay2 = to.y + (vty / vtl) * offset;
+      const ax2 = c2.x + (vtx / vtl) * offset;
+      const ay2 = c2.y + (vty / vtl) * offset;
 
       return { x1: ax1, y1: ay1, x2: ax2, y2: ay2 };
     }
@@ -1995,7 +2317,7 @@
         if (i >= connections.length) {
           setNowSpeaking(null);
           setActivePill(null);
-          showHeatmap(); // heatmap appears at end of replay
+          showHeatmap();
           return;
         }
 
@@ -2023,14 +2345,13 @@
       ctx.clearRect(0,0,canvas.width,canvas.height);
       let i = 0;
 
-      // copy durations by participant (for pace)
       const endTimesCopy = new Map(participants.map(p => [p.id, [...p.endTimes]]));
 
       function step(){
         if (i >= connections.length) {
           setNowSpeaking(null);
           setActivePill(null);
-          showHeatmap(); // heatmap appears at end of replay
+          showHeatmap();
           return;
         }
 
@@ -2104,12 +2425,17 @@
         const formatted = `${minutes}m ${seconds.toFixed(2)}s`;
         const domination = totalDuration > 0 ? ((air/totalDuration)*100).toFixed(2)+'%' : '0%';
 
+        const entries = Object.entries(p.tagCounts || {});
+        entries.sort((a,b) => b[1] - a[1]);
+        const tagSummary = entries.length ? entries.map(([k,v]) => `${k}×${v}`).join(', ') : '';
+
         const row = reportTableBody.insertRow();
         row.insertCell(0).textContent = p.name;
         row.insertCell(1).textContent = ratings.join(', ');
         row.insertCell(2).textContent = avg;
         row.insertCell(3).textContent = formatted;
         row.insertCell(4).textContent = domination;
+        row.insertCell(5).textContent = tagSummary;
 
         const nrow = notesReportTableBody.insertRow();
         nrow.insertCell(0).textContent = p.name;
@@ -2130,7 +2456,7 @@
     function copyNodeAsTSV(tableEl){
       const rows = Array.from(tableEl.querySelectorAll('tr'));
       const lines = rows.map(r => {
-        const cells = Array.from(r.children).map(td => (td.innerText || '').replace(/\s+/g,' ').trim());
+        const cells = Array.from(r.children).map(td => (td.innerText || '').replace(/\s+\n/g,'\n').replace(/\s+/g,' ').trim());
         return cells.join('\t');
       });
       return lines.join('\n');
@@ -2213,6 +2539,7 @@
         pauseCenter.classList.remove('hidden');
         setActivePill(null);
         setNowSpeaking(null);
+        clearTagSelection();
       }
     }
 
@@ -2233,7 +2560,7 @@
       const inp = document.getElementById('newParticipantName');
       const name = inp.value.trim();
       if (!name){ alert('Please enter a name.'); return; }
-      if (participants.length >= 22){ alert('Maximum of 22 participants reached'); return; }
+      if (participants.length >= 29){ alert('Maximum of 29 participants reached'); return; }
 
       const exists = participants.some(p => p.name.trim().toLowerCase() === name.toLowerCase());
       if (exists){
@@ -2320,7 +2647,6 @@
       const newName = inp.value.trim();
       if (!newName){ alert('Please enter a valid name.'); return; }
 
-      // duplicate warning (but allow)
       const exists = participants.some((p,i) => i !== index && p.name.trim().toLowerCase() === newName.toLowerCase());
       if (exists){
         const ok = confirm('Already exists. Rename anyway?');
@@ -2330,21 +2656,18 @@
       const p = participants[index];
       p.name = newName;
 
-      // update pill text + title
       const nameEl = document.getElementById(`name${p.id}`);
       if (nameEl){
         nameEl.textContent = newName;
         nameEl.title = newName;
       }
 
-      // update log table participant name cells by pid
       Array.from(logTableBody.rows).forEach(r => {
         if (r.dataset.pid === p.id){
           r.cells[0].textContent = newName;
         }
       });
 
-      // update notes popup title if open
       if (currentNotesParticipantId === p.id){
         notesBoxTitle.textContent = `Notes about ${p.name}`;
       }
@@ -2361,10 +2684,8 @@
 
     // ---------- SCREENSHOT / PRINT ----------
     async function exportScreenshot(){
-      // Prefer html2canvas when available; otherwise print
       if (window.html2canvas){
         try{
-          // hide drawer for capture (looks cleaner)
           const drawerWasOpen = drawer.classList.contains('open');
           closeDrawer();
 
@@ -2375,7 +2696,6 @@
             useCORS: true
           });
 
-          // restore drawer state
           if (drawerWasOpen) openDrawer();
 
           const dataUrl = canvasShot.toDataURL("image/png");
@@ -2392,12 +2712,10 @@
           alert('Screenshot capture failed. Falling back to Print-to-PDF.');
         }
       }
-
-      // Print fallback
       window.print();
     }
 
-    // ---------- HEATMAP (Bold, differentiated, rim-weighted, angular blending) ----------
+    // ---------- HEATMAP ----------
     function clamp01(x){ return Math.max(0, Math.min(1, x)); }
     function smoothstep(a,b,x){
       const t = clamp01((x-a)/(b-a));
@@ -2465,17 +2783,11 @@
       };
     }
 
-    // "Exact knobs" idea:
-    // - Nonlinear dominance curve for color + alpha (more differentiation)
-    // - Separate blend (secondary->primary) from intensity (alpha)
-    // - Saturation boost increases with dominance (bolder)
     function dominanceCurve(t){
-      // A: gamma < 1 boosts mid/high separation
       const gamma = 0.60;
       return Math.pow(clamp01(t), gamma);
     }
     function intensityCurve(t){
-      // Slightly stronger than color curve: makes dominance pop
       const gamma = 0.52;
       return Math.pow(clamp01(t), gamma);
     }
@@ -2485,7 +2797,6 @@
       const primary = cs.getPropertyValue('--primary-color').trim() || '#6F263D';
       const secondary = cs.getPropertyValue('--secondary-color').trim() || '#236192';
 
-      // if one is white-ish or black-ish, use gray spectrum instead
       if (isWhiteish(primary) || isWhiteish(secondary)){
         return { primary: '#9CA3AF', secondary: '#E5E7EB', mode: 'gray-light' };
       }
@@ -2500,23 +2811,19 @@
       const pRgb = hexToRgb(pal.primary);
       const sRgb = hexToRgb(pal.secondary);
 
-      // baseline faint presence even near 0:
-      const baselineBlend = 0.10; // keeps a faint spectrum baseline (your "near 0 faint baseline")
+      const baselineBlend = 0.10;
       const tColor = dominanceCurve(tNorm);
 
-      const blend = baselineBlend + (1 - baselineBlend) * tColor; // higher => closer to primary
+      const blend = baselineBlend + (1 - baselineBlend) * tColor;
       let rgb = mixRgb(sRgb, pRgb, clamp01(blend));
 
-      // Saturation boost for boldness (stronger as dominance increases)
-      // For grays, this does little; for team colors, it punches.
       const satBoostBase = 1.10;
       const satBoostMax = 1.55;
       const satBoost = satBoostBase + (satBoostMax - satBoostBase) * tColor;
 
       const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
       hsl.s = clamp01(hsl.s * satBoost);
-      // Also nudge lightness slightly to avoid "muddy mid":
-      const lNudge = (tColor - 0.5) * 0.08; // subtle
+      const lNudge = (tColor - 0.5) * 0.08;
       hsl.l = clamp01(hsl.l + lNudge);
 
       rgb = hslToRgb(hsl.h, hsl.s, hsl.l);
@@ -2524,9 +2831,8 @@
     }
 
     function alphaForDominance(tNorm){
-      // baseline + nonlinear alpha curve
-      const base = 0.06;   // faint wash at near 0
-      const max = 0.62;    // bold
+      const base = 0.06;
+      const max = 0.62;
       const tA = intensityCurve(tNorm);
       return base + (max - base) * tA;
     }
@@ -2542,10 +2848,7 @@
       return { arr, total, maxPct };
     }
 
-    function angleOfPoint(x,y){
-      return Math.atan2(y - centerY, x - centerX); // -pi..pi
-    }
-
+    function angleOfPoint(x,y){ return Math.atan2(y - centerY, x - centerX); }
     function normalizeAngle(a){
       let x = a;
       while (x < 0) x += Math.PI*2;
@@ -2559,7 +2862,6 @@
       heatmapActive = true;
       heatStatusText.textContent = 'Heatmap: on';
 
-      // show pct badges outside pills
       const { arr, maxPct } = computeDominationPercents();
       const pctMap = new Map(arr.map(o => [o.id, o.pct]));
 
@@ -2572,7 +2874,6 @@
         }
       });
 
-      // render heatmap
       renderHeatmapAngularBlended(maxPct, pctMap);
     }
 
@@ -2581,7 +2882,6 @@
       heatStatusText.textContent = 'Heatmap: off';
       heatCtx.clearRect(0,0,heatCanvas.width,heatCanvas.height);
 
-      // hide pct badges
       participants.forEach(p => {
         const el = document.getElementById(`pct${p.id}`);
         if (el) el.classList.remove('show');
@@ -2600,87 +2900,54 @@
         return;
       }
 
-      // Precompute participant angles around the circle (based on layout)
       const angles = participants.map(p => normalizeAngle(angleOfPoint(p.x, p.y)));
 
-      // We'll sample around the circle and paint thin wedges.
-      // Higher samples => smoother boundaries.
-      const steps = Math.max(720, num * 180); // adaptive
+      const steps = Math.max(720, num * 180);
       const dTheta = (Math.PI*2) / steps;
 
-      // Boundary blend width (radians): smoother transitions between sectors
-      const boundaryWidth = Math.max(0.10, Math.min(0.22, (Math.PI*2)/(num*3))); // ~6-12 degrees typical
-
-      // Rim weighting: strongest near rim and especially near pills
-      const rInner = circleRadius * 0.08;
+      const boundaryWidth = Math.max(0.10, Math.min(0.22, (Math.PI*2)/(num*3)));
       const rOuter = circleRadius - 2;
 
-      // Helper to find closest two participant indices for a given angle on the ring ordering
-      // We assume participants are placed in array order around circle; angles should be monotonic-ish
-      // We'll sort by angle, then locate interval.
       const sorted = participants
         .map((p,i)=>({i, a: angles[i]}))
         .sort((x,y)=>x.a - y.a);
 
       function findBracket(theta){
-        // theta normalized 0..2pi
-        // find last sorted angle <= theta
         let lo = 0, hi = sorted.length - 1;
         while (lo <= hi){
           const mid = (lo + hi) >> 1;
           if (sorted[mid].a <= theta) lo = mid + 1;
           else hi = mid - 1;
         }
-        const rightIdx = lo % sorted.length;            // first angle > theta (wrap)
+        const rightIdx = lo % sorted.length;
         const leftIdx = (rightIdx - 1 + sorted.length) % sorted.length;
         return { left: sorted[leftIdx], right: sorted[rightIdx] };
       }
 
-      // Convert to continuous distance between angles on the circle
-      function angleDist(a,b){
-        let d = Math.abs(a-b);
-        if (d > Math.PI) d = Math.PI*2 - d;
-        return d;
-      }
-
-      // Draw each wedge slice with a radial gradient (rim-weighted), using blended color+alpha.
       for (let s=0; s<steps; s++){
-        const theta = s * dTheta; // 0..2pi
+        const theta = s * dTheta;
         const mid = theta + dTheta/2;
 
         const { left, right } = findBracket(mid);
         const aL = left.a;
         const aR = right.a;
 
-        // compute interpolation parameter along the arc from left->right (handle wrap)
         let span = aR - aL;
         if (span < 0) span += Math.PI*2;
         let along = mid - aL;
         if (along < 0) along += Math.PI*2;
         const u = span > 0 ? along / span : 0;
 
-        // boundary blending: emphasize smoothness near ends
-        // We want the "middle" of the sector to be clearly that participant, and
-        // the boundary region to blend.
-        // We'll define weight of right side using a smoothstep around the boundaryWidth.
-        // Convert boundaryWidth to fraction of span:
         const bwFrac = Math.min(0.45, boundaryWidth / Math.max(span, 0.00001));
         let wRight;
         if (u < bwFrac){
-          // near left boundary => mostly left
-          wRight = 0.0;
-          // but we allow a tiny blend window if we want *continuous* fields even at the exact boundary
           const tt = smoothstep(0, bwFrac, u);
-          wRight = tt * 0.18; // small early blend (keeps field continuous)
+          wRight = tt * 0.18;
         }else if (u > 1 - bwFrac){
-          // near right boundary => blend into right
           const tt = smoothstep(1 - bwFrac, 1, u);
-          wRight = 0.82 + tt * 0.18; // finishes to 1
+          wRight = 0.82 + tt * 0.18;
         }else{
-          // interior => strongly left-ish for first half, right-ish for second half?
-          // For "sector heat" look, we prefer each sector dominated by its center participant,
-          // not a linear gradient across the whole wedge. So keep it mostly left until near right boundary.
-          wRight = 0.08; // subtle drift inside sector
+          wRight = 0.08;
         }
         wRight = clamp01(wRight);
 
@@ -2690,25 +2957,19 @@
         const pctL = pctMap.get(participants[iL].id) || 0;
         const pctR = pctMap.get(participants[iR].id) || 0;
 
-        // Normalize by maxPct for more differentiation
         const tL = clamp01(pctL / maxPct);
         const tR = clamp01(pctR / maxPct);
 
-        // Blend dominance values (angular blending at boundaries)
         const t = (1 - wRight) * tL + wRight * tR;
 
-        // Color + alpha from knobs (nonlinear + bold)
         const rgb = colorForDominance(t);
         const a = alphaForDominance(t);
 
-        // Radial gradient: strongest near rim, fades inward.
-        // Also slightly bias the gradient center toward the pill location for local “peak”.
         const pL = participants[iL];
         const pR = participants[iR];
         const cx = (1 - wRight) * pL.x + wRight * pR.x;
         const cy = (1 - wRight) * pL.y + wRight * pR.y;
 
-        // gradient centered near rim point, but draw across whole disk
         const g = heatCtx.createRadialGradient(cx, cy, circleRadius*0.06, cx, cy, circleRadius*0.78);
         g.addColorStop(0.00, `rgba(${rgb.r},${rgb.g},${rgb.b},${Math.min(0.92, a*1.15)})`);
         g.addColorStop(0.22, `rgba(${rgb.r},${rgb.g},${rgb.b},${a})`);
@@ -2717,7 +2978,6 @@
 
         heatCtx.fillStyle = g;
 
-        // Draw wedge slice
         heatCtx.beginPath();
         heatCtx.moveTo(centerX, centerY);
         heatCtx.arc(centerX, centerY, rOuter, theta, theta + dTheta, false);
@@ -2725,8 +2985,6 @@
         heatCtx.fill();
       }
 
-      // Optional: a very faint overall radial wash to keep “near 0” baseline visible
-      // (kept extremely subtle to avoid flattening contrast)
       heatCtx.save();
       const pal = getHeatPalette();
       const baseRgb = hexToRgb(pal.secondary);
@@ -2749,7 +3007,7 @@
     confirmRestartPopup.addEventListener('click', (e) => { if (e.target === confirmRestartPopup) closeConfirmRestartPopup(); });
     editParticipantsPopup.addEventListener('click', (e) => { if (e.target === editParticipantsPopup) closeEditParticipantsPopup(); });
 
-    // ---------- PUBLIC API for buttons ----------
+    // ---------- PUBLIC API ----------
     window.startDiscussion = startDiscussion;
     window.doneAddingParticipants = doneAddingParticipants;
     window.endDiscussion = endDiscussion;
