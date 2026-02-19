@@ -471,38 +471,78 @@
       border-color: rgba(0,0,0,.0);
     }
 
-    /* Tag chips (rating modal only) */
-    .tag-row{
-      display:flex;
-      flex-wrap:wrap;
-      gap:8px;
-      margin: 10px 0 8px;
-      justify-content:center;
-    }
-    .chip{
-      border: 1px solid rgba(0,0,0,.10);
-      background: rgba(0,0,0,.04);
-      color: var(--ink);
-      border-radius: 999px;
-      padding: 8px 10px;
-      font-size: 12px;
-      font-weight: 800;
-      cursor:pointer;
-      transition: transform .12s ease, box-shadow .12s ease, background .2s ease;
-      user-select:none;
-      box-shadow: 0 2px 0 rgba(0,0,0,.10);
-    }
-    .chip:hover{ transform: translateY(-1px); box-shadow: 0 10px 20px rgba(0,0,0,.12); background: rgba(35,97,146,.08); }
-    .chip.active{
-      background: rgba(35,97,146,.12);
-      border-color: rgba(35,97,146,.28);
-    }
-    .chip .hk{
-      opacity:.7;
-      font-weight:900;
-      margin-left: 6px;
-    }
+   /* Tag chips (rating modal only) */
+.tag-row{
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin: 10px auto 8px;
+  width: min(420px, 100%);
+  justify-content: center;
+  align-items: stretch;
+}
 
+/* compact, regular chips */
+.chip{
+  position: relative;
+  width: 100%;
+  text-align: left;
+
+  border: 1px solid rgba(0,0,0,.10);
+  background: rgba(0,0,0,.035);
+  color: var(--ink);
+
+  border-radius: 14px;
+  padding: 8px 12px;
+
+  font-size: 12px;
+  font-weight: 800;
+  cursor:pointer;
+  user-select:none;
+
+  transition: transform .10s ease, background .18s ease, border-color .18s ease;
+  box-shadow: none;
+  line-height: 1.1;
+}
+
+.chip:hover{
+  transform: translateY(-1px);
+  background: rgba(35,97,146,.08);
+  border-color: rgba(35,97,146,.22);
+}
+
+.chip.active{
+  background: rgba(35,97,146,.14);
+  border-color: rgba(35,97,146,.30);
+}
+
+/* hotkey badge: single letter, compact, consistent */
+.chip .hk{
+  position: absolute;
+  right: 8px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 22px;
+  height: 22px;
+  border-radius: 999px;
+
+  display:flex;
+  align-items:center;
+  justify-content:center;
+
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: .02em;
+
+  color: rgba(31,35,40,.90);
+  background: rgba(255,255,255,.85);
+  border: 1px solid rgba(0,0,0,.10);
+}
+
+/* subtle responsiveness */
+@media (max-width: 520px){
+  .tag-row{ grid-template-columns: 1fr; width: 100%; }
+}
     textarea{
       width: 100%;
       border-radius: 14px;
@@ -1271,26 +1311,31 @@
     let heatmapActive = false;
 
     // ✅ tag config + hotkeys (generic)
-    const TAGS = [
-      { key:'Evidence',      label:'✅ Evidence',         hk:'Alt+E' },
-      { key:'BuildsOnOthers',label:'✅ Builds on others', hk:'Alt+B' },
-      { key:'AsksQuestion',  label:'✅ Asks question',    hk:'Alt+Q' },
-      { key:'Dominates',     label:'⚠️ Dominates',        hk:'Alt+D' },
-      { key:'OffTopic',      label:'⚠️ Off-topic',        hk:'Alt+O' },
-      { key:'Repeats',       label:'⚠️ Repeats point',    hk:'Alt+R' },
-      { key:'Breakthrough',  label:'🌟 Breakthrough',     hk:'Alt+T' },
-    ];
-    const TAG_HOTKEYS = new Map([
-      ['E','Evidence'],
-      ['B','BuildsOnOthers'],
-      ['Q','AsksQuestion'],
-      ['D','Dominates'],
-      ['O','OffTopic'],
-      ['R','Repeats'],
-      ['T','Breakthrough'],
-    ]);
-    let selectedTagsForEntry = new Set(); // keys for current rating entry
+// Hotkeys supported:
+// - Option/Alt + Letter (Mac Option works as altKey in JS)
+// - Command + Shift + Letter (additional, does NOT replace Alt/Option)
+//
+// Keep letters chosen to avoid collisions with participant layer as much as possible.
+const TAGS = [
+  { key:'Evidence',          label:'✅ Evidence',                 hk:'⌥E / ⌘⇧E', letter:'E', group:'good' },
+  { key:'BuildsOnOthers',    label:'✅ Builds on others',         hk:'⌥B / ⌘⇧B', letter:'B', group:'good' },
+  { key:'AsksQuestion',      label:'✅ Asks question',            hk:'⌥Q / ⌘⇧Q', letter:'Q', group:'good' },
 
+  { key:'Clarifies',         label:'✅ Clarifies / summarizes',   hk:'⌥S / ⌘⇧S', letter:'S', group:'good' },
+  { key:'ConnectsTexts',     label:'✅ Connects across texts',    hk:'⌥X / ⌘⇧X', letter:'X', group:'good' },
+  { key:'WrongButBold',      label:'🟡 Wrong but bold',           hk:'⌥W / ⌘⇧W', letter:'W', group:'good' },
+
+  { key:'Dominates',         label:'⚠️ Dominates',                hk:'⌥D / ⌘⇧D', letter:'D', group:'warn' },
+  { key:'OffTopic',          label:'⚠️ Off-topic',                hk:'⌥O / ⌘⇧O', letter:'O', group:'warn' },
+  { key:'Repeats',           label:'⚠️ Repeats point',            hk:'⌥R / ⌘⇧R', letter:'R', group:'warn' },
+
+  { key:'GreatInsight',      label:'🌟 Great insight',            hk:'⌥I / ⌘⇧I', letter:'I', group:'star' },
+];
+
+// Map letter -> tag key for hotkey handling
+const TAG_HOTKEYS = new Map(TAGS.map(t => [t.letter.toUpperCase(), t.key]));
+
+let selectedTagsForEntry = new Set(); // keys for current rating entry
     function clipToCircle(context){
       context.save();
       context.beginPath();
@@ -1462,21 +1507,46 @@
       document.head.appendChild(s);
     }
 
-    // ---------- TAG CHIPS (rating modal only) ----------
-    function renderTagChips(){
-      tagRow.innerHTML = '';
-      TAGS.forEach(t => {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'chip';
-        btn.dataset.tag = t.key;
-        btn.innerHTML = `${escapeHtml(t.label)} <span class="hk">${escapeHtml(t.hk)}</span>`;
-        btn.onclick = () => toggleTag(t.key, btn);
-        tagRow.appendChild(btn);
-      });
-    }
+ // ---------- TAG CHIPS (rating modal only) ----------
+// ---------- TAG CHIPS (rating modal only) ----------
+function renderTagChips(){
+  tagRow.innerHTML = '';
 
-    function toggleTag(key, el){
+  // Keep a stable order that reads well in a 2-col grid:
+  // Good moves first, then warnings, then highlight.
+  const order = [
+    'Evidence',
+    'BuildsOnOthers',
+    'AsksQuestion',
+    'Clarifies',
+    'ConnectsTexts',
+    'WrongButBold',
+    'Dominates',
+    'OffTopic',
+    'Repeats',
+    'GreatInsight'
+  ];
+
+  const byKey = new Map(TAGS.map(t => [t.key, t]));
+  order.forEach(key => {
+    const t = byKey.get(key);
+    if (!t) return;
+
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'chip';
+    btn.dataset.tag = t.key;
+
+    // Show short, consistent hotkey badge (letter only).
+    // Put the full combos in the tooltip so chips stay compact.
+    btn.title = `${t.label.replace(/^(\S+)\s/, '')} — Hotkey: ${t.hk}`;
+
+    btn.innerHTML = `${escapeHtml(t.label)} <span class="hk" aria-hidden="true">${escapeHtml(t.letter)}</span>`;
+    btn.onclick = () => toggleTag(t.key, btn);
+
+    tagRow.appendChild(btn);
+  });
+}    function toggleTag(key, el){
       if (selectedTagsForEntry.has(key)){
         selectedTagsForEntry.delete(key);
         el.classList.remove('active');
@@ -1849,38 +1919,47 @@
       }
     });
 
-    // ---------- Rating modal hotkeys (Ctrl+Enter, 1–5, Esc, Alt+tag) ----------
-    document.addEventListener('keydown', (e) => {
-      if (!isRatingOpen()) return;
+// ---------- Rating modal hotkeys (Ctrl+Enter, 1–5, Esc, Alt/Option+tag, Cmd+Shift+tag) ----------
+document.addEventListener('keydown', (e) => {
+  if (!isRatingOpen()) return;
 
-      // tag toggles (Alt+Letter)
-      if (e.altKey && !e.ctrlKey && !e.metaKey){
-        const k = String(e.key || '').toUpperCase();
-        if (k.length === 1 && TAG_HOTKEYS.has(k)){
-          e.preventDefault();
-          const tagKey = TAG_HOTKEYS.get(k);
-          if (selectedTagsForEntry.has(tagKey)) selectedTagsForEntry.delete(tagKey);
-          else selectedTagsForEntry.add(tagKey);
-          syncChipActiveStates();
-          return;
-        }
-      }
+  const k = String(e.key || '').toUpperCase();
 
-      if (e.ctrlKey && e.key === 'Enter'){
-        e.preventDefault();
-        startTimer();
-        return;
-      }
-      if (e.key >= '1' && e.key <= '5'){
-        selectRating(parseInt(e.key,10));
-      }
-      if (e.key === 'Escape'){
-        ratingBox.style.display = 'none';
-        pauseCenter.classList.remove('hidden');
-        clearTagSelection();
-      }
-    });
+  // Tag toggles:
+  // - Option/Alt + Letter
+  // - Command + Shift + Letter
+  // (Do not require focus changes; safe while typing in textarea)
+  const isAltTag = e.altKey && !e.ctrlKey && !e.metaKey && k.length === 1;
+  const isCmdShiftTag = e.metaKey && e.shiftKey && !e.ctrlKey && k.length === 1;
 
+  if ((isAltTag || isCmdShiftTag) && TAG_HOTKEYS.has(k)){
+    e.preventDefault();
+    const tagKey = TAG_HOTKEYS.get(k);
+
+    if (selectedTagsForEntry.has(tagKey)) selectedTagsForEntry.delete(tagKey);
+    else selectedTagsForEntry.add(tagKey);
+
+    syncChipActiveStates();
+    return;
+  }
+
+  if (e.ctrlKey && e.key === 'Enter'){
+    e.preventDefault();
+    startTimer();
+    return;
+  }
+
+  // rating 1–5
+  if (e.key >= '1' && e.key <= '5'){
+    selectRating(parseInt(e.key,10));
+  }
+
+  if (e.key === 'Escape'){
+    ratingBox.style.display = 'none';
+    pauseCenter.classList.remove('hidden');
+    clearTagSelection();
+  }
+});
     notesOverlay.addEventListener('keydown', (e) => {
       if (e.ctrlKey && e.key === 'Enter'){ saveNotes(); }
       if (e.key === 'Escape'){ closeNotesBox(); }
@@ -2705,128 +2784,112 @@
       window.print();
     }
 
-    // ---------- HEATMAP ----------
-    function clamp01(x){ return Math.max(0, Math.min(1, x)); }
-    function smoothstep(a,b,x){
-      const t = clamp01((x-a)/(b-a));
-      return t*t*(3-2*t);
-    }
+   function clamp01(x){ return Math.max(0, Math.min(1, x)); }
 
-    function hexToRgb(hex){
-      const h = hex.trim().replace('#','');
-      if (h.length === 3){
-        const r = parseInt(h[0]+h[0],16);
-        const g = parseInt(h[1]+h[1],16);
-        const b = parseInt(h[2]+h[2],16);
-        return {r,g,b};
-      }
-      const r = parseInt(h.slice(0,2),16);
-      const g = parseInt(h.slice(2,4),16);
-      const b = parseInt(h.slice(4,6),16);
-      return {r,g,b};
-    }
+function hexToRgb(hex){
+const h = hex.trim().replace('#','');
+const r = parseInt(h.slice(0,2),16);
+const g = parseInt(h.slice(2,4),16);
+const b = parseInt(h.slice(4,6),16);
+return {r,g,b};
+}
 
-    function rgbToHsl(r,g,b){
-      r/=255; g/=255; b/=255;
-      const max = Math.max(r,g,b), min = Math.min(r,g,b);
-      let h, s, l = (max+min)/2;
-      if (max === min){ h = s = 0; }
-      else{
-        const d = max-min;
-        s = l > 0.5 ? d/(2-max-min) : d/(max+min);
-        switch(max){
-          case r: h = (g-b)/d + (g<b ? 6 : 0); break;
-          case g: h = (b-r)/d + 2; break;
-          case b: h = (r-g)/d + 4; break;
-        }
-        h /= 6;
-      }
-      return {h,s,l};
-    }
+function rgbToHsl(r,g,b){
+r/=255; g/=255; b/=255;
+const max = Math.max(r,g,b), min = Math.min(r,g,b);
+let h, s, l = (max+min)/2;
+if(max===min){ h=s=0; }
+else{
+const d = max-min;
+s = l>0.5 ? d/(2-max-min) : d/(max+min);
+switch(max){
+case r: h=(g-b)/d+(g<b?6:0); break;
+case g: h=(b-r)/d+2; break;
+case b: h=(r-g)/d+4; break;
+}
+h/=6;
+}
+return {h,s,l};
+}
 
-    function hslToRgb(h,s,l){
-      let r,g,b;
-      if (s === 0){ r = g = b = l; }
-      else{
-        const hue2rgb = (p,q,t) => {
-          if (t < 0) t += 1;
-          if (t > 1) t -= 1;
-          if (t < 1/6) return p + (q-p)*6*t;
-          if (t < 1/2) return q;
-          if (t < 2/3) return p + (q-p)*(2/3 - t)*6;
-          return p;
-        };
-        const q = l < 0.5 ? l*(1+s) : l + s - l*s;
-        const p = 2*l - q;
-        r = hue2rgb(p,q,h+1/3);
-        g = hue2rgb(p,q,h);
-        b = hue2rgb(p,q,h-1/3);
-      }
-      return {r:Math.round(r*255), g:Math.round(g*255), b:Math.round(b*255)};
-    }
+function hslToRgb(h,s,l){
+let r,g,b;
+if(s===0){ r=g=b=l; }
+else{
+const hue2rgb=(p,q,t)=>{
+if(t<0)t+=1;if(t>1)t-=1;
+if(t<1/6)return p+(q-p)*6*t;
+if(t<1/2)return q;
+if(t<2/3)return p+(q-p)*(2/3-t)*6;
+return p;
+};
+const q=l<0.5?l*(1+s):l+s-l*s;
+const p=2*l-q;
+r=hue2rgb(p,q,h+1/3);
+g=hue2rgb(p,q,h);
+b=hue2rgb(p,q,h-1/3);
+}
+return {r:Math.round(r*255),g:Math.round(g*255),b:Math.round(b*255)};
+}
 
-    function mixRgb(a,b,t){
-      return {
-        r: Math.round(a.r + (b.r - a.r) * t),
-        g: Math.round(a.g + (b.g - a.g) * t),
-        b: Math.round(a.b + (b.b - a.b) * t)
-      };
-    }
+function colorForDominance(t){
+const primary = getComputedStyle(document.documentElement)
+.getPropertyValue('--primary-color').trim();
 
-    function dominanceCurve(t){
-      const gamma = 0.60;
-      return Math.pow(clamp01(t), gamma);
-    }
-    function intensityCurve(t){
-      const gamma = 0.52;
-      return Math.pow(clamp01(t), gamma);
-    }
+const rgb = hexToRgb(primary);
+const hsl = rgbToHsl(rgb.r,rgb.g,rgb.b);
 
-    function getHeatPalette(){
-      const cs = getComputedStyle(document.documentElement);
-      const primary = cs.getPropertyValue('--primary-color').trim() || '#6F263D';
-      const secondary = cs.getPropertyValue('--secondary-color').trim() || '#236192';
+const dominance = Math.pow(clamp01(t),0.55);
 
-      if (isWhiteish(primary) || isWhiteish(secondary)){
-        return { primary: '#9CA3AF', secondary: '#E5E7EB', mode: 'gray-light' };
-      }
-      if (isBlackish(primary) || isBlackish(secondary)){
-        return { primary: '#111827', secondary: '#6B7280', mode: 'gray-dark' };
-      }
-      return { primary, secondary, mode: 'team' };
-    }
+hsl.s = clamp01(hsl.s * (1 + dominance*0.6));
+hsl.l = clamp01(hsl.l - dominance*0.15);
 
-    function colorForDominance(tNorm){
-      const pal = getHeatPalette();
-      const pRgb = hexToRgb(pal.primary);
-      const sRgb = hexToRgb(pal.secondary);
+if(dominance > 0.8){
+hsl.h = clamp01(hsl.h - 0.02);
+}
 
-      const baselineBlend = 0.10;
-      const tColor = dominanceCurve(tNorm);
+return hslToRgb(hsl.h,hsl.s,hsl.l);
+}
 
-      const blend = baselineBlend + (1 - baselineBlend) * tColor;
-      let rgb = mixRgb(sRgb, pRgb, clamp01(blend));
+function alphaForDominance(t){
+const d = Math.pow(clamp01(t),0.6);
+return 0.08 + d*0.75;
+}
 
-      const satBoostBase = 1.10;
-      const satBoostMax = 1.55;
-      const satBoost = satBoostBase + (satBoostMax - satBoostBase) * tColor;
+function renderHeatmapAngularBlended(maxPct, pctMap){
 
-      const hsl = rgbToHsl(rgb.r, rgb.g, rgb.b);
-      hsl.s = clamp01(hsl.s * satBoost);
-      const lNudge = (tColor - 0.5) * 0.08;
-      hsl.l = clamp01(hsl.l + lNudge);
+heatCtx.clearRect(0,0,heatCanvas.width,heatCanvas.height);
+clipToCircle(heatCtx);
 
-      rgb = hslToRgb(hsl.h, hsl.s, hsl.l);
-      return rgb;
-    }
+const rOuter = circleRadius-2;
 
-    function alphaForDominance(tNorm){
-      const base = 0.06;
-      const max = 0.62;
-      const tA = intensityCurve(tNorm);
-      return base + (max - base) * tA;
-    }
+participants.forEach(p=>{
+const pct = pctMap.get(p.id)||0;
+const t = pct/maxPct;
 
+const rgb = colorForDominance(t);
+const alpha = alphaForDominance(t);
+
+const g = heatCtx.createRadialGradient(
+p.x,p.y,
+circleRadius*0.05,
+p.x,p.y,
+circleRadius*0.85
+);
+
+g.addColorStop(0,`rgba(${rgb.r},${rgb.g},${rgb.b},${Math.min(1,alpha)})`);
+g.addColorStop(0.25,`rgba(${rgb.r},${rgb.g},${rgb.b},${alpha*0.7})`);
+g.addColorStop(0.75,`rgba(${rgb.r},${rgb.g},${rgb.b},${alpha*0.15})`);
+g.addColorStop(1,`rgba(${rgb.r},${rgb.g},${rgb.b},0)`);
+
+heatCtx.fillStyle=g;
+heatCtx.beginPath();
+heatCtx.arc(centerX,centerY,rOuter,0,Math.PI*2);
+heatCtx.fill();
+});
+
+unclip(heatCtx);
+}
     function computeDominationPercents(){
       const total = participants.reduce((sum,p) => sum + p.endTimes.reduce((a,b)=>a+b,0), 0);
       const arr = participants.map(p => {
