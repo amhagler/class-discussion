@@ -900,6 +900,128 @@
       .title-area{ margin: 0 0 12px !important; padding-bottom: 0 !important; }
       .notes-out{ display:none !important; }
     }
+/* ---------- HELP DRAWER (RIGHT SIDE) ---------- */
+.help-backdrop{
+  position: fixed;
+  inset: 0;
+  z-index: 160;
+  background: rgba(0,0,0,.22);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity .18s ease;
+}
+.help-backdrop.open{
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.help-drawer{
+  position: fixed;
+  top: 0;
+  right: 0;
+  height: 100vh;
+  width: min(420px, calc(100vw - 24px));
+  z-index: 170;
+  background: rgba(255,255,255,.90);
+  backdrop-filter: blur(16px);
+  border-left: 1px solid rgba(0,0,0,.10);
+  box-shadow: -16px 0 44px rgba(0,0,0,.18);
+  display: flex;
+  flex-direction: column;
+  transform: translateX(102%);
+  transition: transform .22s ease;
+}
+
+.help-drawer.open{ transform: translateX(0); }
+
+.help-header{
+  padding: 14px 14px 12px;
+  border-bottom: 1px solid rgba(0,0,0,.08);
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:10px;
+}
+
+.help-kicker{
+  font-size: 12px;
+  font-weight: 800;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: .08em;
+}
+
+.help-h1{
+  margin-top: 4px;
+  font-size: 18px;
+  font-weight: 900;
+  color: var(--primary-color);
+}
+
+.help-body{
+  padding: 12px 14px 16px;
+  overflow: auto;
+}
+
+.help-section{
+  background: rgba(0,0,0,.03);
+  border: 1px solid rgba(0,0,0,.08);
+  border-radius: 18px;
+  padding: 12px 12px;
+  margin-bottom: 10px;
+}
+
+.help-section-title{
+  font-size: 13px;
+  font-weight: 900;
+  color: var(--primary-color);
+  margin: 0 0 8px;
+}
+
+.help-list, .help-bullets{
+  margin: 0;
+  padding-left: 18px;
+  color: var(--ink);
+  font-size: 13px;
+  line-height: 1.35;
+}
+.help-list li, .help-bullets li{ margin: 6px 0; }
+
+.help-advanced-toggle{
+  width: 100%;
+  border: none;
+  border-radius: 16px;
+  padding: 10px 12px;
+  cursor: pointer;
+  background: rgba(35,97,146,.10);
+  color: var(--ink);
+  font-weight: 900;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  transition: transform .12s ease, background .2s ease;
+}
+.help-advanced-toggle:hover{
+  transform: translateY(-1px);
+  background: rgba(35,97,146,.14);
+}
+.help-advanced-toggle .chev{
+  font-size: 14px;
+  opacity: .8;
+  transition: transform .18s ease;
+}
+.help-advanced-toggle.open .chev{ transform: rotate(180deg); }
+
+.help-advanced-content{ margin-top: 10px; }
+
+.help-footer{
+  margin-top: 8px;
+  padding: 10px 12px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 300;
+}
   </style>
 </head>
 
@@ -919,7 +1041,9 @@
         <button id="toggleDrawerButton" class="btn ghost" onclick="toggleDrawer()">
           ☰ Open Panel
         </button>
-
+<button id="helpButton" class="btn ghost" onclick="openHelpDrawer()" title="How to use the Discussion Tracker">
+  ❓ Help
+</button>
         <button id="copyBothButton" class="btn" style="display:none;" onclick="copyBoth()">
           ⧉ Copy Both
         </button>
@@ -1214,7 +1338,91 @@
       </div>
     </div>
   </div>
+<!-- Help Drawer (Right Side) -->
+<div id="helpDrawerBackdrop" class="help-backdrop" onclick="closeHelpDrawer()"></div>
 
+<aside id="helpDrawer" class="help-drawer" aria-hidden="true">
+  <div class="help-header">
+    <div class="help-title">
+      <div class="help-kicker">Discussion Tracker</div>
+      <div class="help-h1">How to Use</div>
+    </div>
+
+    <div class="help-actions">
+      <button class="btn ghost" onclick="closeHelpDrawer()">✕ Close</button>
+    </div>
+  </div>
+
+  <div class="help-body">
+    <div class="help-section">
+      <div class="help-section-title">Quick Start (60 seconds)</div>
+      <ol class="help-list">
+        <li><strong>Enter a title</strong> and click <strong>Start</strong>.</li>
+        <li><strong>Add participants</strong>, then click <strong>Done</strong>.</li>
+        <li>During discussion, <strong>click a name pill</strong> when someone starts speaking.</li>
+        <li>Choose a <strong>1–5 rating</strong>, optionally add a comment, then <strong>Save</strong>.</li>
+        <li>Click the center <strong>Pause</strong> button to end the current speaking segment.</li>
+        <li>Click <strong>End</strong> when the discussion is over to access replay + reporting tools.</li>
+      </ol>
+    </div>
+
+    <div class="help-section">
+      <div class="help-section-title">Core Controls</div>
+      <ul class="help-bullets">
+        <li><strong>Click a pill</strong>: start/stop timing for that speaker (switching speakers ends the previous segment).</li>
+        <li><strong>Pause</strong>: ends the current speaking segment without starting another.</li>
+        <li><strong>Open Panel</strong>: view/edit the log, generate the report, copy data.</li>
+        <li><strong>Replay</strong>: replays the discussion flow after you end the session.</li>
+        <li><strong>Heatmap</strong>: visualizes airtime dominance (optional overlay).</li>
+      </ul>
+    </div>
+
+    <div class="help-section help-advanced">
+      <button id="helpAdvancedToggle" class="help-advanced-toggle" type="button" onclick="toggleAdvancedHelp()">
+        <span>Advanced Instructions</span>
+        <span class="chev" aria-hidden="true">▾</span>
+      </button>
+
+      <div id="helpAdvancedContent" class="help-advanced-content" hidden>
+        <div class="help-section-title" style="margin-top:14px;">Keyboard Shortcuts</div>
+        <ul class="help-bullets">
+          <li><strong>Participant hotkeys</strong>: press a participant’s key once to select, press again to record speaking.</li>
+          <li><strong>Rating modal</strong>: keys <strong>1–5</strong> select rating.</li>
+          <li><strong>Save rating</strong>: <strong>Ctrl+Enter</strong>.</li>
+          <li><strong>Close rating modal</strong>: <strong>Esc</strong>.</li>
+        </ul>
+
+        <div class="help-section-title">Tags</div>
+        <ul class="help-bullets">
+          <li>Use your configured tag hotkeys while the rating box is open.</li>
+          <li>Tags are appended to the log comment as <strong>Tags: …</strong> and summarized in the Report.</li>
+        </ul>
+
+        <div class="help-section-title">Workflow Tips</div>
+        <ul class="help-bullets">
+          <li><strong>Light touch</strong>: tags and ratings work best as signals, not constant judgments.</li>
+          <li><strong>End cleanly</strong>: hit <strong>Pause</strong> before <strong>End</strong> if someone is mid-sentence.</li>
+          <li><strong>Edit later</strong>: you can correct ratings/comments inline in the Log panel.</li>
+        </ul>
+      </div>
+    </div>
+<div class="help-section">
+  <div class="help-section-title">About Student Privacy</div>
+  <ul class="help-bullets">
+    <li>This tool runs entirely in your browser. No accounts. No cloud storage. No data is sent anywhere.</li>
+    <li>All discussion data exists only in your current session unless you choose to copy it.</li>
+    <li>To save a record, use <strong>Copy Log</strong>, <strong>Copy Report</strong>, or <strong>Copy Both</strong>, then paste into a document or spreadsheet.</li>
+    <li>If you close or refresh the page without copying, the session data will be lost.</li>
+    <li>Saved color palettes are stored locally in your browser and contain no student information.</li>
+  </ul>
+</div>
+    <div class="help-footer">
+      <div class="help-footer-note">
+        Tip: Click outside this drawer or press <strong>Esc</strong> to close.
+      </div>
+    </div>
+  </div>
+</aside>
   <script>
     // ---------- DOM ----------
     const participantFormWrap = document.getElementById('participantFormWrap');
@@ -1400,7 +1608,62 @@ let selectedTagsForEntry = new Set(); // keys for current rating entry
     ];
 
     // ---------- COLOR SCHEME ----------
-    function darkenColor(hex){
+// ---------- SAVED PALETTES (2 slots, renameable; stored locally) ----------
+const SAVED_PALETTES_KEY = 'discussion_tracker_saved_palettes_v1';
+
+function loadSavedPalettes(){
+  try{
+    const raw = localStorage.getItem(SAVED_PALETTES_KEY);
+    const parsed = raw ? JSON.parse(raw) : null;
+    if (Array.isArray(parsed) && parsed.length === 2) return parsed;
+  }catch(e){}
+  return [null, null]; // exactly 2 slots
+}
+
+function saveSavedPalettes(arr){
+  try{
+    localStorage.setItem(SAVED_PALETTES_KEY, JSON.stringify(arr));
+  }catch(e){
+    alert('Could not save palettes in this browser.');
+  }
+}
+
+function getCurrentPalette(){
+  const cs = getComputedStyle(document.documentElement);
+  const primary = cs.getPropertyValue('--primary-color').trim() || '#000000';
+  const secondary = cs.getPropertyValue('--secondary-color').trim() || '#000000';
+  return { name: 'Saved', colors: [primary, secondary] };
+}
+
+function saveCurrentToSlot(slotIndex){
+  const slots = loadSavedPalettes();
+  const current = getCurrentPalette();
+
+  const existing = slots[slotIndex];
+  const defaultName = existing?.name || `My Palette ${slotIndex + 1}`;
+  const name = prompt('Name this palette:', defaultName);
+
+  if (name === null) return; // user cancelled
+  const trimmed = String(name).trim();
+  if (!trimmed){
+    alert('Please enter a name (or press Cancel).');
+    return;
+  }
+
+  slots[slotIndex] = { name: trimmed, colors: [current.colors[0], current.colors[1]] };
+  saveSavedPalettes(slots);
+
+  // Re-render list so the slot updates immediately
+  createColorSchemeList();
+}
+
+function clearSlot(slotIndex){
+  const slots = loadSavedPalettes();
+  slots[slotIndex] = null;
+  saveSavedPalettes(slots);
+  createColorSchemeList();
+}   
+ function darkenColor(hex){
       const amount = 0.2;
       const clean = String(hex).replace('#','').trim();
       const r = parseInt(clean.slice(0,2),16);
@@ -1456,22 +1719,72 @@ let selectedTagsForEntry = new Set(); // keys for current rating entry
       const ucla = nhlTeams.find(t => t.name.startsWith('UCLA'));
       const coreTeams = nhlTeams.filter(t => t !== ucla);
 
-      coreTeams.forEach(team => addSchemeCard(team));
-      if (ucla) addSchemeCard(ucla);
+   coreTeams.forEach(team => addSchemeCard(team));
+if (ucla) addSchemeCard(ucla);
 
-      const li = document.createElement('li');
-      li.className = 'scheme';
-      li.innerHTML = `
-        <div class="swatches">
-          <div class="swatch" style="background:#000"></div>
-          <div class="swatch" style="background:#000"></div>
-        </div>
-        <div class="team-name">Custom</div>
-        <button class="select-button">Select your own</button>
-      `;
-      li.querySelector('button').onclick = () => { openCustomColorPopup(); closeColorSchemePopup(); };
-      colorSchemeList.appendChild(li);
+// --- Two saved slots (renameable, local only) ---
+addSavedSlotCard(0);
+addSavedSlotCard(1);
 
+// --- Custom picker card ---
+const li = document.createElement('li');
+li.className = 'scheme';
+li.innerHTML = `
+  <div class="swatches">
+    <div class="swatch" style="background:#000"></div>
+    <div class="swatch" style="background:#000"></div>
+  </div>
+  <div class="team-name">Custom</div>
+  <button class="select-button">Select your own</button>
+`;
+li.querySelector('button').onclick = () => { openCustomColorPopup(); closeColorSchemePopup(); };
+colorSchemeList.appendChild(li);
+function addSavedSlotCard(slotIndex){
+  const slots = loadSavedPalettes();
+  const saved = slots[slotIndex];
+
+  const name = saved?.name ? saved.name : `Saved Slot ${slotIndex + 1}`;
+  const c1 = saved?.colors?.[0] || 'rgba(0,0,0,.10)';
+  const c2 = saved?.colors?.[1] || 'rgba(0,0,0,.10)';
+
+  const li = document.createElement('li');
+  li.className = 'scheme';
+
+  li.innerHTML = `
+    <div class="swatches">
+      <div class="swatch" style="background:${escapeHtml(c1)}"></div>
+      <div class="swatch" style="background:${escapeHtml(c2)}"></div>
+    </div>
+    <div class="team-name">${escapeHtml(name)}</div>
+
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button class="select-button" style="flex:1 1 46%;" ${saved ? '' : 'disabled'}>Select</button>
+      <button class="select-button" style="flex:1 1 46%; background: rgba(35,97,146,.12); color: var(--ink); border: 1px solid rgba(0,0,0,.10); box-shadow: none;">
+        Save current
+      </button>
+      <button class="select-button" style="flex:1 1 100%; background: rgba(0,0,0,.05); color: var(--ink); border: 1px solid rgba(0,0,0,.10); box-shadow: none;" ${saved ? '' : 'disabled'}>
+        Clear slot
+      </button>
+    </div>
+  `;
+
+  const btns = li.querySelectorAll('button');
+  const selectBtn = btns[0];
+  const saveBtn = btns[1];
+  const clearBtn = btns[2];
+
+  selectBtn.onclick = () => {
+    if (!saved) return;
+    updateColorScheme(saved.colors[0], saved.colors[1], saved.name);
+    closeColorSchemePopup();
+  };
+
+  saveBtn.onclick = () => saveCurrentToSlot(slotIndex);
+
+  clearBtn.onclick = () => clearSlot(slotIndex);
+
+  colorSchemeList.appendChild(li);
+}
       function addSchemeCard(team){
         const li = document.createElement('li');
         li.className = 'scheme';
@@ -3052,7 +3365,46 @@ unclip(heatCtx);
     customColorPopup.addEventListener('click', (e) => { if (e.target === customColorPopup) closeCustomColorPopup(); });
     confirmRestartPopup.addEventListener('click', (e) => { if (e.target === confirmRestartPopup) closeConfirmRestartPopup(); });
     editParticipantsPopup.addEventListener('click', (e) => { if (e.target === editParticipantsPopup) closeEditParticipantsPopup(); });
+// ---------- HELP DRAWER (RIGHT) ----------
+const helpDrawer = document.getElementById('helpDrawer');
+const helpDrawerBackdrop = document.getElementById('helpDrawerBackdrop');
+const helpAdvancedToggle = document.getElementById('helpAdvancedToggle');
+const helpAdvancedContent = document.getElementById('helpAdvancedContent');
 
+function openHelpDrawer(){
+  if (!helpDrawer || !helpDrawerBackdrop) return;
+  helpDrawer.classList.add('open');
+  helpDrawerBackdrop.classList.add('open');
+  helpDrawer.setAttribute('aria-hidden','false');
+}
+
+function closeHelpDrawer(){
+  if (!helpDrawer || !helpDrawerBackdrop) return;
+  helpDrawer.classList.remove('open');
+  helpDrawerBackdrop.classList.remove('open');
+  helpDrawer.setAttribute('aria-hidden','true');
+}
+
+function toggleAdvancedHelp(){
+  if (!helpAdvancedContent || !helpAdvancedToggle) return;
+  const isOpen = !helpAdvancedContent.hasAttribute('hidden');
+  if (isOpen){
+    helpAdvancedContent.setAttribute('hidden','');
+    helpAdvancedToggle.classList.remove('open');
+  }else{
+    helpAdvancedContent.removeAttribute('hidden');
+    helpAdvancedToggle.classList.add('open');
+  }
+}
+
+// Close help on Esc (when rating modal isn't handling Esc)
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape'){
+    if (helpDrawer && helpDrawer.classList.contains('open') && !(ratingBox && ratingBox.style.display !== 'none')){
+      closeHelpDrawer();
+    }
+  }
+});
     // ---------- PUBLIC API ----------
     window.startDiscussion = startDiscussion;
     window.doneAddingParticipants = doneAddingParticipants;
@@ -3074,7 +3426,9 @@ unclip(heatCtx);
     window.switchTab = switchTab;
     window.toggleDrawer = toggleDrawer;
     window.closeDrawer = closeDrawer;
-
+window.openHelpDrawer = openHelpDrawer;
+window.closeHelpDrawer = closeHelpDrawer;
+window.toggleAdvancedHelp = toggleAdvancedHelp;
     window.copyLog = copyLog;
     window.copyReport = copyReport;
     window.copyBoth = copyBoth;
