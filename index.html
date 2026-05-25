@@ -233,7 +233,7 @@
       display:flex;
       justify-content:center;
       padding-top:42px;
-      padding-bottom:96px;
+      padding-bottom:188px;
       overflow:visible;
     }
     #arena{
@@ -370,6 +370,13 @@
       outline:2px solid var(--secondary-color);
       outline-offset:2px;
     }
+    .pill.educator.selected{
+      box-shadow:
+        0 10px 22px rgba(0,0,0,.10),
+        0 0 0 3px rgba(255,255,255,.58),
+        0 0 0 6px rgba(111,38,61,.30);
+      outline-color:var(--primary-color);
+    }
     .pill.active{
       background-color:var(--secondary-color);
       filter:saturate(1.05);
@@ -378,19 +385,62 @@
       outline:none;
     }
     .pill.educator{
+      border-radius:999px;
       background:
-        linear-gradient(135deg, rgba(255,255,255,.34), rgba(255,255,255,.12)),
+        linear-gradient(135deg, rgba(255,255,255,.28), rgba(255,255,255,.08)),
         var(--secondary-color);
       border-color:rgba(35,97,146,.52);
       box-shadow:
-        0 10px 22px rgba(0,0,0,.10),
-        0 0 0 3px rgba(35,97,146,.14);
+        0 12px 26px rgba(0,0,0,.13),
+        0 0 0 3px rgba(111,38,61,.10);
+    }
+    .pill.educator::before{
+      content:"B";
+      position:absolute;
+      left:-10px;
+      top:50%;
+      width:26px;
+      height:26px;
+      transform:translateY(-50%);
+      border-radius:50%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background:var(--primary-color);
+      color:var(--text-color);
+      border:2px solid rgba(255,255,255,.90);
+      box-shadow:0 8px 18px rgba(0,0,0,.16);
+      font-size:12px;
+      font-weight:900;
+      line-height:1;
+    }
+    .pill.educator.active{
+      background-color:var(--primary-color);
+      box-shadow:
+        0 16px 34px rgba(0,0,0,.16),
+        0 0 0 3px rgba(35,97,146,.18);
     }
     .pill.educator .count::after{
       content:" Educator";
       font-weight:800;
       opacity:.85;
     }
+    #arena.crowded{
+      --pill-w:106px;
+      --pill-h:50px;
+      --pill-pad:8px;
+      --aux-d:38px;
+    }
+    #arena.crowded .pill .name{ font-size:14px; }
+    #arena.crowded .pill .count{ font-size:11px; }
+    #arena.very-crowded{
+      --pill-w:92px;
+      --pill-h:46px;
+      --pill-pad:7px;
+      --aux-d:34px;
+    }
+    #arena.very-crowded .pill .name{ font-size:13px; }
+    #arena.very-crowded .pill .count{ font-size:10px; }
     .pill.pulse{ animation:microPulse .26s ease-out; }
     @keyframes microPulse{
       0%{ transform:translateY(-1px) scale(1); }
@@ -572,7 +622,7 @@
     .stats-panel.compact{ width:220px; }
     .stats-panel.compact .stats-body{ gap:8px; padding:10px; }
     .stats-panel.compact .stat-card{ padding:9px; border-radius:14px; }
-    .stats-panel.compact .stat-card:nth-child(n+4){ display:none; }
+    .stats-panel.compact .stat-card:nth-child(n+5){ display:none; }
     .stats-panel.compact .stat-v{ font-size:16px; }
     .stats-panel.compact .stat-small{ font-size:11px; }
     .stats-hd{
@@ -644,6 +694,10 @@
     }
     .stat-card:nth-child(2) .stat-v,
     .stat-card:nth-child(2) .stat-k{
+      color:var(--secondary-color);
+    }
+    .stat-card.class-average .stat-v,
+    .stat-card.class-average .stat-k{
       color:var(--secondary-color);
     }
     .stat-small{
@@ -1130,6 +1184,7 @@
         <button id="arrangeModeButton" class="btn ghost" style="display:none;" onclick="toggleArrangeMode()">Arrange Mode</button>
         <button id="arrangeDragModeButton" class="btn ghost" style="display:none;" onclick="toggleArrangeDragMode()">Free Drag</button>
         <button id="snapCircleTopButton" class="btn ghost" style="display:none;" onclick="snapParticipantsToCircle()">Snap Circle</button>
+        <button id="educatorToggleButton" class="btn ghost" style="display:none;" onclick="toggleEducatorVisibility()">Hide Educator</button>
         <button id="statsToggleButton" class="btn ghost" style="display:none;" onclick="toggleStatsPanel()">Hide Stats</button>
         <button id="toggleDrawerButton" class="btn ghost" onclick="toggleDrawer()">Open Panel</button>
         <button id="helpButton" class="btn ghost" onclick="openHelpDrawer()" title="How to use the Discussion Tracker">Help</button>
@@ -1235,6 +1290,7 @@
           <b>Live Stats</b>
           <div class="stats-controls">
             <button class="stats-mini-btn" type="button" onclick="cycleStatsSize()" id="statsSizeButton">Compact</button>
+            <button class="stats-mini-btn" type="button" onclick="toggleClassAverage()" id="classAverageToggleButton">Avg</button>
             <button class="stats-mini-btn" type="button" onclick="snapParticipantsToCircle()" id="snapCircleButton" style="display:none;">Snap</button>
             <button class="stats-mini-btn" type="button" onclick="hideStatsPanel()">Hide</button>
             <span class="save-dot" title="Autosaving locally"></span>
@@ -1250,6 +1306,11 @@
             <div class="stat-k" id="speakerStatLabel">Current Speaker</div>
             <div class="stat-v" id="currentSpeakerStat">None</div>
             <div class="stat-small" id="speakerElapsedStat">0:00</div>
+          </div>
+          <div class="stat-card class-average" id="classAverageCard">
+            <div class="stat-k">Class Average</div>
+            <div class="stat-v" id="classAverageStat">N/A</div>
+            <div class="stat-small" id="classAverageDetail">No ratings recorded</div>
           </div>
           <div class="stat-card">
             <div class="stat-k">Balance</div>
@@ -1467,9 +1528,9 @@
         <ol class="help-list">
           <li>Enter a title and optional discussion question.</li>
           <li>Press Enter from the title, question, or educator field to move into participant entry. Use Shift+Enter for a question line break.</li>
-          <li>Add an optional educator name if you want yourself/facilitator shown below the circle.</li>
+          <li>Add an optional educator name if you want yourself/facilitator included as a distinct pill.</li>
           <li>Leave Include in stats unchecked to keep educator airtime out of student balance data.</li>
-          <li>The educator uses hotkey B and appears below the circle by default.</li>
+          <li>The educator uses hotkey B, sits clearly below the circle, and can be hidden or shown from the top bar.</li>
           <li>Add student participants, then click Done.</li>
         </ol>
       </div>
@@ -1479,7 +1540,8 @@
           <li>Click a pill when someone starts speaking. Clicking the same active pill, or Pause, ends the current segment.</li>
           <li>Choose a 1-5 rating, optional tags, and an optional comment, then Save.</li>
           <li>Use Undo Last if you clicked the wrong speaker or made a recent setup/arrange change.</li>
-          <li>The Live Stats panel shows time, current speaker duration, balance, top contributors, and who has not spoken yet.</li>
+          <li>Alt+Shift plus a participant hotkey opens notes for that person. Alt+Shift+B opens educator notes when the educator is visible.</li>
+          <li>The Live Stats panel shows time, current speaker duration, class average, balance, top contributors, and who has not spoken yet.</li>
           <li>Stats can be compacted, hidden, or shown again without affecting the discussion data.</li>
           <li>Screenshot / Snip opens the system snipping workflow for a quick capture of the map.</li>
         </ul>
@@ -1488,18 +1550,19 @@
         <div class="help-section-title">Arrange Mode</div>
         <ul class="help-bullets">
           <li>Arrange Mode turns off speaker-recording clicks and participant hotkeys.</li>
-          <li>Drag pills to approximate classroom seating, or switch to ring ordering to drag people around the circle.</li>
+          <li>Free Drag lets you approximate classroom seating. Ring Order lets you reorder students by dragging them around the circle.</li>
           <li>Use Snap Circle in the top bar to return everyone to the clean circle layout.</li>
-          <li>Arranging preserves counts, notes, ratings, timings, and connections.</li>
+          <li>Arrange Mode remains available after End, and arranging preserves counts, notes, ratings, timings, and connections.</li>
         </ul>
       </div>
       <div class="help-section">
         <div class="help-section-title">After End</div>
         <ul class="help-bullets">
-          <li>Replay controls appear after ending the discussion.</li>
-          <li>The Live Stats panel switches to a domination leaderboard and overall class discussion average.</li>
+          <li>Replay controls appear after ending the discussion, and participant counts tick upward during replay.</li>
+          <li>The report generates automatically when you end the discussion.</li>
+          <li>The Live Stats panel switches to a domination leaderboard. The class discussion average can be shown or hidden after End.</li>
           <li>Balance remains visible below the leaderboard.</li>
-          <li>Generate Report summarizes ratings, airtime, domination percentage, tags, and notes.</li>
+          <li>The report summarizes ratings, airtime, domination percentage, tags, and notes.</li>
           <li>Copy Log, Copy Report, or Copy Both to save the discussion outside the browser.</li>
           <li>Live-only controls such as Undo, Help, and Participants disappear after End.</li>
         </ul>
@@ -1553,8 +1616,10 @@
     const arrangeDragModeButton = document.getElementById('arrangeDragModeButton');
     const statsToggleButton = document.getElementById('statsToggleButton');
     const statsSizeButton = document.getElementById('statsSizeButton');
+    const classAverageToggleButton = document.getElementById('classAverageToggleButton');
     const snapCircleButton = document.getElementById('snapCircleButton');
     const snapCircleTopButton = document.getElementById('snapCircleTopButton');
+    const educatorToggleButton = document.getElementById('educatorToggleButton');
     const helpButton = document.getElementById('helpButton');
     const editParticipantsButton = document.getElementById('editParticipantsButton');
     const copyLogButton = document.getElementById('copyLogButton');
@@ -1620,6 +1685,8 @@
     let statsMode = 'normal';
     let arrangeMode = false;
     let arrangeDragMode = 'free';
+    let educatorHidden = false;
+    let classAverageVisible = true;
     let undoStack = [];
     let selectedTagsForEntry = new Set();
     let autosaveTimer = null;
@@ -1728,7 +1795,10 @@
       });
     }
     function displayPeople(){
-      return educator ? [...participants, educator] : [...participants];
+      return educator && !educatorHidden ? [...participants, educator] : [...participants];
+    }
+    function ringPeople(){
+      return [...participants];
     }
     function statPeople(){
       return displayPeople().filter(p => !p.isEducator || p.includeInStats);
@@ -1760,6 +1830,8 @@
         statsMode,
         arrangeMode,
         arrangeDragMode,
+        educatorHidden,
+        classAverageVisible,
         logRows: getLogRowsState(),
         reportEnabled: !tabReport.disabled,
         reportRows: getTableRowsState(document.getElementById('reportTable')),
@@ -1788,6 +1860,8 @@
       statsMode = snap.statsMode || 'normal';
       arrangeMode = !!snap.arrangeMode;
       arrangeDragMode = snap.arrangeDragMode || 'free';
+      educatorHidden = !!snap.educatorHidden;
+      classAverageVisible = snap.classAverageVisible !== false;
 
       if (Array.isArray(snap.colors)) updateColorScheme(snap.colors[0], snap.colors[1], teamName);
       applyStatsMode();
@@ -1934,6 +2008,8 @@
       document.getElementById('statsPanel').classList.toggle('compact', compact);
       statsToggleButton.textContent = hidden ? 'Show Stats' : 'Hide Stats';
       statsSizeButton.textContent = compact ? 'Normal' : 'Compact';
+      classAverageToggleButton.textContent = classAverageVisible ? 'Hide Avg' : 'Show Avg';
+      classAverageToggleButton.style.display = discussionEnded ? '' : 'none';
       snapCircleButton.style.display = arrangeMode && active ? '' : 'none';
       requestAnimationFrame(() => {
         updateStageSize();
@@ -1958,6 +2034,13 @@
       pushUndo('toggle stats');
       statsMode = statsMode === 'hidden' ? 'normal' : 'hidden';
       applyStatsMode();
+      scheduleSave();
+    }
+    function toggleClassAverage(){
+      pushUndo('toggle class average');
+      classAverageVisible = !classAverageVisible;
+      classAverageToggleButton.textContent = classAverageVisible ? 'Hide Avg' : 'Show Avg';
+      updateStats();
       scheduleSave();
     }
 
@@ -1986,8 +2069,8 @@
       arrangeModeButton.classList.toggle('secondary', arrangeMode);
       arrangeModeButton.textContent = arrangeMode ? 'Tracking Mode' : 'Arrange Mode';
       snapCircleButton.style.display = arrangeMode && discussionStarted && displayPeople().length ? '' : 'none';
-      snapCircleTopButton.style.display = arrangeMode && discussionStarted && !discussionEnded && displayPeople().length ? 'inline-flex' : 'none';
-      arrangeDragModeButton.style.display = arrangeMode && discussionStarted && !discussionEnded ? 'inline-flex' : 'none';
+      snapCircleTopButton.style.display = arrangeMode && discussionStarted && displayPeople().length ? 'inline-flex' : 'none';
+      arrangeDragModeButton.style.display = arrangeMode && discussionStarted ? 'inline-flex' : 'none';
       arrangeDragModeButton.textContent = arrangeDragMode === 'free' ? 'Free Drag' : 'Ring Order';
       placeParticipants();
       redrawConnections();
@@ -2007,10 +2090,25 @@
       arrangeDragModeButton.textContent = arrangeDragMode === 'free' ? 'Free Drag' : 'Ring Order';
       scheduleSave();
     }
+    function toggleEducatorVisibility(){
+      if (!educator) return;
+      pushUndo('toggle educator');
+      educatorHidden = !educatorHidden;
+      if (educatorHidden){
+        educator.customPosition = null;
+        if (selectedParticipantId === educator.id) selectedParticipantId = null;
+        if (currentSpeakerId === educator.id) pauseTimer();
+      }
+      educatorToggleButton.textContent = educatorHidden ? 'Show Educator' : 'Hide Educator';
+      placeParticipants();
+      redrawConnections();
+      updateStats();
+      scheduleSave();
+    }
 
     function snapParticipantsToCircle(){
       pushUndo('snap to circle');
-      displayPeople().forEach(p => {
+      [...participants, educator].filter(Boolean).forEach(p => {
         p.customPosition = null;
       });
       placeParticipants();
@@ -2037,8 +2135,10 @@
       updateStageSize();
       clearParticipants();
       const people = displayPeople();
-      const num = people.length;
-      if (!num) return;
+      const ringCount = ringPeople().length;
+      arena.classList.toggle('crowded', ringCount > 14 && ringCount <= 22);
+      arena.classList.toggle('very-crowded', ringCount > 22);
+      if (!people.length) return;
 
       participants.forEach((p, i) => p.hotkeyLabel = hotkeyForIndex(i));
       if (educator) educator.hotkeyLabel = 'B';
@@ -2057,9 +2157,10 @@
           y = centerY + p.customPosition.dy * ry;
         }else if (p.isEducator){
           x = centerX;
-          y = centerY + ry + 54;
+          y = centerY + ry + 112;
         }else{
-          const angle = ringOrderAngleForIndex(i, participants.length);
+          const ringIndex = participants.findIndex(pp => pp.id === p.id);
+          const angle = ringOrderAngleForIndex(ringIndex, ringCount);
           x = centerX + rx * Math.cos(angle);
           y = centerY + ry * Math.sin(angle);
         }
@@ -2272,6 +2373,8 @@
       discussionTitle = titleInput;
       discussionQuestion = questionInput;
       educator = educatorInput ? makePerson(educatorInput, { id:'educator', isEducator:true, includeInStats:includeEducator }) : null;
+      educatorHidden = false;
+      classAverageVisible = true;
       discussionDate = new Date().toLocaleDateString();
       discussionStarted = true;
       discussionEnded = false;
@@ -2338,6 +2441,8 @@
       endDiscussionButton.style.display = 'inline-flex';
       undoButton.style.display = 'inline-flex';
       arrangeModeButton.style.display = 'inline-flex';
+      educatorToggleButton.style.display = educator ? 'inline-flex' : 'none';
+      educatorToggleButton.textContent = educatorHidden ? 'Show Educator' : 'Hide Educator';
       statsToggleButton.style.display = 'inline-flex';
       editParticipantsButton.style.display = 'inline-flex';
       copyLogButton.style.display = 'inline-flex';
@@ -2523,14 +2628,14 @@
       pauseCenter.style.display = 'none';
       endDiscussionButton.style.display = 'none';
       undoButton.style.display = 'none';
-      arrangeModeButton.style.display = 'none';
-      arrangeDragModeButton.style.display = 'none';
-      snapCircleTopButton.style.display = 'none';
+      arrangeModeButton.style.display = displayPeople().length ? 'inline-flex' : 'none';
+      arrangeDragModeButton.style.display = arrangeMode ? 'inline-flex' : 'none';
+      snapCircleTopButton.style.display = arrangeMode && displayPeople().length ? 'inline-flex' : 'none';
       editParticipantsButton.style.display = 'none';
       helpButton.style.display = 'none';
       copyBothButton.style.display = 'inline-flex';
       restartDiscussionButton.style.display = 'inline-flex';
-      generateReportButton.style.display = 'inline-flex';
+      generateReportButton.style.display = 'none';
       exportScreenshotButton.style.display = 'inline-flex';
       copyLogButton.style.display = 'inline-flex';
       replayDock.classList.add('open');
@@ -2538,9 +2643,9 @@
       switchTab('log');
       openDrawer();
       discussionEnded = true;
-      arrangeMode = false;
       selectedParticipantId = null;
       applySelectedHighlight();
+      generateReport(false);
       applyArrangeMode();
       applyStatsMode();
       updateStats();
@@ -2675,17 +2780,40 @@
 
     function clearReplay(){
       window.__replayDrawn = [];
+      window.__replayCounts = new Map();
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
+    function setDisplayedCount(id, n){
+      const el = document.getElementById(`speakCount${id}`);
+      if (el) el.textContent = String(n);
+    }
+    function resetDisplayedCountsForReplay(){
+      displayPeople().forEach(p => {
+        window.__replayCounts.set(p.id, 0);
+        setDisplayedCount(p.id, 0);
+      });
+    }
+    function incrementReplayCount(id){
+      if (!id || !window.__replayCounts) return;
+      const next = (window.__replayCounts.get(id) || 0) + 1;
+      window.__replayCounts.set(id, next);
+      setDisplayedCount(id, next);
+    }
+    function restoreDisplayedCounts(){
+      displayPeople().forEach(p => setDisplayedCount(p.id, p.speakCount || 0));
     }
 
     function replayDiscussion(speed){
       if (!connections.length) return;
       clearReplay();
+      resetDisplayedCountsForReplay();
+      incrementReplayCount(connections[0].fromId);
       let i = 0;
       function step(){
         if (i >= connections.length){
           setActivePill(null);
           redrawConnections();
+          restoreDisplayedCounts();
           return;
         }
         const seg = connections[i];
@@ -2693,6 +2821,7 @@
         const dur = Math.max(180, 760 / speed);
         animateReplaySegment(seg.fromId, seg.toId, seg.thickness, dur, () => {
           highlightParticipant(seg.toId);
+          incrementReplayCount(seg.toId);
           i++;
           setTimeout(step, 120);
         });
@@ -2703,12 +2832,15 @@
     function replayDiscussionTimed(speed){
       if (!connections.length) return;
       clearReplay();
+      resetDisplayedCountsForReplay();
+      incrementReplayCount(connections[0].fromId);
       let i = 0;
       const endTimesCopy = new Map(displayPeople().map(p => [p.id, [...p.endTimes]]));
       function step(){
         if (i >= connections.length){
           setActivePill(null);
           redrawConnections();
+          restoreDisplayedCounts();
           return;
         }
         const seg = connections[i];
@@ -2719,6 +2851,7 @@
         const dur = Math.max(220, (durationSpoken / speed) * 1000);
         animateReplaySegment(seg.fromId, seg.toId, seg.thickness, dur, () => {
           highlightParticipant(seg.toId);
+          incrementReplayCount(seg.toId);
           i++;
           setTimeout(step, 100);
         });
@@ -2764,27 +2897,34 @@
       }));
       const totalAir = totals.reduce((a,b)=>a+b.time,0);
       const heard = totals.filter(t => t.speakCount > 0).length;
+      const zeroCount = totals.filter(t => t.speakCount === 0).length;
       const maxPct = totalAir ? Math.max(...totals.map(t => t.time / totalAir)) * 100 : 0;
       const allRatings = peopleForStats.flatMap(p => (p.ratings || []).filter(r => r !== null && r !== undefined && r !== ''));
+      const avgRating = allRatings.length
+        ? (allRatings.reduce((a,b)=>a + Number(b), 0) / allRatings.length).toFixed(2)
+        : 'N/A';
+
+      classAverageCard.style.display = discussionEnded && !classAverageVisible ? 'none' : '';
+      classAverageStat.textContent = avgRating;
+      classAverageDetail.textContent = allRatings.length ? `${allRatings.length} rated contributions` : 'No ratings recorded';
+      classAverageToggleButton.textContent = classAverageVisible ? 'Hide Avg' : 'Show Avg';
 
       if (discussionEnded){
         clockTime.closest('.stat-card').style.order = '0';
-        currentSpeakerStat.closest('.stat-card').style.order = '1';
+        currentSpeakerStat.closest('.stat-card').style.display = 'none';
+        classAverageCard.style.order = '1';
         topContributors.closest('.stat-card').style.order = '2';
         balanceStat.closest('.stat-card').style.order = '3';
         unspokenList.closest('.stat-card').style.order = '4';
-        speakerStatLabel.textContent = 'Class Average';
-        currentSpeakerStat.textContent = allRatings.length
-          ? (allRatings.reduce((a,b)=>a + Number(b), 0) / allRatings.length).toFixed(2)
-          : 'N/A';
-        speakerElapsedStat.textContent = allRatings.length ? `${allRatings.length} rated contributions` : 'No ratings recorded';
         contributorsStatLabel.textContent = 'Leaderboard';
       }else{
         clockTime.closest('.stat-card').style.order = '0';
+        currentSpeakerStat.closest('.stat-card').style.display = '';
         currentSpeakerStat.closest('.stat-card').style.order = '1';
-        balanceStat.closest('.stat-card').style.order = '2';
-        topContributors.closest('.stat-card').style.order = '3';
-        unspokenList.closest('.stat-card').style.order = '4';
+        classAverageCard.style.order = '2';
+        balanceStat.closest('.stat-card').style.order = '3';
+        topContributors.closest('.stat-card').style.order = '4';
+        unspokenList.closest('.stat-card').style.order = '5';
         speakerStatLabel.textContent = 'Current Speaker';
         currentSpeakerStat.textContent = speaker ? speaker.name : 'None';
         speakerElapsedStat.textContent = speaker && currentSegmentStartedAt ? formatElapsed(now - currentSegmentStartedAt) : '0:00';
@@ -2797,12 +2937,15 @@
       }else if (!totalAir){
         balanceStat.textContent = `${heard}/${peopleForStats.length} heard`;
         balanceDetail.textContent = 'No airtime recorded yet.';
+      }else if (maxPct >= 55){
+        balanceStat.textContent = 'Highly Concentrated';
+        balanceDetail.textContent = `${heard}/${peopleForStats.length} heard; top voice has ${maxPct.toFixed(0)}% of airtime.`;
       }else if (maxPct >= 40){
         balanceStat.textContent = 'Concentrated';
         balanceDetail.textContent = `${heard}/${peopleForStats.length} heard; top voice has ${maxPct.toFixed(0)}% of airtime.`;
-      }else if (heard / peopleForStats.length >= .75 && maxPct <= 28){
+      }else if (heard / peopleForStats.length >= .75 && maxPct < 30 && zeroCount / peopleForStats.length <= .25){
         balanceStat.textContent = 'Balanced';
-        balanceDetail.textContent = `${heard}/${peopleForStats.length} heard; airtime is nicely spread.`;
+        balanceDetail.textContent = `${heard}/${peopleForStats.length} heard; top voice under 30% and few silent voices.`;
       }else{
         balanceStat.textContent = 'Developing';
         balanceDetail.textContent = `${heard}/${peopleForStats.length} heard; top voice has ${maxPct.toFixed(0)}% of airtime.`;
@@ -3366,15 +3509,17 @@
       participantFormWrap.style.display = discussionStarted && !participants.length && !discussionEnded ? 'block' : 'none';
       endDiscussionButton.style.display = discussionStarted && !discussionEnded && displayPeople().length ? 'inline-flex' : 'none';
       undoButton.style.display = discussionStarted && !discussionEnded ? 'inline-flex' : 'none';
-      arrangeModeButton.style.display = discussionStarted && !discussionEnded ? 'inline-flex' : 'none';
-      arrangeDragModeButton.style.display = arrangeMode && discussionStarted && !discussionEnded ? 'inline-flex' : 'none';
-      snapCircleTopButton.style.display = arrangeMode && discussionStarted && !discussionEnded && displayPeople().length ? 'inline-flex' : 'none';
+      arrangeModeButton.style.display = discussionStarted && displayPeople().length ? 'inline-flex' : 'none';
+      arrangeDragModeButton.style.display = arrangeMode && discussionStarted ? 'inline-flex' : 'none';
+      snapCircleTopButton.style.display = arrangeMode && discussionStarted && displayPeople().length ? 'inline-flex' : 'none';
+      educatorToggleButton.style.display = discussionStarted && educator ? 'inline-flex' : 'none';
+      educatorToggleButton.textContent = educatorHidden ? 'Show Educator' : 'Hide Educator';
       statsToggleButton.style.display = discussionStarted ? 'inline-flex' : 'none';
       editParticipantsButton.style.display = discussionStarted && !discussionEnded ? 'inline-flex' : 'none';
       helpButton.style.display = discussionEnded ? 'none' : 'inline-flex';
       exportScreenshotButton.style.display = discussionStarted ? 'inline-flex' : 'none';
       restartDiscussionButton.style.display = discussionEnded ? 'inline-flex' : 'none';
-      generateReportButton.style.display = discussionEnded ? 'inline-flex' : 'none';
+      generateReportButton.style.display = 'none';
       copyBothButton.style.display = discussionEnded ? 'inline-flex' : 'none';
       copyLogButton.style.display = discussionStarted ? 'inline-flex' : 'none';
       pauseCenter.style.display = discussionStarted && !discussionEnded ? 'block' : 'none';
@@ -3406,14 +3551,29 @@
       }
     });
     document.addEventListener('keydown', e => {
-      if (discussionEnded) return;
-      if (arrangeMode) return;
       if (isRatingOpen()) return;
       const overlays = [notesOverlay, colorSchemePopup, customColorPopup, confirmRestartPopup, editParticipantsPopup, recoveryPopup];
       if (overlays.some(o => o && o.style.display === 'flex')) return;
       if (isTypingTarget(document.activeElement)) return;
       const k = String(e.key || '').toUpperCase();
-      if (educator && k === 'B'){
+
+      if (discussionStarted && e.altKey && e.shiftKey && !e.ctrlKey && !e.metaKey){
+        if (educator && !educatorHidden && k === 'B'){
+          e.preventDefault();
+          openNotesBoxById(educator.id);
+          return;
+        }
+        const noteIdx = indexFromKeyEvent(e);
+        if (noteIdx != null && noteIdx >= 0 && noteIdx < participants.length){
+          e.preventDefault();
+          openNotesBoxById(participants[noteIdx].id);
+          return;
+        }
+      }
+
+      if (discussionEnded) return;
+      if (arrangeMode) return;
+      if (educator && !educatorHidden && k === 'B'){
         e.preventDefault();
         if (selectedParticipantId === educator.id) recordSpeakingById(educator.id);
         else selectParticipantById(educator.id);
@@ -3496,8 +3656,10 @@
     window.toggleStatsPanel = toggleStatsPanel;
     window.cycleStatsSize = cycleStatsSize;
     window.hideStatsPanel = hideStatsPanel;
+    window.toggleClassAverage = toggleClassAverage;
     window.toggleArrangeMode = toggleArrangeMode;
     window.toggleArrangeDragMode = toggleArrangeDragMode;
+    window.toggleEducatorVisibility = toggleEducatorVisibility;
     window.snapParticipantsToCircle = snapParticipantsToCircle;
     window.openNotesBoxById = openNotesBoxById;
     window.saveNotes = saveNotes;
