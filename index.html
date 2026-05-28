@@ -1264,6 +1264,35 @@
       margin:0;
       list-style:none;
     }
+    .color-tabs{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      margin:0 0 10px;
+    }
+    .color-tab{
+      border:1px solid rgba(35,97,146,.16);
+      background:rgba(255,255,255,.72);
+      color:var(--ink);
+      border-radius:999px;
+      padding:8px 11px;
+      font-size:12px;
+      font-weight:900;
+      cursor:pointer;
+    }
+    .color-tab.active{
+      background:var(--secondary-color);
+      color:var(--text-color);
+      border-color:transparent;
+      box-shadow:0 8px 18px rgba(35,97,146,.16);
+    }
+    .color-search{
+      margin:0 0 10px;
+      display:grid;
+      grid-template-columns:minmax(0, 1fr) auto;
+      gap:10px;
+      align-items:center;
+    }
     .scheme{
       border:1px solid rgba(0,0,0,.10);
       border-radius:16px;
@@ -1284,6 +1313,61 @@
       font-size:13px;
       color:var(--ink);
       font-weight:800;
+    }
+    .scheme .scheme-meta{
+      font-size:11px;
+      color:var(--muted);
+      font-weight:700;
+      margin-top:-6px;
+      line-height:1.25;
+    }
+    .scheme .favorite-label{
+      display:inline-flex;
+      align-self:flex-start;
+      border-radius:999px;
+      padding:5px 8px;
+      background:rgba(111,38,61,.08);
+      border:1px solid rgba(111,38,61,.14);
+      color:var(--primary-color);
+      font-size:11px;
+      font-weight:900;
+      line-height:1;
+    }
+    .scheme-empty{
+      grid-column:1 / -1;
+      border:1px dashed rgba(35,97,146,.25);
+      border-radius:16px;
+      padding:16px;
+      color:var(--muted);
+      background:rgba(255,255,255,.58);
+      font-size:13px;
+      line-height:1.35;
+    }
+    .scheme-actions{
+      display:flex;
+      gap:8px;
+      align-items:center;
+    }
+    .scheme-actions .select-button{
+      flex:1 1 auto;
+    }
+    .favorite-button{
+      width:38px;
+      height:38px;
+      flex:0 0 auto;
+      border-radius:12px;
+      border:1px solid rgba(35,97,146,.16);
+      background:rgba(255,255,255,.72);
+      color:var(--muted);
+      cursor:pointer;
+      font-size:18px;
+      line-height:1;
+      box-shadow:none;
+    }
+    .favorite-button.active{
+      color:#b7791f;
+      background:rgba(255,184,28,.16);
+      border-color:rgba(183,121,31,.28);
     }
     .scheme .select-button{
       width:100%;
@@ -1846,6 +1930,11 @@
   <div id="colorSchemePopup">
     <div class="popup">
       <h2>Color Scheme</h2>
+      <div class="color-tabs" id="colorLeagueTabs"></div>
+      <div class="color-search">
+        <input type="text" id="colorSearchInput" placeholder="Search teams or schools..." oninput="createColorSchemeList()" />
+        <button class="btn ghost" type="button" onclick="clearColorSearch()">Clear</button>
+      </div>
       <ul id="colorSchemeList"></ul>
       <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:12px;align-items:center;flex-wrap:wrap;">
         <label style="display:flex;align-items:center;gap:10px;">
@@ -2028,6 +2117,7 @@
   <script>
     const AUTOSAVE_KEY = 'discussion_tracker_autosave_v2';
     const PALETTES_KEY = 'discussion_tracker_saved_palettes_v1';
+    const FAVORITE_COLORS_KEY = 'discussion_tracker_favorite_color_swatches_v1';
     const TAG_SETS_KEY = 'discussion_tracker_saved_tag_sets_v1';
     const TAG_ACTIVE_KEY = 'discussion_tracker_active_tag_set_v1';
 
@@ -2086,6 +2176,8 @@
 
     const colorSchemePopup = document.getElementById('colorSchemePopup');
     const colorSchemeList = document.getElementById('colorSchemeList');
+    const colorLeagueTabs = document.getElementById('colorLeagueTabs');
+    const colorSearchInput = document.getElementById('colorSearchInput');
     const tagSetPopup = document.getElementById('tagSetPopup');
     const tagSetSelect = document.getElementById('tagSetSelect');
     const tagsEnabledInput = document.getElementById('tagsEnabledInput');
@@ -2151,6 +2243,8 @@
     let classAverageVisible = true;
     let recentReviewVisible = true;
     let everyoneSpokenCelebrated = false;
+    let activeColorLeague = 'NHL';
+    let favoriteColorSwatches = [];
     let undoStack = [];
     let selectedTagsForEntry = new Set();
     let autosaveTimer = null;
@@ -2369,6 +2463,218 @@
       { name:'Washington Capitals', colors:['#041E42', '#C8102E'] },
       { name:'Winnipeg Jets', colors:['#041E42', '#AC162C'] },
       { name:'UCLA (Blue & Gold)', colors:['#2774AE', '#FFD100'] }
+    ];
+
+    function colorRows(rows, league){
+      return rows.trim().split('\n').filter(Boolean).map(line => {
+        const [name, primary, secondary, aliases = ''] = line.split('|').map(part => part.trim());
+        return { name, colors:[primary, secondary], league, aliases };
+      });
+    }
+
+    const COLOR_GROUPS = {
+      NHL: nhlTeams
+        .filter(team => !team.name.startsWith('UCLA'))
+        .map(team => ({ ...team, league:'NHL', aliases:'' })),
+      NFL: colorRows(`
+Arizona Cardinals|#97233F|#000000|Arizona Cards
+Atlanta Falcons|#A71930|#000000|Atlanta
+Baltimore Ravens|#241773|#9E7C0C|Baltimore
+Buffalo Bills|#00338D|#C60C30|Buffalo
+Carolina Panthers|#0085CA|#101820|Carolina
+Chicago Bears|#0B162A|#C83803|Chicago
+Cincinnati Bengals|#FB4F14|#000000|Cincinnati
+Cleveland Browns|#311D00|#FF3C00|Cleveland
+Dallas Cowboys|#041E42|#869397|Dallas
+Denver Broncos|#FB4F14|#002244|Denver
+Detroit Lions|#0076B6|#B0B7BC|Detroit
+Green Bay Packers|#203731|#FFB612|Green Bay
+Houston Texans|#03202F|#A71930|Houston
+Indianapolis Colts|#002C5F|#A2AAAD|Indianapolis
+Jacksonville Jaguars|#006778|#D7A22A|Jacksonville
+Kansas City Chiefs|#E31837|#FFB81C|Kansas City
+Las Vegas Raiders|#000000|#A5ACAF|Raiders
+Los Angeles Chargers|#0080C6|#FFC20E|Chargers
+Los Angeles Rams|#003594|#FFA300|Rams
+Miami Dolphins|#008E97|#FC4C02|Miami
+Minnesota Vikings|#4F2683|#FFC62F|Minnesota
+New England Patriots|#002244|#C60C30|Patriots
+New Orleans Saints|#D3BC8D|#101820|Saints
+New York Giants|#0B2265|#A71930|Giants
+New York Jets|#125740|#FFFFFF|Jets
+Philadelphia Eagles|#004C54|#A5ACAF|Eagles
+Pittsburgh Steelers|#FFB612|#101820|Steelers
+San Francisco 49ers|#AA0000|#B3995D|49ers Niners
+Seattle Seahawks|#002244|#69BE28|Seattle
+Tampa Bay Buccaneers|#D50A0A|#34302B|Buccaneers Bucs
+Tennessee Titans|#0C2340|#4B92DB|Tennessee
+Washington Commanders|#5A1414|#FFB612|Washington
+`, 'NFL'),
+      NBA: colorRows(`
+Atlanta Hawks|#E03A3E|#C1D32F|Atlanta
+Boston Celtics|#007A33|#BA9653|Boston
+Brooklyn Nets|#000000|#FFFFFF|Brooklyn
+Charlotte Hornets|#1D1160|#00788C|Charlotte
+Chicago Bulls|#CE1141|#000000|Chicago
+Cleveland Cavaliers|#860038|#FDBB30|Cleveland Cavs
+Dallas Mavericks|#00538C|#B8C4CA|Dallas
+Denver Nuggets|#0E2240|#FEC524|Denver
+Detroit Pistons|#C8102E|#1D42BA|Detroit
+Golden State Warriors|#1D428A|#FFC72C|Warriors
+Houston Rockets|#CE1141|#000000|Houston
+Indiana Pacers|#002D62|#FDBB30|Indiana
+Los Angeles Clippers|#C8102E|#1D428A|Clippers
+Los Angeles Lakers|#552583|#FDB927|Lakers
+Memphis Grizzlies|#5D76A9|#12173F|Memphis
+Miami Heat|#98002E|#F9A01B|Miami
+Milwaukee Bucks|#00471B|#EEE1C6|Milwaukee
+Minnesota Timberwolves|#0C2340|#78BE20|Minnesota
+New Orleans Pelicans|#0C2340|#C8102E|Pelicans
+New York Knicks|#006BB6|#F58426|Knicks
+Oklahoma City Thunder|#007AC1|#EF3B24|Thunder OKC
+Orlando Magic|#0077C0|#C4CED4|Orlando
+Philadelphia 76ers|#006BB6|#ED174C|Sixers 76ers
+Phoenix Suns|#1D1160|#E56020|Phoenix
+Portland Trail Blazers|#E03A3E|#000000|Portland
+Sacramento Kings|#5A2D81|#63727A|Sacramento
+San Antonio Spurs|#C4CED4|#000000|Spurs
+Toronto Raptors|#CE1141|#000000|Toronto
+Utah Jazz|#002B5C|#F9A01B|Utah
+Washington Wizards|#002B5C|#E31837|Washington
+`, 'NBA'),
+      MLB: colorRows(`
+Arizona Diamondbacks|#A71930|#E3D4AD|Diamondbacks Dbacks
+Atlanta Braves|#13274F|#CE1141|Atlanta
+Baltimore Orioles|#DF4601|#000000|Baltimore
+Boston Red Sox|#BD3039|#0C2340|Boston
+Chicago Cubs|#0E3386|#CC3433|Cubs
+Chicago White Sox|#27251F|#C4CED4|White Sox
+Cincinnati Reds|#C6011F|#000000|Cincinnati
+Cleveland Guardians|#E31937|#0C2340|Cleveland
+Colorado Rockies|#33006F|#C4CED4|Colorado
+Detroit Tigers|#0C2340|#FA4616|Detroit
+Houston Astros|#002D62|#EB6E1F|Houston
+Kansas City Royals|#004687|#BD9B60|Royals
+Los Angeles Angels|#BA0021|#003263|Angels
+Los Angeles Dodgers|#005A9C|#EF3E42|Dodgers
+Miami Marlins|#00A3E0|#EF3340|Miami
+Milwaukee Brewers|#12284B|#FFC52F|Milwaukee
+Minnesota Twins|#002B5C|#D31145|Minnesota
+New York Mets|#002D72|#FF5910|Mets
+New York Yankees|#0C2340|#C4CED4|Yankees
+Oakland Athletics|#003831|#EFB21E|Athletics A's
+Philadelphia Phillies|#E81828|#002D72|Phillies
+Pittsburgh Pirates|#FDB827|#27251F|Pirates
+San Diego Padres|#2F241D|#FFC425|Padres
+San Francisco Giants|#FD5A1E|#27251F|Giants
+Seattle Mariners|#0C2C56|#005C5C|Mariners
+St. Louis Cardinals|#C41E3A|#0C2340|Cardinals
+Tampa Bay Rays|#092C5C|#8FBCE6|Rays
+Texas Rangers|#003278|#C0111F|Rangers
+Toronto Blue Jays|#134A8E|#E8291C|Blue Jays
+Washington Nationals|#AB0003|#14225A|Nationals
+`, 'MLB'),
+      WNBA: colorRows(`
+Atlanta Dream|#E31837|#00A3E0|Atlanta
+Chicago Sky|#418FDE|#FBB034|Chicago
+Connecticut Sun|#F05023|#0A2240|Connecticut
+Dallas Wings|#002B5C|#C4D600|Dallas
+Golden State Valkyries|#1D252D|#B9975B|Golden State
+Indiana Fever|#002D62|#E03A3E|Indiana
+Las Vegas Aces|#000000|#BA0C2F|Las Vegas
+Los Angeles Sparks|#552583|#FDB927|Los Angeles
+Minnesota Lynx|#236192|#78BE20|Minnesota
+New York Liberty|#86CEBC|#000000|New York
+Phoenix Mercury|#3D195B|#E56020|Phoenix
+Seattle Storm|#2C5234|#FBE122|Seattle
+Washington Mystics|#E31837|#002B5C|Washington
+`, 'WNBA'),
+      COLLEGE: colorRows(`
+Air Force Falcons|#003087|#8A8D8F|United States Air Force Academy
+Arizona State University Sun Devils|#8C1D40|#FFC627|Arizona State ASU
+Auburn University Tigers|#0C2340|#E87722|Auburn
+Boston College Eagles|#98002E|#BC9B6A|Boston College BC
+Boston University Terriers|#CC0000|#000000|Boston University BU
+Bowling Green State University Falcons|#4F2C1D|#FE5000|Bowling Green BGSU
+Brown University Bears|#4E3629|#EEB211|Brown
+Clemson University Tigers|#F56600|#522D80|Clemson
+Colorado College Tigers|#000000|#F58025|Colorado College CC
+Colorado State University Rams|#1E4D2B|#C8C372|Colorado State CSU
+Cornell University Big Red|#B31B1B|#222222|Cornell
+Dartmouth College Big Green|#00693E|#FFFFFF|Dartmouth
+Duke University Blue Devils|#003087|#FFFFFF|Duke
+Florida State University Seminoles|#782F40|#CEB888|Florida State FSU
+Harvard University Crimson|#A51C30|#000000|Harvard
+Indiana University Hoosiers|#990000|#EEEDEB|Indiana IU
+Iowa State University Cyclones|#C8102E|#F1BE48|Iowa State
+Louisiana State University Tigers|#461D7C|#FDD023|LSU
+Miami University RedHawks|#C41230|#000000|Miami Ohio
+Michigan State University Spartans|#18453B|#FFFFFF|Michigan State MSU
+Minnesota State University Mavericks|#512888|#FFC72C|Minnesota State Mankato
+North Dakota State University Bison|#0A5640|#FFC72C|NDSU
+Northeastern University Huskies|#CC0000|#000000|Northeastern
+Ohio State University Buckeyes|#BB0000|#666666|Ohio State OSU
+Penn State University Nittany Lions|#1E407C|#FFFFFF|Penn State
+Princeton University Tigers|#FF8F00|#000000|Princeton
+Quinnipiac University Bobcats|#0C2340|#C99700|Quinnipiac
+Rensselaer Polytechnic Institute Engineers|#D6001C|#000000|RPI
+Rutgers University Scarlet Knights|#CC0033|#5F6A72|Rutgers
+St. Cloud State University Huskies|#C8102E|#000000|St Cloud State
+Syracuse University Orange|#D44500|#000E54|Syracuse
+Texas A&M University Aggies|#500000|#FFFFFF|Texas A&M
+The University of Alabama Crimson Tide|#9E1B32|#828A8F|Alabama
+The University of Texas Longhorns|#BF5700|#FFFFFF|Texas
+United States Military Academy Army Black Knights|#D4BF91|#000000|Army West Point
+University of Alaska Anchorage Seawolves|#00583D|#FFC425|Alaska Anchorage
+University of Alaska Fairbanks Nanooks|#236192|#FFB81C|Alaska Fairbanks
+University of Arizona Wildcats|#003366|#CC0033|Arizona
+University of Arkansas Razorbacks|#9D2235|#FFFFFF|Arkansas
+University of California Berkeley Golden Bears|#003262|#FDB515|California Cal
+University of California Los Angeles Bruins|#2774AE|#FFD100|UCLA Bruins
+University of Cincinnati Bearcats|#E00122|#000000|Cincinnati
+University of Colorado Buffaloes|#CFB87C|#000000|Colorado CU
+University of Connecticut Huskies|#000E2F|#FFFFFF|UConn
+University of Denver Pioneers|#8B2332|#C99700|Denver DU
+University of Florida Gators|#0021A5|#FA4616|Florida
+University of Georgia Bulldogs|#BA0C2F|#000000|Georgia UGA
+University of Iowa Hawkeyes|#FFCD00|#000000|Iowa
+University of Kansas Jayhawks|#0051BA|#E8000D|Kansas
+University of Kentucky Wildcats|#0033A0|#FFFFFF|Kentucky
+University of Maine Black Bears|#003263|#B0D7FF|Maine
+University of Massachusetts Minutemen|#881C1C|#FFFFFF|UMass
+University of Miami Hurricanes|#F47321|#005030|Miami Hurricanes
+University of Michigan Wolverines|#00274C|#FFCB05|Michigan
+University of Minnesota Golden Gophers|#7A0019|#FFCC33|Minnesota
+University of Minnesota Duluth Bulldogs|#862633|#FFC72C|Minnesota Duluth UMD
+University of Nebraska Cornhuskers|#E41C38|#FFFFFF|Nebraska
+University of New Hampshire Wildcats|#003591|#FFFFFF|New Hampshire UNH
+University of North Dakota Fighting Hawks|#009A44|#000000|North Dakota UND
+University of Notre Dame Fighting Irish|#0C2340|#C99700|Notre Dame
+University of Oklahoma Sooners|#841617|#FDF9D8|Oklahoma
+University of Oregon Ducks|#154733|#FEE123|Oregon
+University of Pennsylvania Quakers|#011F5B|#990000|Penn
+University of Pittsburgh Panthers|#003594|#FFB81C|Pittsburgh Pitt
+University of Southern California Trojans|#990000|#FFC72C|USC
+University of Tennessee Volunteers|#FF8200|#FFFFFF|Tennessee
+University of Vermont Catamounts|#007155|#FFC72C|Vermont UVM
+University of Washington Huskies|#4B2E83|#B7A57A|Washington
+University of Wisconsin Badgers|#C5050C|#FFFFFF|Wisconsin
+Virginia Tech Hokies|#861F41|#E5751F|Virginia Tech
+Western Michigan University Broncos|#6C4023|#B5A167|Western Michigan
+Yale University Bulldogs|#00356B|#FFFFFF|Yale
+`, 'D1 Football/Hockey')
+    };
+
+    const COLOR_TABS = [
+      { key:'NHL', label:'NHL' },
+      { key:'NFL', label:'NFL' },
+      { key:'NBA', label:'NBA' },
+      { key:'MLB', label:'MLB' },
+      { key:'WNBA', label:'WNBA' },
+      { key:'COLLEGE', label:'D1 FB/Hockey' },
+      { key:'FAVORITES', label:'Favorites' },
+      { key:'SAVED', label:'Saved' },
+      { key:'CUSTOM', label:'Custom' }
     ];
 
     function escapeHtml(str){
@@ -4519,7 +4825,11 @@
       loadTagSetIntoEditor({ name:`Tag Set ${tagEditorSlot + 1}`, tags:[] });
       scheduleSave();
     }
-    function openColorSchemePopup(){ colorSchemePopup.style.display = 'flex'; }
+    function openColorSchemePopup(){
+      loadFavoriteColorSwatches();
+      createColorSchemeList();
+      colorSchemePopup.style.display = 'flex';
+    }
     function closeColorSchemePopup(){ colorSchemePopup.style.display = 'none'; }
     function openCustomColorPopup(){ customColorPopup.style.display = 'flex'; }
     function closeCustomColorPopup(){ customColorPopup.style.display = 'none'; }
@@ -4572,25 +4882,125 @@
       saveSavedPalettes(slots);
       createColorSchemeList();
     }
+    function loadFavoriteColorSwatches(){
+      try{
+        const raw = localStorage.getItem(FAVORITE_COLORS_KEY);
+        const parsed = raw ? JSON.parse(raw) : [];
+        favoriteColorSwatches = Array.isArray(parsed) ? parsed.slice(0, 8) : [];
+      }catch(e){
+        favoriteColorSwatches = [];
+      }
+      return favoriteColorSwatches;
+    }
+    function saveFavoriteColorSwatches(){
+      try{ localStorage.setItem(FAVORITE_COLORS_KEY, JSON.stringify(favoriteColorSwatches.slice(0, 8))); }
+      catch(e){ alert('Could not save favorites in this browser.'); }
+    }
+    function colorSwatchKey(item){
+      return `${item.name}|${item.colors?.[0] || ''}|${item.colors?.[1] || ''}`;
+    }
+    function isFavoriteSwatch(item){
+      const key = colorSwatchKey(item);
+      return favoriteColorSwatches.some(fav => colorSwatchKey(fav) === key);
+    }
+    function toggleFavoriteSwatch(name, primary, secondary, league, aliases = ''){
+      loadFavoriteColorSwatches();
+      const item = { name, colors:[primary, secondary], league, aliases };
+      const key = colorSwatchKey(item);
+      const existingIndex = favoriteColorSwatches.findIndex(fav => colorSwatchKey(fav) === key);
+      if (existingIndex >= 0){
+        favoriteColorSwatches.splice(existingIndex, 1);
+        saveFavoriteColorSwatches();
+        createColorSchemeList();
+        return;
+      }
+      if (favoriteColorSwatches.length >= 8){
+        alert('Favorites are full. Remove one first. You can save up to 8 favorites.');
+        return;
+      }
+      const label = prompt('Label this favorite:', '');
+      if (label === null) return;
+      favoriteColorSwatches.push({ ...item, label:String(label).trim() });
+      saveFavoriteColorSwatches();
+      createColorSchemeList();
+    }
+    function renameFavoriteSwatch(name, primary, secondary){
+      loadFavoriteColorSwatches();
+      const key = colorSwatchKey({ name, colors:[primary, secondary] });
+      const fav = favoriteColorSwatches.find(item => colorSwatchKey(item) === key);
+      if (!fav) return;
+      const label = prompt('Favorite label:', fav.label || '');
+      if (label === null) return;
+      fav.label = String(label).trim();
+      saveFavoriteColorSwatches();
+      createColorSchemeList();
+    }
+    function setActiveColorLeague(key){
+      activeColorLeague = key;
+      createColorSchemeList();
+    }
+    function clearColorSearch(){
+      colorSearchInput.value = '';
+      createColorSchemeList();
+      colorSearchInput.focus();
+    }
+    function renderColorLeagueTabs(){
+      colorLeagueTabs.innerHTML = '';
+      COLOR_TABS.forEach(tab => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'color-tab' + (activeColorLeague === tab.key ? ' active' : '');
+        btn.textContent = tab.key === 'FAVORITES' ? `${tab.label} ${favoriteColorSwatches.length}/8` : tab.label;
+        btn.onclick = () => setActiveColorLeague(tab.key);
+        colorLeagueTabs.appendChild(btn);
+      });
+    }
+    function matchesColorSearch(item, query){
+      if (!query) return true;
+      return [item.name, item.league, item.aliases, item.label]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase()
+        .includes(query);
+    }
+    function addSchemeEmpty(message){
+      const li = document.createElement('li');
+      li.className = 'scheme-empty';
+      li.textContent = message;
+      colorSchemeList.appendChild(li);
+    }
     function createColorSchemeList(){
       colorSchemeList.innerHTML = '';
-      const ucla = nhlTeams.find(t => t.name.startsWith('UCLA'));
-      const coreTeams = nhlTeams.filter(t => t !== ucla);
-      coreTeams.forEach(team => addSchemeCard(team));
-      if (ucla) addSchemeCard(ucla);
-      for (let i = 0; i < 7; i++) addSavedSlotCard(i);
-      const li = document.createElement('li');
-      li.className = 'scheme';
-      li.innerHTML = `
-        <div class="swatches">
-          <div class="swatch" style="background:#000"></div>
-          <div class="swatch" style="background:#000"></div>
-        </div>
-        <div class="team-name">Custom</div>
-        <button class="select-button">Select your own</button>
-      `;
-      li.querySelector('button').onclick = () => { openCustomColorPopup(); closeColorSchemePopup(); };
-      colorSchemeList.appendChild(li);
+      loadFavoriteColorSwatches();
+      renderColorLeagueTabs();
+      const query = (colorSearchInput?.value || '').trim().toLowerCase();
+
+      if (activeColorLeague === 'FAVORITES'){
+        const favorites = favoriteColorSwatches.filter(item => matchesColorSearch(item, query));
+        if (!favorites.length){
+          addSchemeEmpty(favoriteColorSwatches.length ? 'No favorites match that search.' : 'No favorites yet. Star any team swatch to save up to 8 here.');
+          return;
+        }
+        favorites.forEach(team => addSchemeCard(team, { favoriteView:true }));
+        return;
+      }
+
+      if (activeColorLeague === 'SAVED'){
+        for (let i = 0; i < 7; i++) addSavedSlotCard(i);
+        return;
+      }
+
+      if (activeColorLeague === 'CUSTOM'){
+        addCustomColorCard();
+        return;
+      }
+
+      const teams = (COLOR_GROUPS[activeColorLeague] || []).filter(item => matchesColorSearch(item, query));
+      if (!teams.length){
+        addSchemeEmpty('No color swatches match that search.');
+        return;
+      }
+      teams.forEach(team => addSchemeCard(team));
     }
     function addSavedSlotCard(slotIndex){
       const slots = loadSavedPalettes();
@@ -4622,21 +5032,52 @@
       btns[2].onclick = () => clearSlot(slotIndex);
       colorSchemeList.appendChild(li);
     }
-    function addSchemeCard(team){
+    function addCustomColorCard(){
       const li = document.createElement('li');
       li.className = 'scheme';
+      li.innerHTML = `
+        <div class="swatches">
+          <div class="swatch" style="background:#000"></div>
+          <div class="swatch" style="background:#fff"></div>
+        </div>
+        <div class="team-name">Custom Colors</div>
+        <div class="scheme-meta">Pick your own primary and secondary colors.</div>
+        <button class="select-button">Select your own</button>
+      `;
+      li.querySelector('button').onclick = () => { openCustomColorPopup(); closeColorSchemePopup(); };
+      colorSchemeList.appendChild(li);
+    }
+    function addSchemeCard(team, opts = {}){
+      const li = document.createElement('li');
+      li.className = 'scheme';
+      const isFav = isFavoriteSwatch(team);
+      const favoriteLabel = opts.favoriteView && team.label ? `<div class="favorite-label">${escapeHtml(team.label)}</div>` : '';
+      const meta = opts.favoriteView ? `${team.league || 'Favorite'} · ${team.name}` : (team.league || '');
       li.innerHTML = `
         <div class="swatches">
           <div class="swatch" style="background:${team.colors[0]}"></div>
           <div class="swatch" style="background:${team.colors[1]}"></div>
         </div>
-        <div class="team-name">${escapeHtml(team.name)}</div>
-        <button class="select-button">Select</button>
+        ${favoriteLabel}
+        <div class="team-name">${escapeHtml(opts.favoriteView && team.label ? team.label : team.name)}</div>
+        <div class="scheme-meta">${escapeHtml(meta)}</div>
+        <div class="scheme-actions">
+          <button class="select-button">Select</button>
+          ${opts.favoriteView ? '<button class="favorite-button label-button" title="Edit favorite label">Aa</button>' : ''}
+          <button class="favorite-button ${isFav ? 'active' : ''}" title="${isFav ? 'Remove from favorites' : 'Add to favorites'}">★</button>
+        </div>
       `;
-      li.querySelector('button').onclick = () => {
-        updateColorScheme(team.colors[0], team.colors[1], team.name);
+      const buttons = li.querySelectorAll('button');
+      buttons[0].onclick = () => {
+        updateColorScheme(team.colors[0], team.colors[1], opts.favoriteView && team.label ? team.label : team.name);
         closeColorSchemePopup();
       };
+      if (opts.favoriteView){
+        buttons[1].onclick = () => renameFavoriteSwatch(team.name, team.colors[0], team.colors[1]);
+        buttons[2].onclick = () => toggleFavoriteSwatch(team.name, team.colors[0], team.colors[1], team.league || '', team.aliases || '');
+      }else{
+        buttons[1].onclick = () => toggleFavoriteSwatch(team.name, team.colors[0], team.colors[1], team.league || '', team.aliases || '');
+      }
       colorSchemeList.appendChild(li);
     }
     enableHtml2canvas.addEventListener('change', () => {
@@ -4820,6 +5261,7 @@
     window.addEventListener('beforeunload', saveNow);
 
     document.addEventListener('DOMContentLoaded', () => {
+      document.getElementById('colorSchemeButton')?.addEventListener('click', openColorSchemePopup);
       createColorSchemeList();
       updateColorScheme('#6F263D', '#236192', 'Colorado Avalanche');
       loadActiveTagSettings();
@@ -4851,6 +5293,10 @@
     window.closeNotesBox = closeNotesBox;
     window.openColorSchemePopup = openColorSchemePopup;
     window.closeColorSchemePopup = closeColorSchemePopup;
+    window.setActiveColorLeague = setActiveColorLeague;
+    window.clearColorSearch = clearColorSearch;
+    window.toggleFavoriteSwatch = toggleFavoriteSwatch;
+    window.renameFavoriteSwatch = renameFavoriteSwatch;
     window.openTagSetPopup = openTagSetPopup;
     window.closeTagSetPopup = closeTagSetPopup;
     window.setTagsEnabledFromInput = setTagsEnabledFromInput;
