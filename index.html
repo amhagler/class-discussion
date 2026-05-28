@@ -27,15 +27,21 @@
       --pill-h:56px;
       --pill-pad:10px;
       --aux-d:44px;
+
+      --font-ui:Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
 
     *{ box-sizing:border-box; }
     html,body{ min-height:100%; }
     body{
       margin:0;
-      font-family:Arial, sans-serif;
-      background:radial-gradient(1200px 700px at 10% 10%, #fff, var(--bg));
+      font-family:var(--font-ui);
+      background:
+        radial-gradient(900px 520px at 12% 4%, rgba(255,255,255,.94), transparent 64%),
+        linear-gradient(135deg, #f8fafc 0%, #f1f5f9 46%, #eef2f7 100%);
       color:var(--ink);
+      -webkit-font-smoothing:antialiased;
+      text-rendering:optimizeLegibility;
     }
 
     .topbar{
@@ -43,7 +49,7 @@
       top:0;
       z-index:50;
       backdrop-filter:blur(10px);
-      background:linear-gradient(to bottom, rgba(255,255,255,.88), rgba(255,255,255,.68));
+      background:linear-gradient(to bottom, rgba(255,255,255,.92), rgba(255,255,255,.74));
       border-bottom:1px solid rgba(0,0,0,.08);
     }
     .topbar-inner{
@@ -65,7 +71,7 @@
     .brand h1{
       margin:0;
       font-size:20px;
-      letter-spacing:.2px;
+      letter-spacing:0;
       color:var(--primary-color);
     }
     .brand .sub{
@@ -92,10 +98,11 @@
       align-items:center;
       justify-content:center;
       gap:8px;
-      box-shadow:0 2px 0 rgba(0,0,0,.18);
+      box-shadow:0 1px 0 rgba(255,255,255,.16) inset, 0 8px 18px rgba(0,0,0,.12);
       transition:transform .12s ease, box-shadow .12s ease, background .2s ease, opacity .2s ease;
       user-select:none;
       font-size:14px;
+      font-weight:750;
       line-height:1;
       white-space:nowrap;
     }
@@ -198,9 +205,9 @@
     label{
       font-size:13px;
       color:var(--muted);
-      font-weight:300;
+      font-weight:650;
     }
-    input[type="text"], textarea{
+    input[type="text"], textarea, .rich-comment{
       padding:12px 12px;
       font-size:16px;
       border-radius:14px;
@@ -210,8 +217,8 @@
       background:rgba(255,255,255,.88);
       color:var(--ink);
     }
-    textarea{ resize:vertical; min-height:82px; font-family:Arial, sans-serif; }
-    input[type="text"]:focus, textarea:focus{
+    textarea{ resize:vertical; min-height:82px; font-family:var(--font-ui); }
+    input[type="text"]:focus, textarea:focus, .rich-comment:focus{
       border-color:rgba(35,97,146,.55);
       box-shadow:0 0 0 4px rgba(35,97,146,.10);
     }
@@ -227,6 +234,43 @@
     .workspace{
       display:block;
       position:relative;
+    }
+    .workspace.stats-ended{
+      display:grid;
+      grid-template-columns:minmax(620px, 1fr) minmax(250px, 330px);
+      gap:18px;
+      align-items:start;
+    }
+    .workspace.stats-ended .stage{
+      justify-content:flex-start;
+      grid-column:1;
+      min-width:0;
+    }
+    .workspace.stats-ended .stats-panel{
+      position:sticky;
+      top:112px;
+      right:auto;
+      bottom:auto;
+      grid-column:2;
+      grid-row:1;
+      width:100%;
+      transform:none;
+      align-self:start;
+    }
+    @media (max-width:980px){
+      .workspace.stats-ended{
+        grid-template-columns:1fr;
+      }
+      .workspace.stats-ended .stage{
+        justify-content:center;
+      }
+      .workspace.stats-ended .stats-panel{
+        grid-column:1;
+        position:relative;
+        top:auto;
+        width:min(330px, 100%);
+        justify-self:end;
+      }
     }
 
     .stage{
@@ -523,9 +567,10 @@
       margin:10px 0 12px;
     }
     .rating-option{
-      width:40px;
+      min-width:40px;
       height:40px;
-      border-radius:50%;
+      border-radius:999px;
+      padding:0 14px;
       display:flex;
       align-items:center;
       justify-content:center;
@@ -537,12 +582,65 @@
       font-weight:800;
       color:var(--ink);
     }
+    .rating-option.no-rating{
+      width:auto;
+      min-width:78px;
+      font-size:12px;
+      gap:6px;
+    }
     .rating-option:hover{ transform:translateY(-1px); background:rgba(0,0,0,.12); }
     .rating-option.selected{
       background:var(--primary-color);
       color:var(--text-color);
       border-color:transparent;
     }
+    .comment-tools{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      margin:8px 0 6px;
+    }
+    .format-tools{
+      display:flex;
+      gap:6px;
+      align-items:center;
+    }
+    .format-btn{
+      width:34px;
+      height:30px;
+      border-radius:10px;
+      border:1px solid rgba(35,97,146,.16);
+      background:rgba(255,255,255,.78);
+      color:var(--ink);
+      cursor:pointer;
+      font-size:14px;
+      font-weight:900;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      box-shadow:0 1px 0 rgba(255,255,255,.80) inset;
+    }
+    .format-btn:hover{
+      background:rgba(35,97,146,.08);
+      border-color:rgba(35,97,146,.26);
+    }
+    .rich-comment{
+      width:100%;
+      min-height:94px;
+      line-height:1.35;
+      overflow:auto;
+      font-family:var(--font-ui);
+    }
+    .rich-comment:empty::before{
+      content:attr(data-placeholder);
+      color:rgba(107,114,128,.72);
+      pointer-events:none;
+    }
+    .rich-comment b,
+    .rich-comment strong{ font-weight:850; }
+    .rich-comment i,
+    .rich-comment em{ font-style:italic; }
     .tag-row{
       display:grid;
       grid-template-columns:repeat(2, minmax(0, 1fr));
@@ -736,6 +834,49 @@
       color:var(--secondary-color);
       flex:0 0 auto;
     }
+    .stats-panel.ended .stats-hd{
+      background:
+        linear-gradient(135deg, rgba(111,38,61,.10), rgba(35,97,146,.08)),
+        rgba(255,255,255,.70);
+    }
+    .stats-panel.ended .review-panel{
+      display:none;
+    }
+    .stats-panel.ended .stat-card:first-child{
+      display:none;
+    }
+    .stats-panel.ended .stats-body{
+      gap:8px;
+    }
+    .stats-panel.ended .stat-card:nth-child(5){
+      background:
+        linear-gradient(135deg, rgba(111,38,61,.12), rgba(35,97,146,.10)),
+        rgba(255,255,255,.76);
+      border-color:rgba(111,38,61,.20);
+      box-shadow:0 12px 28px rgba(111,38,61,.10);
+    }
+    .stats-panel.ended .mini-list{
+      gap:4px;
+      margin-top:2px;
+    }
+    .stats-panel.ended .mini-row{
+      padding:6px 8px;
+      gap:6px;
+      border:1px solid rgba(255,255,255,.70);
+      background:linear-gradient(135deg, rgba(255,255,255,.90), rgba(255,255,255,.55));
+      box-shadow:0 7px 16px rgba(35,97,146,.08);
+    }
+    .stats-panel.ended .mini-row b{
+      font-size:14px;
+      font-weight:900;
+      color:var(--primary-color);
+    }
+    .stats-panel.ended .mini-row span{
+      font-size:16px;
+      font-weight:950;
+      color:var(--secondary-color);
+      font-variant-numeric:tabular-nums;
+    }
     .unspoken{
       display:flex;
       gap:6px;
@@ -872,16 +1013,14 @@
 
     .replay-dock{
       display:none;
-      position:fixed;
-      left:24px;
-      top:112px;
-      z-index:41;
-      width:270px;
-      border-radius:20px;
-      background:rgba(255,255,255,.88);
+      width:100%;
+      border-radius:0;
+      background:
+        linear-gradient(180deg, rgba(35,97,146,.06), rgba(111,38,61,.05)),
+        rgba(255,255,255,.58);
       backdrop-filter:blur(14px);
-      border:1px solid rgba(35,97,146,.16);
-      box-shadow:0 16px 44px rgba(0,0,0,.16);
+      border-top:1px solid rgba(35,97,146,.14);
+      box-shadow:none;
       padding:12px;
     }
     .replay-dock.open{ display:block; }
@@ -927,13 +1066,6 @@
     .replay-dock .dock-btn.primaryish{
       background:rgba(111,38,61,.08);
       color:var(--primary-color);
-    }
-    @media (max-width:1100px){
-      .replay-dock{
-        left:14px;
-        top:92px;
-        width:min(270px, calc(100vw - 28px));
-      }
     }
 
     #colorSchemePopup,
@@ -1382,19 +1514,26 @@
                 <div class="rating-option" onclick="selectRating(3)">3</div>
                 <div class="rating-option" onclick="selectRating(4)">4</div>
                 <div class="rating-option" onclick="selectRating(5)">5</div>
+                <div class="rating-option no-rating" onclick="selectRating(null)">No rating =</div>
               </div>
 
               <div class="tag-row" id="tagRow"></div>
 
-              <label for="comment">Comment:</label>
-              <textarea id="comment" rows="3" placeholder="Optional quick note..."></textarea>
+              <div class="comment-tools">
+                <label for="comment">Comment:</label>
+                <div class="format-tools" aria-label="Comment formatting">
+                  <button class="format-btn" type="button" onclick="formatComment('bold')" title="Bold (Ctrl/Cmd+B)">B</button>
+                  <button class="format-btn" type="button" onclick="formatComment('italic')" title="Italic (Ctrl/Cmd+I)"><i>I</i></button>
+                </div>
+              </div>
+              <div id="comment" class="rich-comment" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="Optional quick note..."></div>
 
               <div style="display:flex;justify-content:flex-end;margin-top:10px;">
                 <button class="btn secondary" onclick="saveContribution()">Save</button>
               </div>
 
               <div style="margin-top:8px;color:var(--muted);font-size:12px;font-weight:300;line-height:1.35;">
-                Tip: Ctrl+Enter saves. Keys 1-5 select rating. Alt/Option+tag letter toggles tags.
+                Tip: Ctrl+Enter saves. Keys 1-5 select rating. = records no rating. Ctrl/Cmd+B and Ctrl/Cmd+I format comment text.
               </div>
             </div>
           </div>
@@ -1452,26 +1591,25 @@
           </div>
           <div class="recent-review" id="recentReviewList"></div>
         </div>
+        <div id="replayDock" class="replay-dock" aria-hidden="true">
+          <div class="dock-title">
+            <span>Replay</span>
+            <button class="stats-mini-btn" type="button" onclick="redrawConnections()">Reset</button>
+          </div>
+          <div class="dock-sub">Order Replay</div>
+          <div class="dock-row">
+            <button class="dock-btn" onclick="replayDiscussion(2)">2x</button>
+            <button class="dock-btn" onclick="replayDiscussion(4)">4x</button>
+            <button class="dock-btn" onclick="replayDiscussion(8)">8x</button>
+          </div>
+          <div class="dock-sub">Timed Replay</div>
+          <div class="dock-row">
+            <button class="dock-btn primaryish" onclick="replayDiscussionTimed(8)">8x</button>
+            <button class="dock-btn primaryish" onclick="replayDiscussionTimed(16)">16x</button>
+            <button class="dock-btn primaryish" onclick="replayDiscussionTimed(32)">32x</button>
+          </div>
+        </div>
       </aside>
-
-      <div id="replayDock" class="replay-dock" aria-hidden="true">
-        <div class="dock-title">
-          <span>Replay</span>
-          <button class="stats-mini-btn" type="button" onclick="redrawConnections()">Reset</button>
-        </div>
-        <div class="dock-sub">Order Replay</div>
-        <div class="dock-row">
-          <button class="dock-btn" onclick="replayDiscussion(2)">2x</button>
-          <button class="dock-btn" onclick="replayDiscussion(4)">4x</button>
-          <button class="dock-btn" onclick="replayDiscussion(8)">8x</button>
-        </div>
-        <div class="dock-sub">Timed Replay</div>
-        <div class="dock-row">
-          <button class="dock-btn primaryish" onclick="replayDiscussionTimed(8)">8x</button>
-          <button class="dock-btn primaryish" onclick="replayDiscussionTimed(16)">16x</button>
-          <button class="dock-btn primaryish" onclick="replayDiscussionTimed(32)">32x</button>
-        </div>
-      </div>
     </div>
   </div>
 
@@ -1818,6 +1956,7 @@
     let currentSpeakerId = null;
     let currentSegmentStartedAt = null;
     let selectedRating = null;
+    let selectedRatingWasChosen = false;
     let currentNotesParticipantId = null;
     let teamName = 'Colorado Avalanche';
     let selectedParticipantId = null;
@@ -1894,6 +2033,47 @@
     function escapeHtml(str){
       return String(str || '').replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
     }
+    function sanitizeCommentHtml(html){
+      const template = document.createElement('template');
+      template.innerHTML = String(html || '');
+      const allowed = new Set(['B', 'STRONG', 'I', 'EM', 'BR', 'DIV', 'P']);
+      const cleanNode = node => {
+        if (node.nodeType === Node.TEXT_NODE) return document.createTextNode(node.textContent || '');
+        if (node.nodeType !== Node.ELEMENT_NODE) return document.createTextNode('');
+        const tag = node.tagName;
+        if (!allowed.has(tag)){
+          const frag = document.createDocumentFragment();
+          node.childNodes.forEach(child => frag.appendChild(cleanNode(child)));
+          return frag;
+        }
+        const out = document.createElement(tag.toLowerCase());
+        node.childNodes.forEach(child => out.appendChild(cleanNode(child)));
+        return out;
+      };
+      const fragment = document.createDocumentFragment();
+      template.content.childNodes.forEach(child => fragment.appendChild(cleanNode(child)));
+      const wrapper = document.createElement('div');
+      wrapper.appendChild(fragment);
+      return wrapper.innerHTML
+        .replace(/<div><br><\/div>/g, '<br>')
+        .replace(/<p><br><\/p>/g, '<br>')
+        .trim();
+    }
+    function getCommentHtml(){
+      const el = document.getElementById('comment');
+      return sanitizeCommentHtml(el ? el.innerHTML : '');
+    }
+    function clearCommentInput(){
+      const el = document.getElementById('comment');
+      if (el) el.innerHTML = '';
+    }
+    function formatComment(command){
+      const el = document.getElementById('comment');
+      if (!el) return;
+      el.focus();
+      document.execCommand(command, false, null);
+      scheduleSave();
+    }
     function uuid(){
       if (crypto && crypto.randomUUID) return crypto.randomUUID();
       return 'p_' + Math.random().toString(16).slice(2) + '_' + Date.now().toString(16);
@@ -1968,6 +2148,7 @@
         currentSpeakerId,
         currentSegmentStartedAt,
         selectedRating,
+        selectedRatingWasChosen,
         teamName,
         selectedParticipantId,
         discussionStarted,
@@ -1999,6 +2180,7 @@
       currentSpeakerId = snap.currentSpeakerId || null;
       currentSegmentStartedAt = snap.currentSegmentStartedAt || null;
       selectedRating = snap.selectedRating || null;
+      selectedRatingWasChosen = !!snap.selectedRatingWasChosen;
       teamName = snap.teamName || 'Custom';
       selectedParticipantId = snap.selectedParticipantId || null;
       discussionStarted = !!snap.discussionStarted;
@@ -2046,7 +2228,7 @@
         className: row.className,
         pid: row.dataset.pid || '',
         seq: row.dataset.seq || '',
-        cells: Array.from(row.cells).map(c => c.textContent)
+        cells: Array.from(row.cells).map((c, idx) => idx === 3 ? { html:c.innerHTML, text:c.textContent } : c.textContent)
       }));
     }
     function getTableRowsState(table){
@@ -2059,9 +2241,13 @@
         row.className = r.className || '';
         if (r.pid) row.dataset.pid = r.pid;
         if (r.seq) row.dataset.seq = r.seq;
-        (r.cells || []).forEach((txt, idx) => {
+        (r.cells || []).forEach((value, idx) => {
           const cell = row.insertCell(idx);
-          cell.textContent = txt;
+          if (idx === 3 && value && typeof value === 'object'){
+            cell.innerHTML = sanitizeCommentHtml(value.html || value.text || '');
+          }else{
+            cell.textContent = typeof value === 'object' ? (value.text || '') : value;
+          }
           if (!row.classList.contains('question-row') && (idx === 0 || idx === 2 || idx === 3)){
             cell.className = 'cell-editable';
             cell.title = idx === 0 ? 'Click to change owner' : (idx === 2 ? 'Click to edit rating' : 'Click to edit comment');
@@ -2154,8 +2340,10 @@
       const compact = statsMode === 'compact';
       workspace.classList.toggle('stats-hidden', hidden || !active);
       workspace.classList.toggle('stats-compact', compact);
+      workspace.classList.toggle('stats-ended', discussionEnded);
       document.getElementById('statsPanel').classList.toggle('hidden', hidden || !active);
       document.getElementById('statsPanel').classList.toggle('compact', compact);
+      document.getElementById('statsPanel').classList.toggle('ended', discussionEnded);
       statsToggleButton.textContent = hidden ? 'Show Stats' : 'Hide Stats';
       statsSizeButton.textContent = compact ? 'Normal' : 'Compact';
       classAverageToggleButton.textContent = classAverageVisible ? 'Hide Avg' : 'Show Avg';
@@ -2209,6 +2397,7 @@
       panel.style.top = '';
       panel.style.bottom = '';
       panel.style.right = '';
+      if (discussionEnded) return;
       const arenaRect = arena.getBoundingClientRect();
       const panelRect = panel.getBoundingClientRect();
       const gap = 18;
@@ -2718,12 +2907,19 @@
 
     function selectRating(rating){
       selectedRating = rating;
+      selectedRatingWasChosen = true;
       ratingBox.querySelectorAll('.rating-option').forEach(opt => opt.classList.remove('selected'));
-      ratingBox.querySelectorAll('.rating-option')[rating - 1].classList.add('selected');
+      if (rating === null){
+        const noRating = ratingBox.querySelector('.rating-option.no-rating');
+        if (noRating) noRating.classList.add('selected');
+      }else{
+        ratingBox.querySelectorAll('.rating-option')[rating - 1].classList.add('selected');
+      }
       scheduleSave();
     }
     function resetRating(){
       selectedRating = null;
+      selectedRatingWasChosen = false;
       ratingBox.querySelectorAll('.rating-option').forEach(opt => opt.classList.remove('selected'));
     }
     function saveContribution(){
@@ -2732,7 +2928,7 @@
       const participant = getPersonById(currentSpeakerId);
       if (!participant) return;
 
-      const baseComment = document.getElementById('comment').value || '';
+      const baseComment = getCommentHtml();
       const tagLabels = tagsForEntryAsLabels();
       participant.tagsPerEntry.push(tagLabels);
       tagLabels.forEach(lbl => participant.tagCounts[lbl] = (participant.tagCounts[lbl] || 0) + 1);
@@ -2755,15 +2951,15 @@
       const commentCell = row.insertCell(3);
       commentCell.className = 'cell-editable';
       const appended = tagLabels.length
-        ? (baseComment ? `${baseComment}\nTags: ${tagLabels.join(', ')}` : `Tags: ${tagLabels.join(', ')}`)
+        ? (baseComment ? `${baseComment}<div>Tags: ${escapeHtml(tagLabels.join(', '))}</div>` : `Tags: ${escapeHtml(tagLabels.join(', '))}`)
         : baseComment;
-      commentCell.textContent = appended;
+      commentCell.innerHTML = sanitizeCommentHtml(appended);
       commentCell.title = 'Click to edit comment';
       row.insertCell(4).textContent = '';
 
       ratingBox.style.display = 'none';
       pauseCenter.classList.remove('hidden');
-      document.getElementById('comment').value = '';
+      clearCommentInput();
       resetRating();
       clearTagSelection();
       updateLogCount();
@@ -2834,7 +3030,7 @@
       const oldSeq = parseInt(row.dataset.seq || '0', 10);
       if (!Number.isFinite(oldSeq) || oldSeq < 0) return;
       const rating = oldPerson.ratings?.[oldSeq] ?? ((row.cells[2].textContent || '').trim() ? parseInt(row.cells[2].textContent, 10) : null);
-      const comment = oldPerson.comments?.[oldSeq] ?? (row.cells[3].textContent || '');
+      const comment = oldPerson.comments?.[oldSeq] ?? sanitizeCommentHtml(row.cells[3].innerHTML || row.cells[3].textContent || '');
       const tags = structuredClone(oldPerson.tagsPerEntry?.[oldSeq] || []);
       const startTime = oldPerson.startTimes?.[oldSeq] ?? null;
       const duration = oldPerson.endTimes?.[oldSeq] ?? parseDurationCell(row.cells[4].textContent);
@@ -2890,7 +3086,7 @@
       const p = getPersonById(row.dataset.pid);
       if (!p) return;
       const seq = parseInt(row.dataset.seq || '0', 10);
-      p.comments[seq] = commentText;
+      p.comments[seq] = sanitizeCommentHtml(escapeHtml(commentText));
       row.cells[3].textContent = commentText;
       updateStats();
       if (!tabReport.disabled) generateReport(false);
@@ -4092,6 +4288,10 @@
         return;
       }
       if (e.key >= '1' && e.key <= '5') selectRating(parseInt(e.key, 10));
+      if (e.key === '='){
+        e.preventDefault();
+        selectRating(null);
+      }
       if (e.key === 'Escape'){
         ratingBox.style.display = 'none';
         pauseCenter.classList.remove('hidden');
@@ -4110,6 +4310,12 @@
     discussionImportFile.addEventListener('change', e => {
       importDiscussionFile(e.target.files && e.target.files[0]);
     });
+    document.getElementById('comment').addEventListener('paste', e => {
+      e.preventDefault();
+      const text = (e.clipboardData || window.clipboardData).getData('text/plain');
+      document.execCommand('insertText', false, text);
+    });
+    document.getElementById('comment').addEventListener('input', scheduleSave);
 
     notesOverlay.addEventListener('click', e => { if (e.target === notesOverlay) closeNotesBox(); });
     colorSchemePopup.addEventListener('click', e => { if (e.target === colorSchemePopup) closeColorSchemePopup(); });
@@ -4160,6 +4366,7 @@
     window.updatePrimaryColorCode = updatePrimaryColorCode;
     window.updateSecondaryColorCode = updateSecondaryColorCode;
     window.applyCustomColors = applyCustomColors;
+    window.formatComment = formatComment;
     window.switchTab = switchTab;
     window.toggleDrawer = toggleDrawer;
     window.closeDrawer = closeDrawer;
