@@ -124,6 +124,16 @@
       background:rgba(255,255,255,.92);
       box-shadow:0 10px 24px rgba(0,0,0,.10);
     }
+    .btn.ghost.secondary{
+      background:var(--secondary-color);
+      color:var(--text-color);
+      border-color:rgba(35,97,146,.28);
+      box-shadow:0 1px 0 rgba(255,255,255,.18) inset, 0 10px 24px rgba(35,97,146,.18);
+    }
+    .btn.ghost.secondary:hover{
+      background:var(--secondary-color-dark);
+      color:var(--text-color);
+    }
     .btn:disabled{
       opacity:.45;
       cursor:not-allowed;
@@ -207,7 +217,7 @@
       color:var(--muted);
       font-weight:650;
     }
-    input[type="text"], textarea, .rich-comment{
+    input[type="text"], textarea, select, .rich-comment{
       padding:12px 12px;
       font-size:16px;
       border-radius:14px;
@@ -217,10 +227,22 @@
       background:rgba(255,255,255,.88);
       color:var(--ink);
     }
+    select{ font-family:var(--font-ui); }
     textarea{ resize:vertical; min-height:82px; font-family:var(--font-ui); }
-    input[type="text"]:focus, textarea:focus, .rich-comment:focus{
+    input[type="text"]:focus, textarea:focus, select:focus, .rich-comment:focus{
       border-color:rgba(35,97,146,.55);
       box-shadow:0 0 0 4px rgba(35,97,146,.10);
+    }
+    .tag-setup{
+      display:grid;
+      grid-template-columns:auto minmax(180px, 1fr) auto;
+      gap:10px;
+      align-items:center;
+    }
+    .tag-setup.disabled select,
+    .tag-setup.disabled button{
+      opacity:.45;
+      pointer-events:none;
     }
     .tiny-note{
       font-size:12px;
@@ -691,6 +713,88 @@
       background:rgba(255,255,255,.85);
       border:1px solid rgba(0,0,0,.10);
     }
+    .tag-row.tags-disabled{ display:none; }
+    .tag-set-toolbar{
+      display:grid;
+      grid-template-columns:minmax(180px, 1fr) auto auto auto;
+      gap:10px;
+      align-items:end;
+      margin:10px 0 12px;
+    }
+    .tag-slot-grid{
+      display:grid;
+      grid-template-columns:repeat(4, minmax(0, 1fr));
+      gap:8px;
+      margin:8px 0 12px;
+    }
+    .tag-slot{
+      border:1px solid rgba(35,97,146,.14);
+      border-radius:14px;
+      background:rgba(255,255,255,.70);
+      padding:9px;
+      cursor:pointer;
+      text-align:left;
+      color:var(--ink);
+    }
+    .tag-slot.active{
+      border-color:rgba(111,38,61,.34);
+      background:rgba(111,38,61,.08);
+      box-shadow:0 0 0 3px rgba(111,38,61,.08);
+    }
+    .tag-slot b{
+      display:block;
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+      font-size:13px;
+    }
+    .tag-slot span{
+      color:var(--muted);
+      font-size:11px;
+    }
+    .tag-editor{
+      display:grid;
+      gap:8px;
+      margin-top:10px;
+    }
+    .tag-edit-row{
+      display:grid;
+      grid-template-columns:minmax(180px, 1fr) 86px auto;
+      gap:8px;
+      align-items:start;
+      border:1px solid rgba(0,0,0,.08);
+      border-radius:14px;
+      background:rgba(255,255,255,.66);
+      padding:8px;
+    }
+    .tag-edit-row input{
+      font-size:14px;
+      padding:9px 10px;
+      border-radius:10px;
+    }
+    .tag-edit-row .warning{
+      grid-column:1 / -1;
+      display:none;
+      font-size:12px;
+      line-height:1.25;
+    }
+    .tag-edit-row.warn .warning{
+      display:block;
+      color:#8a5a00;
+    }
+    .tag-edit-row.error .warning{
+      display:block;
+      color:#9b1c1c;
+      font-weight:800;
+    }
+    @media (max-width:760px){
+      .tag-setup,
+      .tag-set-toolbar,
+      .tag-edit-row{
+        grid-template-columns:1fr;
+      }
+      .tag-slot-grid{ grid-template-columns:repeat(2, minmax(0, 1fr)); }
+    }
 
     .stats-panel{
       position:fixed;
@@ -759,6 +863,16 @@
       max-width:100%;
     }
     .stats-mini-btn:hover{ background:rgba(255,255,255,.94); }
+    .stats-mini-btn.secondary{
+      background:var(--secondary-color);
+      color:var(--text-color);
+      border-color:rgba(35,97,146,.28);
+      box-shadow:0 8px 18px rgba(35,97,146,.16);
+    }
+    .stats-mini-btn.secondary:hover{
+      background:var(--secondary-color-dark);
+      color:var(--text-color);
+    }
     .save-dot{
       width:10px;
       height:10px;
@@ -891,6 +1005,21 @@
       border:1px solid rgba(111,38,61,.12);
       color:var(--primary-color);
       font-weight:800;
+    }
+    .unspoken.everyone-spoken-pulse span{
+      animation:electricPulse .62s ease-in-out 4;
+    }
+    @keyframes electricPulse{
+      0%, 100%{
+        box-shadow:0 0 0 rgba(35,97,146,0);
+        background:rgba(111,38,61,.08);
+      }
+      50%{
+        box-shadow:
+          0 0 0 3px rgba(153,217,217,.32),
+          0 0 18px rgba(35,97,146,.34);
+        background:rgba(35,97,146,.12);
+      }
     }
     .review-panel{
       border-top:1px solid rgba(111,38,61,.18);
@@ -1069,6 +1198,7 @@
     }
 
     #colorSchemePopup,
+    #tagSetPopup,
     #customColorPopup,
     #confirmRestartPopup,
     #editParticipantsPopup,
@@ -1397,6 +1527,7 @@
       #discussionDetails,
       #participantFormWrap,
       #colorSchemePopup,
+      #tagSetPopup,
       #customColorPopup,
       #confirmRestartPopup,
       #editParticipantsPopup,
@@ -1440,6 +1571,7 @@
         <button id="restartDiscussionButton" class="btn" style="display:none;" onclick="confirmRestartDiscussion()">Restart</button>
         <button id="generateReportButton" class="btn secondary" style="display:none;" onclick="generateReport()">Generate Report</button>
         <button id="colorSchemeButton" class="btn ghost" onclick="openColorSchemePopup()">Colors</button>
+        <button id="tagSetButton" class="btn ghost" onclick="openTagSetPopup()">Tags</button>
         <button id="editParticipantsButton" class="btn ghost" style="display:none;" onclick="openEditParticipantsPopup()">Participants</button>
         <button id="exportScreenshotButton" class="btn ghost" style="display:none;" onclick="exportScreenshot()">Screenshot / Snip</button>
         <button class="btn ghost" onclick="window.open('https://venmo.com/Ari-Hagler-2','_blank')" title="This tool is always free for teachers. If you find it useful, feel free to buy me a caffeinated beverage.">Buy Me Caffeine</button>
@@ -1473,6 +1605,17 @@
             <input type="checkbox" id="educatorIncludeStats" />
             Include in stats
           </label>
+        </div>
+        <div>
+          <label>Contribution Tags</label>
+          <div class="tag-setup" id="tagSetupControls">
+            <label style="display:flex;gap:8px;align-items:center;color:var(--ink);font-weight:700;">
+              <input type="checkbox" id="tagsEnabledInput" checked onchange="setTagsEnabledFromInput()" />
+              Use tags
+            </label>
+            <select id="tagSetSelect" onchange="selectTagSetFromDropdown()"></select>
+            <button class="btn ghost" type="button" onclick="openTagSetPopup()">Edit Tags</button>
+          </div>
         </div>
         <div class="setup-row">
           <button class="btn secondary" onclick="startDiscussion()">Start</button>
@@ -1715,6 +1858,30 @@
     </div>
   </div>
 
+  <div id="tagSetPopup">
+    <div class="popup">
+      <h2>Tag Sets</h2>
+      <div class="tiny-note" style="text-align:left;margin-bottom:10px;">Save up to 8 local tag sets. Switching sets changes future contribution entries only; old logged tags stay as recorded.</div>
+      <div class="tag-slot-grid" id="tagSlotGrid"></div>
+      <div class="tag-set-toolbar">
+        <div>
+          <label for="tagSetNameInput">Set Name</label>
+          <input type="text" id="tagSetNameInput" placeholder="10th Grade" />
+        </div>
+        <button class="btn ghost" type="button" onclick="loadDefaultTagsIntoEditor()">Load Default</button>
+        <button class="btn ghost" type="button" onclick="addTagEditorRow()">Add Tag</button>
+        <button class="btn secondary" type="button" onclick="saveTagEditorToSlot()">Save Slot</button>
+      </div>
+      <div class="tag-editor" id="tagEditorRows"></div>
+      <div id="tagValidationSummary" class="tiny-note" style="text-align:left;color:var(--muted);"></div>
+      <div class="mini-actions">
+        <button class="btn secondary" type="button" onclick="useEditedTagSet()">Use This Set</button>
+        <button class="btn ghost" type="button" onclick="clearTagEditorSlot()">Clear Slot</button>
+        <button class="btn ghost" type="button" onclick="closeTagSetPopup()">Close</button>
+      </div>
+    </div>
+  </div>
+
   <div id="customColorPopup">
     <div class="mini-popup">
       <h2>Select Your Own Colors</h2>
@@ -1799,6 +1966,7 @@
           <li>Press Enter from the title, question, or educator field to move into participant entry. Use Shift+Enter for a question line break.</li>
           <li>Add an optional educator name if you want yourself/facilitator included as a distinct pill.</li>
           <li>Leave Include in stats unchecked to keep educator airtime out of student balance data.</li>
+          <li>Choose whether to use contribution tags, then pick or edit a local tag set before starting.</li>
           <li>The educator uses hotkey B, sits clearly below the circle, and can be hidden or shown from the top bar.</li>
           <li>Add student participants, then click Done.</li>
         </ol>
@@ -1808,6 +1976,7 @@
         <ul class="help-bullets">
           <li>Click a pill when someone starts speaking. Clicking the same active pill, or Pause, ends the current segment.</li>
           <li>Choose a 1-5 rating, optional tags, and an optional comment, then Save.</li>
+          <li>Use the Tags button to switch or edit tag sets. Changes affect future entries only.</li>
           <li>Use Undo Last if you clicked the wrong speaker or made a recent setup/arrange change.</li>
           <li>Press / to open or close the discussion log quickly.</li>
           <li>In the log, click a participant name to move that entry to a different owner. Ratings, comments, tags, duration, stats, and discussion-flow lines update with it.</li>
@@ -1859,6 +2028,8 @@
   <script>
     const AUTOSAVE_KEY = 'discussion_tracker_autosave_v2';
     const PALETTES_KEY = 'discussion_tracker_saved_palettes_v1';
+    const TAG_SETS_KEY = 'discussion_tracker_saved_tag_sets_v1';
+    const TAG_ACTIVE_KEY = 'discussion_tracker_active_tag_set_v1';
 
     const participantFormWrap = document.getElementById('participantFormWrap');
     const participantForm = document.getElementById('participantForm');
@@ -1915,6 +2086,14 @@
 
     const colorSchemePopup = document.getElementById('colorSchemePopup');
     const colorSchemeList = document.getElementById('colorSchemeList');
+    const tagSetPopup = document.getElementById('tagSetPopup');
+    const tagSetSelect = document.getElementById('tagSetSelect');
+    const tagsEnabledInput = document.getElementById('tagsEnabledInput');
+    const tagSetupControls = document.getElementById('tagSetupControls');
+    const tagSlotGrid = document.getElementById('tagSlotGrid');
+    const tagSetNameInput = document.getElementById('tagSetNameInput');
+    const tagEditorRows = document.getElementById('tagEditorRows');
+    const tagValidationSummary = document.getElementById('tagValidationSummary');
     const customColorPopup = document.getElementById('customColorPopup');
     const primaryColorInput = document.getElementById('primaryColor');
     const secondaryColorInput = document.getElementById('secondaryColor');
@@ -1971,6 +2150,7 @@
     let educatorHidden = false;
     let classAverageVisible = true;
     let recentReviewVisible = true;
+    let everyoneSpokenCelebrated = false;
     let undoStack = [];
     let selectedTagsForEntry = new Set();
     let autosaveTimer = null;
@@ -1980,7 +2160,7 @@
     let centerX = 430;
     let centerY = 430;
 
-    const TAGS = [
+    const DEFAULT_TAGS = [
       { key:'Evidence', label:'Evidence', letter:'E' },
       { key:'BuildsOnOthers', label:'Pushes thinking', letter:'P' },
       { key:'AsksQuestion', label:'Asks question', letter:'U' },
@@ -1990,9 +2170,170 @@
       { key:'Dominates', label:'Dominates', letter:'D' },
       { key:'OffTopic', label:'Off-topic', letter:'O' },
       { key:'Repeats', label:'Repeats point', letter:'R' },
-      { key:'GreatInsight', label:'Brilliant insight', letter:'B' }
+      { key:'GreatInsight', label:'Brilliant insight', letter:'G' }
     ];
-    const TAG_HOTKEYS = new Map(TAGS.map(t => [t.letter.toUpperCase(), t.key]));
+    let activeTagSet = { source:'default', slot:null, name:'Default Discussion Tags', tags:structuredClone(DEFAULT_TAGS) };
+    let savedTagSets = [];
+    let tagsEnabled = true;
+    let tagEditorSlot = 0;
+
+    function currentTags(){
+      return tagsEnabled ? (activeTagSet.tags || []) : [];
+    }
+    function currentTagHotkeys(){
+      return new Map(currentTags()
+        .filter(t => t.letter)
+        .map(t => [String(t.letter).toUpperCase(), t.key]));
+    }
+    function normalizeTag(tag, idx = 0){
+      const label = String(tag?.label || '').trim();
+      const letter = String(tag?.letter || '').trim().slice(0, 1).toUpperCase();
+      return {
+        key: String(tag?.key || label || `Tag${idx + 1}`).replace(/[^A-Za-z0-9_]+/g, '') || `Tag${idx + 1}`,
+        label,
+        letter
+      };
+    }
+    function normalizeTagSet(set, fallbackName = 'Untitled Tag Set'){
+      const tags = Array.isArray(set?.tags) ? set.tags.map(normalizeTag).filter(t => t.label) : [];
+      return {
+        name:String(set?.name || fallbackName).trim() || fallbackName,
+        tags:tags.slice(0, 12)
+      };
+    }
+    function loadSavedTagSets(){
+      try{
+        const raw = localStorage.getItem(TAG_SETS_KEY);
+        const parsed = raw ? JSON.parse(raw) : null;
+        if (Array.isArray(parsed)){
+          const slots = parsed.slice(0, 8).map((set, idx) => set ? normalizeTagSet(set, `Tag Set ${idx + 1}`) : null);
+          while (slots.length < 8) slots.push(null);
+          return slots;
+        }
+      }catch(e){}
+      return new Array(8).fill(null);
+    }
+    function saveSavedTagSets(){
+      try{ localStorage.setItem(TAG_SETS_KEY, JSON.stringify(savedTagSets)); }
+      catch(e){ alert('Could not save tag sets in this browser.'); }
+    }
+    function loadActiveTagSettings(){
+      savedTagSets = loadSavedTagSets();
+      try{
+        const raw = localStorage.getItem(TAG_ACTIVE_KEY);
+        const parsed = raw ? JSON.parse(raw) : null;
+        tagsEnabled = parsed?.tagsEnabled !== false;
+        if (parsed?.source === 'slot' && Number.isInteger(parsed.slot) && savedTagSets[parsed.slot]){
+          activeTagSet = { source:'slot', slot:parsed.slot, ...normalizeTagSet(savedTagSets[parsed.slot]) };
+        }else if (parsed?.source === 'custom' && parsed?.activeTagSet?.tags){
+          activeTagSet = { source:'custom', slot:null, ...normalizeTagSet(parsed.activeTagSet, parsed.activeTagSet.name || 'Unsaved Tag Set') };
+        }else{
+          activeTagSet = { source:'default', slot:null, name:'Default Discussion Tags', tags:structuredClone(DEFAULT_TAGS) };
+        }
+      }catch(e){
+        tagsEnabled = true;
+        activeTagSet = { source:'default', slot:null, name:'Default Discussion Tags', tags:structuredClone(DEFAULT_TAGS) };
+      }
+      refreshTagSetControls();
+    }
+    function saveActiveTagSettings(){
+      try{
+        localStorage.setItem(TAG_ACTIVE_KEY, JSON.stringify({
+          tagsEnabled,
+          source:activeTagSet.source,
+          slot:activeTagSet.slot,
+          activeTagSet: activeTagSet.source === 'custom' ? normalizeTagSet(activeTagSet, activeTagSet.name || 'Unsaved Tag Set') : null
+        }));
+      }catch(e){}
+    }
+    function refreshTagSetControls(){
+      if (!tagSetSelect || !tagsEnabledInput) return;
+      tagSetSelect.innerHTML = '';
+      const defaultOption = document.createElement('option');
+      defaultOption.value = 'default';
+      defaultOption.textContent = 'Default Discussion Tags';
+      tagSetSelect.appendChild(defaultOption);
+      if (activeTagSet.source === 'custom'){
+        const customOption = document.createElement('option');
+        customOption.value = 'custom';
+        customOption.textContent = activeTagSet.name || 'Unsaved Tag Set';
+        tagSetSelect.appendChild(customOption);
+      }
+      savedTagSets.forEach((set, idx) => {
+        if (!set) return;
+        const opt = document.createElement('option');
+        opt.value = `slot:${idx}`;
+        opt.textContent = set.name;
+        tagSetSelect.appendChild(opt);
+      });
+      tagSetSelect.value = activeTagSet.source === 'slot' ? `slot:${activeTagSet.slot}` : (activeTagSet.source === 'custom' ? 'custom' : 'default');
+      tagsEnabledInput.checked = tagsEnabled;
+      tagSetupControls.classList.toggle('disabled', !tagsEnabled);
+      renderTagChips();
+    }
+    function setTagsEnabledFromInput(){
+      tagsEnabled = !!tagsEnabledInput.checked;
+      clearTagSelection();
+      refreshTagSetControls();
+      saveActiveTagSettings();
+      scheduleSave();
+    }
+    function selectTagSetFromDropdown(){
+      const value = tagSetSelect.value;
+      if (value === 'default'){
+        activeTagSet = { source:'default', slot:null, name:'Default Discussion Tags', tags:structuredClone(DEFAULT_TAGS) };
+      }else if (value === 'custom'){
+        // Keep the current unsaved set active.
+      }else if (value.startsWith('slot:')){
+        const slot = parseInt(value.split(':')[1], 10);
+        if (savedTagSets[slot]) activeTagSet = { source:'slot', slot, ...normalizeTagSet(savedTagSets[slot]) };
+      }
+      clearTagSelection();
+      refreshTagSetControls();
+      saveActiveTagSettings();
+      scheduleSave();
+    }
+    function validateTagDefinitions(tags){
+      const blocked = new Map([
+        ['B', 'B is reserved for the educator hotkey.'],
+        ['1', '1-5 are reserved for ratings.'],
+        ['2', '1-5 are reserved for ratings.'],
+        ['3', '1-5 are reserved for ratings.'],
+        ['4', '1-5 are reserved for ratings.'],
+        ['5', '1-5 are reserved for ratings.'],
+        ['=', '= is reserved for no rating.'],
+        ['/', '/ opens the discussion log.']
+      ]);
+      const risky = new Map([
+        ['Q', 'Q may not work reliably on some computers.'],
+        ['W', 'W can conflict with browser/window shortcuts.'],
+        ['H', 'H can conflict with browser/window shortcuts.'],
+        ['M', 'M can conflict with browser/window shortcuts.'],
+        ['F', 'F can conflict with browser/window shortcuts.']
+      ]);
+      const seen = new Map();
+      const messages = [];
+      let hasError = false;
+      tags.forEach((tag, idx) => {
+        if (!tag.label) return;
+        const letter = String(tag.letter || '').toUpperCase();
+        if (!letter) return;
+        if (blocked.has(letter)){
+          hasError = true;
+          messages.push({ idx, type:'error', text:blocked.get(letter) });
+        }
+        if (seen.has(letter)){
+          hasError = true;
+          messages.push({ idx, type:'error', text:`${letter} is already used by "${tags[seen.get(letter)].label}".` });
+        }else{
+          seen.set(letter, idx);
+        }
+        if (risky.has(letter)){
+          messages.push({ idx, type:'warn', text:risky.get(letter) });
+        }
+      });
+      return { hasError, messages };
+    }
 
     const nhlTeams = [
       { name:'Anaheim Ducks', colors:['#F47A38', '#B09862'] },
@@ -2162,6 +2503,8 @@
         educatorHidden,
         classAverageVisible,
         recentReviewVisible,
+        tagsEnabled,
+        activeTagSet: structuredClone(activeTagSet),
         logRows: getLogRowsState(),
         reportEnabled: !tabReport.disabled,
         reportRows: getTableRowsState(document.getElementById('reportTable')),
@@ -2194,8 +2537,17 @@
       educatorHidden = !!snap.educatorHidden;
       classAverageVisible = snap.classAverageVisible !== false;
       recentReviewVisible = snap.recentReviewVisible !== false;
+      tagsEnabled = snap.tagsEnabled !== false;
+      if (snap.activeTagSet?.tags){
+        activeTagSet = {
+          source:snap.activeTagSet.source || 'custom',
+          slot:Number.isInteger(snap.activeTagSet.slot) ? snap.activeTagSet.slot : null,
+          ...normalizeTagSet(snap.activeTagSet, snap.activeTagSet.name || 'Recovered Tag Set')
+        };
+      }
 
       if (Array.isArray(snap.colors)) updateColorScheme(snap.colors[0], snap.colors[1], teamName);
+      refreshTagSetControls();
       applyStatsMode();
       applyArrangeMode();
       restoreLogRows(snap.logRows || []);
@@ -2420,6 +2772,9 @@
       snapCircleTopButton.style.display = arrangeMode && discussionStarted && displayPeople().length ? 'inline-flex' : 'none';
       arrangeDragModeButton.style.display = arrangeMode && discussionStarted ? 'inline-flex' : 'none';
       arrangeDragModeButton.textContent = arrangeDragMode === 'free' ? 'Free Drag' : 'Ring Order';
+      arrangeDragModeButton.classList.toggle('secondary', arrangeMode);
+      snapCircleTopButton.classList.toggle('secondary', arrangeMode);
+      snapCircleButton.classList.toggle('secondary', arrangeMode);
       placeParticipants();
       redrawConnections();
       positionFloatingPanels();
@@ -2728,6 +3083,7 @@
       discussionEnded = false;
       currentSpeakerId = null;
       currentSegmentStartedAt = null;
+      everyoneSpokenCelebrated = false;
 
       updateTitleArea();
       ensureQuestionRow();
@@ -3132,7 +3488,8 @@
 
     function renderTagChips(){
       tagRow.innerHTML = '';
-      TAGS.forEach(t => {
+      tagRow.classList.toggle('tags-disabled', !tagsEnabled || !currentTags().length);
+      currentTags().forEach(t => {
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'chip';
@@ -3161,7 +3518,7 @@
       tagRow.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
     }
     function tagsForEntryAsLabels(){
-      const map = new Map(TAGS.map(t => [t.key, t.label]));
+      const map = new Map(currentTags().map(t => [t.key, t.label]));
       return Array.from(selectedTagsForEntry).map(k => map.get(k) || k);
     }
 
@@ -3449,12 +3806,20 @@
       }
 
       const unspoken = totals.filter(t => t.speakCount === 0).map(t => t.name);
-      unspokenList.innerHTML = '';
       if (!peopleForStats.length){
-        unspokenList.innerHTML = '<span>None yet</span>';
+        unspokenList.classList.remove('everyone-spoken-pulse');
+        if (unspokenList.textContent !== 'None yet') unspokenList.innerHTML = '<span>None yet</span>';
       }else if (!unspoken.length){
-        unspokenList.innerHTML = '<span>Everyone has spoken</span>';
+        if (unspokenList.textContent !== 'Everyone has spoken') unspokenList.innerHTML = '<span>Everyone has spoken</span>';
+        if (!discussionEnded && !everyoneSpokenCelebrated && totals.some(t => t.speakCount > 0)){
+          everyoneSpokenCelebrated = true;
+          unspokenList.classList.add('everyone-spoken-pulse');
+          setTimeout(() => unspokenList.classList.remove('everyone-spoken-pulse'), 2600);
+        }
       }else{
+        unspokenList.classList.remove('everyone-spoken-pulse');
+        everyoneSpokenCelebrated = false;
+        unspokenList.innerHTML = '';
         unspoken.forEach(name => {
           const pill = document.createElement('span');
           pill.textContent = name;
@@ -4032,6 +4397,128 @@
       redrawConnections();
       scheduleSave();
     }
+    function openTagSetPopup(){
+      tagSetPopup.style.display = 'flex';
+      tagEditorSlot = activeTagSet.source === 'slot' && Number.isInteger(activeTagSet.slot)
+        ? activeTagSet.slot
+        : Math.max(0, savedTagSets.findIndex(s => !s));
+      if (tagEditorSlot < 0) tagEditorSlot = 0;
+      renderTagSlotGrid();
+      loadTagSetIntoEditor(activeTagSet);
+    }
+    function closeTagSetPopup(){ tagSetPopup.style.display = 'none'; }
+    function renderTagSlotGrid(){
+      tagSlotGrid.innerHTML = '';
+      for (let i = 0; i < 8; i++){
+        const set = savedTagSets[i];
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'tag-slot' + (i === tagEditorSlot ? ' active' : '');
+        btn.innerHTML = `<b>${escapeHtml(set?.name || `Slot ${i + 1}`)}</b><span>${set ? `${set.tags.length} tags` : 'Empty slot'}</span>`;
+        btn.onclick = () => {
+          tagEditorSlot = i;
+          renderTagSlotGrid();
+          loadTagSetIntoEditor(set || { name:`Tag Set ${i + 1}`, tags:[] });
+        };
+        tagSlotGrid.appendChild(btn);
+      }
+    }
+    function loadTagSetIntoEditor(set){
+      const normalized = normalizeTagSet(set, `Tag Set ${tagEditorSlot + 1}`);
+      tagSetNameInput.value = normalized.name;
+      tagEditorRows.innerHTML = '';
+      normalized.tags.forEach(tag => addTagEditorRow(tag));
+      if (!normalized.tags.length) addTagEditorRow();
+      validateTagEditorRows();
+    }
+    function loadDefaultTagsIntoEditor(){
+      loadTagSetIntoEditor({ name:'Default Discussion Tags', tags:structuredClone(DEFAULT_TAGS) });
+    }
+    function addTagEditorRow(tag = { label:'', letter:'' }){
+      if (tagEditorRows.children.length >= 12){
+        alert('A tag set can have up to 12 tags.');
+        return;
+      }
+      const row = document.createElement('div');
+      row.className = 'tag-edit-row';
+      row.innerHTML = `
+        <input class="tag-label-input" type="text" placeholder="Tag label" value="${escapeHtml(tag.label || '')}" />
+        <input class="tag-letter-input" type="text" maxlength="1" placeholder="Key" value="${escapeHtml(tag.letter || '')}" />
+        <button class="btn ghost" type="button">Remove</button>
+        <div class="warning"></div>
+      `;
+      row.querySelector('button').onclick = () => {
+        row.remove();
+        validateTagEditorRows();
+      };
+      row.querySelectorAll('input').forEach(inp => {
+        inp.addEventListener('input', validateTagEditorRows);
+      });
+      tagEditorRows.appendChild(row);
+      validateTagEditorRows();
+    }
+    function collectTagEditorRows(){
+      return Array.from(tagEditorRows.children).map((row, idx) => normalizeTag({
+        label:row.querySelector('.tag-label-input').value,
+        letter:row.querySelector('.tag-letter-input').value,
+        key:`${row.querySelector('.tag-label-input').value || 'Tag'}_${idx + 1}`
+      }, idx)).filter(t => t.label);
+    }
+    function validateTagEditorRows(){
+      const tags = collectTagEditorRows();
+      const result = validateTagDefinitions(tags);
+      Array.from(tagEditorRows.children).forEach(row => {
+        row.classList.remove('warn', 'error');
+        row.querySelector('.warning').textContent = '';
+      });
+      result.messages.forEach(msg => {
+        const row = tagEditorRows.children[msg.idx];
+        if (!row) return;
+        row.classList.add(msg.type === 'error' ? 'error' : 'warn');
+        const warning = row.querySelector('.warning');
+        warning.textContent = warning.textContent ? `${warning.textContent} ${msg.text}` : msg.text;
+      });
+      tagValidationSummary.textContent = result.hasError
+        ? 'Fix red hotkey conflicts before saving or using this set.'
+        : (result.messages.length ? 'Yellow warnings are allowed, but another key may work more reliably.' : 'Hotkeys look good.');
+      return result;
+    }
+    function saveTagEditorToSlot(){
+      const result = validateTagEditorRows();
+      if (result.hasError) return;
+      const name = tagSetNameInput.value.trim() || `Tag Set ${tagEditorSlot + 1}`;
+      savedTagSets[tagEditorSlot] = normalizeTagSet({ name, tags:collectTagEditorRows() }, name);
+      saveSavedTagSets();
+      activeTagSet = { source:'slot', slot:tagEditorSlot, ...normalizeTagSet(savedTagSets[tagEditorSlot]) };
+      refreshTagSetControls();
+      saveActiveTagSettings();
+      renderTagSlotGrid();
+      scheduleSave();
+    }
+    function useEditedTagSet(){
+      const result = validateTagEditorRows();
+      if (result.hasError) return;
+      const name = tagSetNameInput.value.trim() || `Unsaved Tag Set`;
+      activeTagSet = { source:'custom', slot:null, ...normalizeTagSet({ name, tags:collectTagEditorRows() }, name) };
+      clearTagSelection();
+      refreshTagSetControls();
+      saveActiveTagSettings();
+      closeTagSetPopup();
+      scheduleSave();
+    }
+    function clearTagEditorSlot(){
+      if (!confirm(`Clear slot ${tagEditorSlot + 1}?`)) return;
+      savedTagSets[tagEditorSlot] = null;
+      if (activeTagSet.source === 'slot' && activeTagSet.slot === tagEditorSlot){
+        activeTagSet = { source:'default', slot:null, name:'Default Discussion Tags', tags:structuredClone(DEFAULT_TAGS) };
+      }
+      saveSavedTagSets();
+      saveActiveTagSettings();
+      refreshTagSetControls();
+      renderTagSlotGrid();
+      loadTagSetIntoEditor({ name:`Tag Set ${tagEditorSlot + 1}`, tags:[] });
+      scheduleSave();
+    }
     function openColorSchemePopup(){ colorSchemePopup.style.display = 'flex'; }
     function closeColorSchemePopup(){ colorSchemePopup.style.display = 'none'; }
     function openCustomColorPopup(){ customColorPopup.style.display = 'flex'; }
@@ -4226,7 +4713,7 @@
     });
     document.addEventListener('keydown', e => {
       if (isRatingOpen()) return;
-      const overlays = [notesOverlay, colorSchemePopup, customColorPopup, confirmRestartPopup, editParticipantsPopup, recoveryPopup];
+      const overlays = [notesOverlay, colorSchemePopup, tagSetPopup, customColorPopup, confirmRestartPopup, editParticipantsPopup, recoveryPopup];
       if (overlays.some(o => o && o.style.display === 'flex')) return;
       if (isTypingTarget(document.activeElement)) return;
       const k = String(e.key || '').toUpperCase();
@@ -4273,9 +4760,10 @@
       const k = String(e.key || '').toUpperCase();
       const isAltTag = e.altKey && !e.ctrlKey && !e.metaKey && k.length === 1;
       const isCmdShiftTag = e.metaKey && e.shiftKey && !e.ctrlKey && k.length === 1;
-      if ((isAltTag || isCmdShiftTag) && TAG_HOTKEYS.has(k)){
+      const tagHotkeys = currentTagHotkeys();
+      if ((isAltTag || isCmdShiftTag) && tagHotkeys.has(k)){
         e.preventDefault();
-        const tagKey = TAG_HOTKEYS.get(k);
+        const tagKey = tagHotkeys.get(k);
         if (selectedTagsForEntry.has(tagKey)) selectedTagsForEntry.delete(tagKey);
         else selectedTagsForEntry.add(tagKey);
         syncChipActiveStates();
@@ -4319,6 +4807,7 @@
 
     notesOverlay.addEventListener('click', e => { if (e.target === notesOverlay) closeNotesBox(); });
     colorSchemePopup.addEventListener('click', e => { if (e.target === colorSchemePopup) closeColorSchemePopup(); });
+    tagSetPopup.addEventListener('click', e => { if (e.target === tagSetPopup) closeTagSetPopup(); });
     customColorPopup.addEventListener('click', e => { if (e.target === customColorPopup) closeCustomColorPopup(); });
     confirmRestartPopup.addEventListener('click', e => { if (e.target === confirmRestartPopup) closeConfirmRestartPopup(); });
     editParticipantsPopup.addEventListener('click', e => { if (e.target === editParticipantsPopup) closeEditParticipantsPopup(); });
@@ -4333,6 +4822,7 @@
     document.addEventListener('DOMContentLoaded', () => {
       createColorSchemeList();
       updateColorScheme('#6F263D', '#236192', 'Colorado Avalanche');
+      loadActiveTagSettings();
       renderTagChips();
       updateStageSize();
       tickClockAndStats();
@@ -4361,6 +4851,15 @@
     window.closeNotesBox = closeNotesBox;
     window.openColorSchemePopup = openColorSchemePopup;
     window.closeColorSchemePopup = closeColorSchemePopup;
+    window.openTagSetPopup = openTagSetPopup;
+    window.closeTagSetPopup = closeTagSetPopup;
+    window.setTagsEnabledFromInput = setTagsEnabledFromInput;
+    window.selectTagSetFromDropdown = selectTagSetFromDropdown;
+    window.loadDefaultTagsIntoEditor = loadDefaultTagsIntoEditor;
+    window.addTagEditorRow = addTagEditorRow;
+    window.saveTagEditorToSlot = saveTagEditorToSlot;
+    window.useEditedTagSet = useEditedTagSet;
+    window.clearTagEditorSlot = clearTagEditorSlot;
     window.openCustomColorPopup = openCustomColorPopup;
     window.closeCustomColorPopup = closeCustomColorPopup;
     window.updatePrimaryColorCode = updatePrimaryColorCode;
