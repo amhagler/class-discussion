@@ -1935,6 +1935,9 @@
     function displayPeople(){
       return educator && !educatorHidden ? [...participants, educator] : [...participants];
     }
+    function ownerChoices(){
+      return educator ? [...participants, educator] : [...participants];
+    }
     function ringPeople(){
       return [...participants];
     }
@@ -2811,6 +2814,7 @@
         }
         prevId = id;
       });
+      lastSpokenId = prevId || null;
     }
     function transferLogEntryOwner(row, newPid){
       const oldPid = row.dataset.pid;
@@ -2820,6 +2824,7 @@
       if (!oldPerson || !newPerson) return;
 
       const oldSeq = parseInt(row.dataset.seq || '0', 10);
+      if (!Number.isFinite(oldSeq) || oldSeq < 0) return;
       const rating = oldPerson.ratings?.[oldSeq] ?? ((row.cells[2].textContent || '').trim() ? parseInt(row.cells[2].textContent, 10) : null);
       const comment = oldPerson.comments?.[oldSeq] ?? (row.cells[3].textContent || '');
       const tags = structuredClone(oldPerson.tagsPerEntry?.[oldSeq] || []);
@@ -2858,6 +2863,7 @@
       rebuildConnectionsFromLog();
       redrawConnections();
       updateStats();
+      updateLogCount();
       if (!tabReport.disabled) generateReport(false);
       scheduleSave();
     }
@@ -3259,9 +3265,9 @@
         .replace(/\s+/g, ' ')
         .trim();
     }
-    function updateRecentReview(){
+    function updateRecentReview(force = false){
       if (!recentReviewList) return;
-      if (recentReviewList.contains(document.activeElement)) return;
+      if (!force && recentReviewList.contains(document.activeElement)) return;
       const rows = Array.from(logTableBody.rows)
         .filter(row => !row.classList.contains('question-row') && row.dataset.pid)
         .slice(-3)
@@ -3298,7 +3304,7 @@
           </div>
         `;
         const ownerSelect = entry.querySelector('.review-owner');
-        displayPeople().forEach(person => {
+        ownerChoices().forEach(person => {
           const o = document.createElement('option');
           o.value = person.id;
           o.textContent = person.name + (person.isEducator ? ' (Educator)' : '');
@@ -3308,20 +3314,23 @@
         ownerSelect.onchange = () => {
           pushUndo('change recent owner');
           transferLogEntryOwner(row, ownerSelect.value);
-          updateRecentReview();
+          ownerSelect.blur();
+          setTimeout(() => updateRecentReview(true), 0);
         };
         const ratingSelect = entry.querySelector('.review-rating');
         ratingSelect.value = row.cells[2]?.textContent?.trim() || '';
         ratingSelect.onchange = () => {
           pushUndo('edit recent rating');
           updateLogEntryRating(row, ratingSelect.value);
-          updateRecentReview();
+          ratingSelect.blur();
+          setTimeout(() => updateRecentReview(true), 0);
         };
         const commentInput = entry.querySelector('.review-comment-input');
         commentInput.onchange = () => {
           pushUndo('edit recent comment');
           updateLogEntryComment(row, commentInput.value);
-          updateRecentReview();
+          commentInput.blur();
+          setTimeout(() => updateRecentReview(true), 0);
         };
         commentInput.addEventListener('keydown', ev => {
           if (ev.key === 'Enter'){
@@ -3407,7 +3416,7 @@
         const current = pid;
         const sel = document.createElement('select');
         sel.className = 'cell-select';
-        displayPeople().forEach(person => {
+        ownerChoices().forEach(person => {
           const o = document.createElement('option');
           o.value = person.id;
           o.textContent = person.name + (person.isEducator ? ' (Educator)' : '');
