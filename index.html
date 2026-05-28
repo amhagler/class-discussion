@@ -598,7 +598,7 @@
       position:fixed;
       top:112px;
       right:26px;
-      width:clamp(190px, 20vw, 300px);
+      width:clamp(230px, 23vw, 330px);
       transform-origin: top right;
       transform: scale(clamp(.72, calc(100vw / 1500), 1));
       z-index:42;
@@ -644,16 +644,21 @@
       display:flex;
       gap:6px;
       align-items:center;
+      justify-content:flex-end;
+      flex-wrap:wrap;
+      min-width:0;
     }
     .stats-mini-btn{
       border:1px solid rgba(35,97,146,.20);
       background:rgba(35,97,146,.08);
       color:var(--secondary-color);
       border-radius:999px;
-      padding:6px 8px;
+      padding:6px 7px;
       font-size:11px;
       font-weight:800;
       cursor:pointer;
+      min-width:0;
+      max-width:100%;
     }
     .stats-mini-btn:hover{ background:rgba(255,255,255,.94); }
     .save-dot{
@@ -668,6 +673,7 @@
       display:grid;
       gap:10px;
       padding:12px;
+      min-width:0;
     }
     .stat-card{
       border:1px solid rgba(35,97,146,.10);
@@ -676,6 +682,7 @@
       padding:10px;
       display:grid;
       gap:4px;
+      min-width:0;
     }
     .stat-k{
       font-size:11px;
@@ -743,6 +750,115 @@
       border:1px solid rgba(111,38,61,.12);
       color:var(--primary-color);
       font-weight:800;
+    }
+    .review-panel{
+      border-top:1px solid rgba(111,38,61,.18);
+      background:
+        linear-gradient(180deg, rgba(111,38,61,.055), rgba(255,255,255,.58));
+      padding:12px;
+      display:grid;
+      gap:8px;
+      min-width:0;
+    }
+    .review-panel.hidden{
+      display:none;
+    }
+    .review-head{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      align-items:flex-start;
+    }
+    .review-head .stat-k{
+      color:var(--primary-color);
+    }
+    .review-sub{
+      color:var(--muted);
+      font-size:11px;
+      line-height:1.3;
+      margin-top:3px;
+    }
+    .review-editable{
+      border:1px solid rgba(111,38,61,.16);
+      background:
+        linear-gradient(180deg, rgba(255,255,255,.80), rgba(255,255,255,.62));
+      border-radius:14px;
+      padding:8px;
+      display:grid;
+      gap:7px;
+    }
+    .recent-review{
+      display:grid;
+      gap:7px;
+      margin-top:4px;
+    }
+    .review-entry{
+      border:1px solid rgba(111,38,61,.12);
+      background:rgba(255,255,255,.70);
+      border-radius:13px;
+      padding:7px 8px;
+      display:grid;
+      gap:7px;
+      min-width:0;
+      overflow:hidden;
+    }
+    .review-edit-row{
+      display:grid;
+      grid-template-columns:minmax(0, 1fr) minmax(52px, 64px);
+      gap:6px;
+      min-width:0;
+    }
+    .review-entry select,
+    .review-entry input{
+      width:100%;
+      min-width:0;
+      border-radius:10px;
+      border:1px solid rgba(0,0,0,.12);
+      padding:7px 8px;
+      font-size:12px;
+      background:rgba(255,255,255,.92);
+      outline:none;
+    }
+    .review-entry input{
+      grid-column:1 / -1;
+    }
+    .review-jump{
+      display:flex;
+      justify-content:space-between;
+      gap:8px;
+      align-items:baseline;
+      border:0;
+      background:transparent;
+      padding:0;
+      font-size:12px;
+      line-height:1.2;
+      cursor:pointer;
+      color:var(--ink);
+      text-align:left;
+      min-width:0;
+    }
+    .review-jump:hover b{
+      color:var(--primary-color);
+    }
+    .review-jump b{
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+      color:var(--ink);
+    }
+    .review-jump span{
+      color:var(--secondary-color);
+      font-weight:900;
+      flex:0 0 auto;
+    }
+    .review-comment{
+      color:var(--muted);
+      font-size:11px;
+      line-height:1.25;
+      overflow:hidden;
+      display:-webkit-box;
+      -webkit-line-clamp:2;
+      -webkit-box-orient:vertical;
     }
     @media (max-width:1100px){
       .stats-panel{
@@ -1291,6 +1407,7 @@
           <div class="stats-controls">
             <button class="stats-mini-btn" type="button" onclick="cycleStatsSize()" id="statsSizeButton">Compact</button>
             <button class="stats-mini-btn" type="button" onclick="toggleClassAverage()" id="classAverageToggleButton">Avg</button>
+            <button class="stats-mini-btn" type="button" onclick="toggleRecentReview()" id="recentReviewToggleButton">Review</button>
             <button class="stats-mini-btn" type="button" onclick="snapParticipantsToCircle()" id="snapCircleButton" style="display:none;">Snap</button>
             <button class="stats-mini-btn" type="button" onclick="hideStatsPanel()">Hide</button>
             <span class="save-dot" title="Autosaving locally"></span>
@@ -1325,6 +1442,15 @@
             <div class="stat-k">Not Yet Heard</div>
             <div class="unspoken" id="unspokenList"></div>
           </div>
+        </div>
+        <div class="review-panel" id="recentReviewPanel">
+          <div class="review-head">
+            <div>
+              <div class="stat-k">Recent Review</div>
+              <div class="review-sub">Last three logged contributions. Edit owner, rating, or comment here.</div>
+            </div>
+          </div>
+          <div class="recent-review" id="recentReviewList"></div>
         </div>
       </aside>
 
@@ -1368,6 +1494,7 @@
       <div class="drawer-actions">
         <button id="copyLogButton" class="btn" style="display:none;" onclick="copyLog()">Copy Log</button>
         <button id="copyReportButton" class="btn" style="display:none;" onclick="copyReport()">Copy Report</button>
+        <button id="copyBothDrawerButton" class="btn secondary" style="display:none;" onclick="copyBoth()">Copy Both</button>
         <button id="drawerCloseButton" class="btn ghost" onclick="closeDrawer()">Close</button>
       </div>
     </div>
@@ -1540,10 +1667,15 @@
           <li>Click a pill when someone starts speaking. Clicking the same active pill, or Pause, ends the current segment.</li>
           <li>Choose a 1-5 rating, optional tags, and an optional comment, then Save.</li>
           <li>Use Undo Last if you clicked the wrong speaker or made a recent setup/arrange change.</li>
+          <li>Press / to open or close the discussion log quickly.</li>
+          <li>In the log, click a participant name to move that entry to a different owner. Ratings, comments, tags, duration, stats, and discussion-flow lines update with it.</li>
           <li>Alt+Shift plus a participant hotkey opens notes for that person. Alt+Shift+B opens educator notes when the educator is visible.</li>
           <li>The Live Stats panel shows time, current speaker duration, class average, balance, top contributors, and who has not spoken yet.</li>
+          <li>The Recent Review section below Live Stats shows the last three logged contributions, so you can quickly catch mistaken owners, ratings, or comments.</li>
+          <li>Use the Review button in Live Stats to show or hide Recent Review.</li>
+          <li>Edit owner, rating, or comment directly in Recent Review, or click the row label to jump to that row in the discussion log.</li>
           <li>Stats can be compacted, hidden, or shown again without affecting the discussion data.</li>
-          <li>Screenshot / Snip opens the system snipping workflow for a quick capture of the map.</li>
+          <li>Screenshot / Snip opens the system snipping workflow when available. On Mac, use Command+Shift+4.</li>
         </ul>
       </div>
       <div class="help-section">
@@ -1564,6 +1696,7 @@
           <li>Balance remains visible below the leaderboard.</li>
           <li>The report summarizes ratings, airtime, domination percentage, tags, and notes.</li>
           <li>Copy Log, Copy Report, or Copy Both to save the discussion outside the browser.</li>
+          <li>Copy Both appears once the report has been generated.</li>
           <li>Live-only controls such as Undo, Help, and Participants disappear after End.</li>
         </ul>
       </div>
@@ -1617,6 +1750,7 @@
     const statsToggleButton = document.getElementById('statsToggleButton');
     const statsSizeButton = document.getElementById('statsSizeButton');
     const classAverageToggleButton = document.getElementById('classAverageToggleButton');
+    const recentReviewToggleButton = document.getElementById('recentReviewToggleButton');
     const snapCircleButton = document.getElementById('snapCircleButton');
     const snapCircleTopButton = document.getElementById('snapCircleTopButton');
     const educatorToggleButton = document.getElementById('educatorToggleButton');
@@ -1625,6 +1759,7 @@
     const copyLogButton = document.getElementById('copyLogButton');
     const copyReportButton = document.getElementById('copyReportButton');
     const copyBothButton = document.getElementById('copyBothButton');
+    const copyBothDrawerButton = document.getElementById('copyBothDrawerButton');
     const restartDiscussionButton = document.getElementById('restartDiscussionButton');
     const generateReportButton = document.getElementById('generateReportButton');
     const exportScreenshotButton = document.getElementById('exportScreenshotButton');
@@ -1658,6 +1793,8 @@
     const topContributors = document.getElementById('topContributors');
     const contributorsStatLabel = document.getElementById('contributorsStatLabel');
     const unspokenList = document.getElementById('unspokenList');
+    const recentReviewPanel = document.getElementById('recentReviewPanel');
+    const recentReviewList = document.getElementById('recentReviewList');
     const workspace = document.querySelector('.workspace');
     const replayDock = document.getElementById('replayDock');
 
@@ -1687,6 +1824,7 @@
     let arrangeDragMode = 'free';
     let educatorHidden = false;
     let classAverageVisible = true;
+    let recentReviewVisible = true;
     let undoStack = [];
     let selectedTagsForEntry = new Set();
     let autosaveTimer = null;
@@ -1832,6 +1970,7 @@
         arrangeDragMode,
         educatorHidden,
         classAverageVisible,
+        recentReviewVisible,
         logRows: getLogRowsState(),
         reportEnabled: !tabReport.disabled,
         reportRows: getTableRowsState(document.getElementById('reportTable')),
@@ -1862,6 +2001,7 @@
       arrangeDragMode = snap.arrangeDragMode || 'free';
       educatorHidden = !!snap.educatorHidden;
       classAverageVisible = snap.classAverageVisible !== false;
+      recentReviewVisible = snap.recentReviewVisible !== false;
 
       if (Array.isArray(snap.colors)) updateColorScheme(snap.colors[0], snap.colors[1], teamName);
       applyStatsMode();
@@ -1912,9 +2052,9 @@
         (r.cells || []).forEach((txt, idx) => {
           const cell = row.insertCell(idx);
           cell.textContent = txt;
-          if (!row.classList.contains('question-row') && (idx === 2 || idx === 3)){
+          if (!row.classList.contains('question-row') && (idx === 0 || idx === 2 || idx === 3)){
             cell.className = 'cell-editable';
-            cell.title = idx === 2 ? 'Click to edit rating' : 'Click to edit comment';
+            cell.title = idx === 0 ? 'Click to change owner' : (idx === 2 ? 'Click to edit rating' : 'Click to edit comment');
           }
         });
       });
@@ -2009,6 +2149,8 @@
       statsToggleButton.textContent = hidden ? 'Show Stats' : 'Hide Stats';
       statsSizeButton.textContent = compact ? 'Normal' : 'Compact';
       classAverageToggleButton.textContent = classAverageVisible ? 'Hide Avg' : 'Show Avg';
+      recentReviewToggleButton.textContent = recentReviewVisible ? 'Hide Review' : 'Show Review';
+      recentReviewPanel.classList.toggle('hidden', !recentReviewVisible);
       classAverageToggleButton.style.display = discussionEnded ? '' : 'none';
       snapCircleButton.style.display = arrangeMode && active ? '' : 'none';
       requestAnimationFrame(() => {
@@ -2041,6 +2183,13 @@
       classAverageVisible = !classAverageVisible;
       classAverageToggleButton.textContent = classAverageVisible ? 'Hide Avg' : 'Show Avg';
       updateStats();
+      scheduleSave();
+    }
+    function toggleRecentReview(){
+      pushUndo('toggle recent review');
+      recentReviewVisible = !recentReviewVisible;
+      applyStatsMode();
+      updateRecentReview();
       scheduleSave();
     }
 
@@ -2583,7 +2732,10 @@
       const row = logTableBody.insertRow();
       row.dataset.pid = participant.id;
       row.dataset.seq = String(seq);
-      row.insertCell(0).textContent = participant.name;
+      const ownerCell = row.insertCell(0);
+      ownerCell.className = 'cell-editable';
+      ownerCell.textContent = participant.name;
+      ownerCell.title = 'Click to change owner';
       row.insertCell(1).textContent = new Date().toLocaleString();
       const ratingCell = row.insertCell(2);
       ratingCell.className = 'cell-editable';
@@ -2617,6 +2769,120 @@
       }
     }
 
+    function parseDurationCell(text){
+      const n = parseFloat(String(text || '').replace(/[^\d.]/g, ''));
+      return Number.isFinite(n) ? n : 0;
+    }
+    function rebuildTagCounts(person){
+      person.tagCounts = {};
+      (person.tagsPerEntry || []).forEach(tags => {
+        (tags || []).forEach(lbl => person.tagCounts[lbl] = (person.tagCounts[lbl] || 0) + 1);
+      });
+    }
+    function recomputeSpeakCount(person){
+      person.speakCount = Math.max(
+        person.ratings?.length || 0,
+        person.comments?.length || 0,
+        person.endTimes?.length || 0
+      );
+      const el = document.getElementById(`speakCount${person.id}`);
+      if (el) el.textContent = String(person.speakCount);
+    }
+    function rebuildConnectionsFromLog(){
+      connections = [];
+      connectionCounts = {};
+      const rows = Array.from(logTableBody.rows)
+        .filter(row => !row.classList.contains('question-row') && row.dataset.pid);
+      let prevId = null;
+      rows.forEach(row => {
+        const id = row.dataset.pid;
+        if (prevId && id && prevId !== id){
+          const from = getPersonById(prevId);
+          const to = getPersonById(id);
+          if (from && to){
+            const key = `${prevId}-${id}`;
+            const rkey = `${id}-${prevId}`;
+            if (connectionCounts[key]) connectionCounts[key] += 1;
+            else if (connectionCounts[rkey]) connectionCounts[rkey] += 1;
+            else connectionCounts[key] = 1;
+            const thickness = connectionCounts[key] || connectionCounts[rkey] || 1;
+            connections.push({ fromId:from.id, toId:to.id, fromName:from.name, toName:to.name, thickness });
+          }
+        }
+        prevId = id;
+      });
+    }
+    function transferLogEntryOwner(row, newPid){
+      const oldPid = row.dataset.pid;
+      if (!oldPid || !newPid || oldPid === newPid) return;
+      const oldPerson = getPersonById(oldPid);
+      const newPerson = getPersonById(newPid);
+      if (!oldPerson || !newPerson) return;
+
+      const oldSeq = parseInt(row.dataset.seq || '0', 10);
+      const rating = oldPerson.ratings?.[oldSeq] ?? ((row.cells[2].textContent || '').trim() ? parseInt(row.cells[2].textContent, 10) : null);
+      const comment = oldPerson.comments?.[oldSeq] ?? (row.cells[3].textContent || '');
+      const tags = structuredClone(oldPerson.tagsPerEntry?.[oldSeq] || []);
+      const startTime = oldPerson.startTimes?.[oldSeq] ?? null;
+      const duration = oldPerson.endTimes?.[oldSeq] ?? parseDurationCell(row.cells[4].textContent);
+
+      oldPerson.ratings.splice(oldSeq, 1);
+      oldPerson.comments.splice(oldSeq, 1);
+      oldPerson.tagsPerEntry.splice(oldSeq, 1);
+      oldPerson.startTimes.splice(oldSeq, 1);
+      oldPerson.endTimes.splice(oldSeq, 1);
+
+      const newSeq = newPerson.ratings.length;
+      newPerson.ratings.push(rating);
+      newPerson.comments.push(comment);
+      newPerson.tagsPerEntry.push(tags);
+      if (startTime !== null) newPerson.startTimes.push(startTime);
+      else newPerson.startTimes.push(Date.now());
+      newPerson.endTimes.push(duration);
+
+      Array.from(logTableBody.rows).forEach(r => {
+        if (r === row) return;
+        if (r.dataset.pid === oldPid && parseInt(r.dataset.seq || '0', 10) > oldSeq){
+          r.dataset.seq = String(parseInt(r.dataset.seq, 10) - 1);
+        }
+      });
+
+      row.dataset.pid = newPid;
+      row.dataset.seq = String(newSeq);
+      row.cells[0].textContent = newPerson.name;
+
+      rebuildTagCounts(oldPerson);
+      rebuildTagCounts(newPerson);
+      recomputeSpeakCount(oldPerson);
+      recomputeSpeakCount(newPerson);
+      rebuildConnectionsFromLog();
+      redrawConnections();
+      updateStats();
+      if (!tabReport.disabled) generateReport(false);
+      scheduleSave();
+    }
+    function updateLogEntryRating(row, ratingText){
+      const p = getPersonById(row.dataset.pid);
+      if (!p) return;
+      const seq = parseInt(row.dataset.seq || '0', 10);
+      const value = ratingText ? parseInt(ratingText, 10) : null;
+      p.ratings[seq] = value;
+      row.cells[2].textContent = ratingText || '';
+      updateStats();
+      if (!tabReport.disabled) generateReport(false);
+      scheduleSave();
+    }
+    function updateLogEntryComment(row, commentText){
+      const p = getPersonById(row.dataset.pid);
+      if (!p) return;
+      const seq = parseInt(row.dataset.seq || '0', 10);
+      p.comments[seq] = commentText;
+      row.cells[3].textContent = commentText;
+      updateStats();
+      if (!tabReport.disabled) generateReport(false);
+      scheduleSave();
+    }
+
     function endDiscussion(){
       pushUndo('end discussion');
       if (currentSpeakerId) finalizeCurrentSegment(Date.now());
@@ -2634,6 +2900,7 @@
       editParticipantsButton.style.display = 'none';
       helpButton.style.display = 'none';
       copyBothButton.style.display = 'inline-flex';
+      copyBothDrawerButton.style.display = 'inline-flex';
       restartDiscussionButton.style.display = 'inline-flex';
       generateReportButton.style.display = 'none';
       exportScreenshotButton.style.display = 'inline-flex';
@@ -2983,6 +3250,97 @@
           unspokenList.appendChild(pill);
         });
       }
+      updateRecentReview();
+    }
+    function cleanReviewComment(text){
+      return String(text || '')
+        .replace(/^Tags:\s*/gm, 'Tags: ')
+        .replace(/\n+/g, ' · ')
+        .replace(/\s+/g, ' ')
+        .trim();
+    }
+    function updateRecentReview(){
+      if (!recentReviewList) return;
+      if (recentReviewList.contains(document.activeElement)) return;
+      const rows = Array.from(logTableBody.rows)
+        .filter(row => !row.classList.contains('question-row') && row.dataset.pid)
+        .slice(-3)
+        .reverse();
+      recentReviewList.innerHTML = '';
+      if (!rows.length){
+        recentReviewList.innerHTML = '<div class="stat-small">No logged contributions yet.</div>';
+        return;
+      }
+      rows.forEach(row => {
+        const entry = document.createElement('div');
+        entry.className = 'review-entry';
+        const owner = row.cells[0]?.textContent || 'Unknown';
+        const rating = row.cells[2]?.textContent?.trim() || '-';
+        const duration = row.cells[4]?.textContent?.trim() || '';
+        const comment = cleanReviewComment(row.cells[3]?.textContent || '');
+        entry.innerHTML = `
+          <button class="review-jump" type="button" title="Jump to this row in the log">
+            <b>${escapeHtml(owner)}</b><span>${escapeHtml(rating)}${duration ? ' · ' + escapeHtml(duration) : ''}</span>
+          </button>
+          <div class="review-editable">
+            <div class="review-edit-row">
+              <select class="review-owner" title="Change owner"></select>
+              <select class="review-rating" title="Change rating">
+                <option value="">-</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+                <option value="5">5</option>
+              </select>
+            </div>
+            <input class="review-comment-input" type="text" title="Edit comment" value="${escapeHtml(row.cells[3]?.textContent || '')}" />
+          </div>
+        `;
+        const ownerSelect = entry.querySelector('.review-owner');
+        displayPeople().forEach(person => {
+          const o = document.createElement('option');
+          o.value = person.id;
+          o.textContent = person.name + (person.isEducator ? ' (Educator)' : '');
+          ownerSelect.appendChild(o);
+        });
+        ownerSelect.value = row.dataset.pid || '';
+        ownerSelect.onchange = () => {
+          pushUndo('change recent owner');
+          transferLogEntryOwner(row, ownerSelect.value);
+          updateRecentReview();
+        };
+        const ratingSelect = entry.querySelector('.review-rating');
+        ratingSelect.value = row.cells[2]?.textContent?.trim() || '';
+        ratingSelect.onchange = () => {
+          pushUndo('edit recent rating');
+          updateLogEntryRating(row, ratingSelect.value);
+          updateRecentReview();
+        };
+        const commentInput = entry.querySelector('.review-comment-input');
+        commentInput.onchange = () => {
+          pushUndo('edit recent comment');
+          updateLogEntryComment(row, commentInput.value);
+          updateRecentReview();
+        };
+        commentInput.addEventListener('keydown', ev => {
+          if (ev.key === 'Enter'){
+            ev.preventDefault();
+            commentInput.blur();
+          }
+        });
+        entry.querySelector('.review-jump').onclick = () => {
+          switchTab('log');
+          row.scrollIntoView({ behavior:'smooth', block:'center' });
+          row.style.outline = '3px solid rgba(35,97,146,.35)';
+          row.style.outlineOffset = '-3px';
+          setTimeout(() => {
+            row.style.outline = '';
+            row.style.outlineOffset = '';
+          }, 1400);
+        };
+        recentReviewList.appendChild(entry);
+      });
     }
     function tickClockAndStats(){
       const now = new Date();
@@ -3018,6 +3376,7 @@
         reportPanel.style.display = 'none';
         copyLogButton.style.display = 'inline-flex';
         copyReportButton.style.display = 'none';
+        copyBothDrawerButton.style.display = discussionEnded && !tabReport.disabled ? 'inline-flex' : 'none';
       }else{
         tabReport.classList.add('active');
         tabLog.classList.remove('active');
@@ -3025,6 +3384,7 @@
         reportPanel.style.display = 'block';
         copyLogButton.style.display = 'none';
         copyReportButton.style.display = 'inline-flex';
+        copyBothDrawerButton.style.display = discussionEnded && !tabReport.disabled ? 'inline-flex' : 'none';
       }
       openDrawer();
     }
@@ -3035,7 +3395,7 @@
       const tr = td.closest('tr');
       if (!tr || tr.classList.contains('question-row')) return;
       const colIndex = td.cellIndex;
-      if (colIndex !== 2 && colIndex !== 3) return;
+      if (colIndex !== 0 && colIndex !== 2 && colIndex !== 3) return;
       if (td.querySelector('input,select,textarea')) return;
       const pid = tr.dataset.pid;
       const seq = parseInt(tr.dataset.seq || '0', 10);
@@ -3043,7 +3403,43 @@
       if (!p) return;
       pushUndo('edit log');
 
-      if (colIndex === 2){
+      if (colIndex === 0){
+        const current = pid;
+        const sel = document.createElement('select');
+        sel.className = 'cell-select';
+        displayPeople().forEach(person => {
+          const o = document.createElement('option');
+          o.value = person.id;
+          o.textContent = person.name + (person.isEducator ? ' (Educator)' : '');
+          sel.appendChild(o);
+        });
+        sel.value = current;
+        td.textContent = '';
+        td.appendChild(sel);
+        sel.focus();
+        let committed = false;
+        const commit = () => {
+          if (committed) return;
+          committed = true;
+          const newPid = sel.value;
+          td.innerHTML = '';
+          td.textContent = getPersonById(current)?.name || '';
+          if (newPid && newPid !== current){
+            transferLogEntryOwner(tr, newPid);
+          }
+        };
+        sel.addEventListener('change', commit);
+        sel.addEventListener('blur', commit);
+        sel.addEventListener('keydown', ev => {
+          if (ev.key === 'Enter'){ ev.preventDefault(); commit(); }
+          if (ev.key === 'Escape'){
+            ev.preventDefault();
+            committed = true;
+            td.innerHTML = '';
+            td.textContent = p.name;
+          }
+        });
+      }else if (colIndex === 2){
         const current = (td.textContent || '').trim();
         const sel = document.createElement('select');
         sel.className = 'cell-select';
@@ -3132,6 +3528,7 @@
       reportReady.textContent = '✓';
       copyReportButton.style.display = 'inline-flex';
       copyBothButton.style.display = 'inline-flex';
+      copyBothDrawerButton.style.display = 'inline-flex';
       if (openAfter){
         switchTab('report');
         openDrawer();
@@ -3331,10 +3728,16 @@
     }
 
     async function exportScreenshot(){
+      const isMac = /Mac|iPhone|iPad|iPod/i.test(navigator.platform || navigator.userAgent || '');
+      if (isMac){
+        alert('On Mac, press Command+Shift+4 to grab the discussion map.');
+        return;
+      }
       try{
         window.location.href = 'ms-screenclip:';
+        setTimeout(() => alert('If Snipping Tool did not open, press Windows+Shift+S to grab the discussion map.'), 600);
       }catch(err){
-        alert('Use Windows+Shift+S to grab the discussion map.');
+        alert('Press Windows+Shift+S to grab the discussion map.');
       }
     }
 
@@ -3521,6 +3924,7 @@
       restartDiscussionButton.style.display = discussionEnded ? 'inline-flex' : 'none';
       generateReportButton.style.display = 'none';
       copyBothButton.style.display = discussionEnded ? 'inline-flex' : 'none';
+      copyBothDrawerButton.style.display = discussionEnded && !tabReport.disabled ? 'inline-flex' : 'none';
       copyLogButton.style.display = discussionStarted ? 'inline-flex' : 'none';
       pauseCenter.style.display = discussionStarted && !discussionEnded ? 'block' : 'none';
       replayDock.classList.toggle('open', discussionEnded);
@@ -3556,6 +3960,13 @@
       if (overlays.some(o => o && o.style.display === 'flex')) return;
       if (isTypingTarget(document.activeElement)) return;
       const k = String(e.key || '').toUpperCase();
+
+      if (e.key === '/' && !e.altKey && !e.ctrlKey && !e.metaKey){
+        e.preventDefault();
+        if (drawer.classList.contains('open')) closeDrawer();
+        else switchTab('log');
+        return;
+      }
 
       if (discussionStarted && e.altKey && e.shiftKey && !e.ctrlKey && !e.metaKey){
         if (educator && !educatorHidden && k === 'B'){
@@ -3657,6 +4068,7 @@
     window.cycleStatsSize = cycleStatsSize;
     window.hideStatsPanel = hideStatsPanel;
     window.toggleClassAverage = toggleClassAverage;
+    window.toggleRecentReview = toggleRecentReview;
     window.toggleArrangeMode = toggleArrangeMode;
     window.toggleArrangeDragMode = toggleArrangeDragMode;
     window.toggleEducatorVisibility = toggleEducatorVisibility;
