@@ -5008,6 +5008,8 @@ Yale University Bulldogs|#00356B|#FFFFFF|Yale
       const name = saved?.name || `Saved Slot ${slotIndex + 1}`;
       const c1 = saved?.colors?.[0] || 'rgba(0,0,0,.10)';
       const c2 = saved?.colors?.[1] || 'rgba(0,0,0,.10)';
+      const savedItem = saved ? { name:saved.name, colors:[saved.colors[0], saved.colors[1]], league:'Saved', aliases:`Saved Slot ${slotIndex + 1}` } : null;
+      const isFav = savedItem ? isFavoriteSwatch(savedItem) : false;
       const li = document.createElement('li');
       li.className = 'scheme';
       li.innerHTML = `
@@ -5016,8 +5018,10 @@ Yale University Bulldogs|#00356B|#FFFFFF|Yale
           <div class="swatch" style="background:${escapeHtml(c2)}"></div>
         </div>
         <div class="team-name">${escapeHtml(name)}</div>
-        <div style="display:flex;gap:8px;flex-wrap:wrap;">
+        <div class="scheme-meta">${saved ? 'Saved custom palette' : 'Empty saved slot'}</div>
+        <div class="scheme-actions">
           <button class="select-button" style="flex:1 1 46%;" ${saved ? '' : 'disabled'}>Select</button>
+          <button class="favorite-button ${isFav ? 'active' : ''}" title="${isFav ? 'Remove from favorites' : 'Add to favorites'}" ${saved ? '' : 'disabled'}>★</button>
           <button class="select-button" style="flex:1 1 46%;background:rgba(35,97,146,.12);color:var(--ink);border:1px solid rgba(0,0,0,.10);box-shadow:none;">Save current</button>
           <button class="select-button" style="flex:1 1 100%;background:rgba(0,0,0,.05);color:var(--ink);border:1px solid rgba(0,0,0,.10);box-shadow:none;" ${saved ? '' : 'disabled'}>Clear slot</button>
         </div>
@@ -5028,8 +5032,12 @@ Yale University Bulldogs|#00356B|#FFFFFF|Yale
         updateColorScheme(saved.colors[0], saved.colors[1], saved.name);
         closeColorSchemePopup();
       };
-      btns[1].onclick = () => saveCurrentToSlot(slotIndex);
-      btns[2].onclick = () => clearSlot(slotIndex);
+      btns[1].onclick = () => {
+        if (!savedItem) return;
+        toggleFavoriteSwatch(savedItem.name, savedItem.colors[0], savedItem.colors[1], savedItem.league, savedItem.aliases);
+      };
+      btns[2].onclick = () => saveCurrentToSlot(slotIndex);
+      btns[3].onclick = () => clearSlot(slotIndex);
       colorSchemeList.appendChild(li);
     }
     function addCustomColorCard(){
