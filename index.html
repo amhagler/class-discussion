@@ -616,6 +616,47 @@
       color:var(--text-color);
       border-color:transparent;
     }
+    .moment-card{
+      border-color:rgba(35,97,146,.22);
+      box-shadow:0 18px 42px rgba(35,97,146,.18), var(--shadow-sm);
+    }
+    .moment-options{
+      display:grid;
+      grid-template-columns:repeat(2, minmax(0, 1fr));
+      gap:10px;
+      margin:10px 0 12px;
+    }
+    .moment-option{
+      border:1px solid rgba(35,97,146,.14);
+      background:rgba(35,97,146,.06);
+      color:var(--ink);
+      border-radius:14px;
+      padding:9px 10px;
+      text-align:left;
+      cursor:pointer;
+      display:grid;
+      gap:3px;
+      min-height:58px;
+    }
+    .moment-option:hover{
+      transform:translateY(-1px);
+      background:rgba(35,97,146,.10);
+    }
+    .moment-option.selected{
+      background:var(--secondary-color);
+      color:var(--text-color);
+      border-color:transparent;
+      box-shadow:0 10px 22px rgba(35,97,146,.16);
+    }
+    .moment-option b{
+      font-size:13px;
+      line-height:1.1;
+    }
+    .moment-option span{
+      font-size:11px;
+      line-height:1.2;
+      opacity:.82;
+    }
     .comment-tools{
       display:flex;
       align-items:center;
@@ -1506,6 +1547,19 @@
       font-weight:800;
       color:var(--ink);
     }
+    .moment-row td{
+      background:rgba(35,97,146,.10) !important;
+      border-top:1px solid rgba(35,97,146,.18);
+    }
+    .moment-row td:first-child{
+      border-left:5px solid var(--secondary-color);
+      color:var(--secondary-color);
+      font-weight:900;
+    }
+    .moment-row td:nth-child(3){
+      color:var(--secondary-color);
+      font-weight:900;
+    }
     .cell-editable{
       cursor:text;
       border-radius:10px;
@@ -1655,6 +1709,7 @@
       <div class="controls">
         <button id="endDiscussionButton" class="btn secondary" style="display:none;" onclick="endDiscussion()">End</button>
         <button id="undoButton" class="btn ghost" style="display:none;" onclick="undoLastAction()" disabled>Undo Last</button>
+        <button id="markMomentButton" class="btn ghost" style="display:none;" onclick="openMomentMarker()" title="Mark Moment (Z)">Mark Moment</button>
         <button id="arrangeModeButton" class="btn ghost" style="display:none;" onclick="toggleArrangeMode()">Arrange Mode</button>
         <button id="arrangeDragModeButton" class="btn ghost" style="display:none;" onclick="toggleArrangeDragMode()">Free Drag</button>
         <button id="snapCircleTopButton" class="btn ghost" style="display:none;" onclick="snapParticipantsToCircle()">Snap Circle</button>
@@ -1772,6 +1827,30 @@
 
               <div style="margin-top:8px;color:var(--muted);font-size:12px;font-weight:300;line-height:1.35;">
                 Tip: Ctrl+Enter saves. Keys 1-5 select rating. = records no rating. Ctrl/Cmd+B and Ctrl/Cmd+I format comment text.
+              </div>
+            </div>
+
+            <div id="momentBox" class="modal-card moment-card" style="display:none;">
+              <h2>Mark Moment</h2>
+
+              <div class="moment-options" id="momentOptions"></div>
+
+              <div class="comment-tools">
+                <label for="momentComment">Moment Comment:</label>
+                <div class="format-tools" aria-label="Moment comment formatting">
+                  <button class="format-btn" type="button" onclick="formatMomentComment('bold')" title="Bold (Ctrl/Cmd+B)">B</button>
+                  <button class="format-btn" type="button" onclick="formatMomentComment('italic')" title="Italic (Ctrl/Cmd+I)"><i>I</i></button>
+                </div>
+              </div>
+              <div id="momentComment" class="rich-comment" contenteditable="true" role="textbox" aria-multiline="true" data-placeholder="Optional note about what just happened..."></div>
+
+              <div style="display:flex;justify-content:flex-end;gap:8px;margin-top:10px;">
+                <button class="btn ghost" onclick="closeMomentMarker()">Cancel</button>
+                <button class="btn secondary" onclick="saveMomentMarker()">Save</button>
+              </div>
+
+              <div style="margin-top:8px;color:var(--muted);font-size:12px;font-weight:300;line-height:1.35;">
+                Tip: Keys 1-4 select a moment type. Ctrl+Enter saves. This does not affect speaker time, ratings, or stats.
               </div>
             </div>
           </div>
@@ -2076,6 +2155,7 @@
         <ul class="help-bullets">
           <li>Click a pill when someone starts speaking. Clicking the same active pill, or Pause, ends the current segment.</li>
           <li>Choose a 1-5 rating, optional tags, and an optional comment, then Save.</li>
+          <li>Use Mark Moment, or press Z when you are not typing, to capture a notable moment without stopping the current speaker timer.</li>
           <li>Use the Tags button to switch or edit tag sets. Changes affect future entries only.</li>
           <li>Use Undo Last if you clicked the wrong speaker or made a recent setup/arrange change.</li>
           <li>Press / to open or close the discussion log quickly.</li>
@@ -2087,6 +2167,16 @@
           <li>Edit owner, rating, or comment directly in Recent Review, or click the row label to jump to that row in the discussion log.</li>
           <li>Stats can be compacted, hidden, or shown again without affecting the discussion data.</li>
           <li>Screenshot / Snip opens the system snipping workflow when available. On Mac, use Command+Shift+4.</li>
+        </ul>
+      </div>
+      <div class="help-section">
+        <div class="help-section-title">Moment Marker</div>
+        <ul class="help-bullets">
+          <li>Mark Moment is available during a live discussion from the top bar, or with the Z key when your cursor is not in a text field.</li>
+          <li>Moment types use number keys inside the marker box: 1 Key Insight, 2 Discussion Craft, 3 Wrong Turn, and 4 Tension Point.</li>
+          <li>Use an optional comment to describe what happened. Ctrl+Enter saves, and Escape cancels.</li>
+          <li>Moment rows are highlighted in the discussion log with the secondary color.</li>
+          <li>Marked moments do not add speaking time, change ratings, affect averages, create connection lines, or count toward the leaderboard.</li>
         </ul>
       </div>
       <div class="help-section">
@@ -2138,6 +2228,9 @@
     const canvas = document.getElementById('connectionCanvas');
     const ctx = canvas.getContext('2d');
     const ratingBox = document.getElementById('ratingBox');
+    const momentBox = document.getElementById('momentBox');
+    const momentOptions = document.getElementById('momentOptions');
+    const momentComment = document.getElementById('momentComment');
     const pauseCenter = document.getElementById('pauseCenter');
     const tagRow = document.getElementById('tagRow');
     const logTableBody = document.querySelector('#logTable tbody');
@@ -2159,6 +2252,7 @@
 
     const endDiscussionButton = document.getElementById('endDiscussionButton');
     const undoButton = document.getElementById('undoButton');
+    const markMomentButton = document.getElementById('markMomentButton');
     const arrangeModeButton = document.getElementById('arrangeModeButton');
     const arrangeDragModeButton = document.getElementById('arrangeDragModeButton');
     const statsToggleButton = document.getElementById('statsToggleButton');
@@ -2239,6 +2333,8 @@
     let currentSegmentStartedAt = null;
     let selectedRating = null;
     let selectedRatingWasChosen = false;
+    let selectedMomentType = null;
+    let ratingBoxHiddenForMoment = false;
     let currentNotesParticipantId = null;
     let teamName = 'Colorado Avalanche';
     let selectedParticipantId = null;
@@ -2281,6 +2377,13 @@
     let savedTagSets = [];
     let tagsEnabled = true;
     let tagEditorSlot = 0;
+
+    const MOMENT_TYPES = [
+      { key:'Key Insight', label:'Key Insight', detail:'A core idea surfaces' },
+      { key:'Discussion Craft', label:'Discussion Craft', detail:'A strong discussion move' },
+      { key:'Wrong Turn', label:'Wrong Turn', detail:'A misread or drift' },
+      { key:'Tension Point', label:'Tension Point', detail:'Tone or social friction' }
+    ];
 
     function currentTags(){
       return tagsEnabled ? (activeTagSet.tags || []) : [];
@@ -2790,6 +2893,7 @@ Yale University Bulldogs|#00356B|#FFFFFF|Yale
       return displayPeople().filter(p => !p.isEducator || p.includeInStats);
     }
     function isRatingOpen(){ return ratingBox.style.display !== 'none'; }
+    function isMomentOpen(){ return momentBox.style.display !== 'none'; }
     function isTypingTarget(el){
       if (!el) return false;
       const tag = (el.tagName || '').toUpperCase();
@@ -2917,7 +3021,7 @@ Yale University Bulldogs|#00356B|#FFFFFF|Yale
           }else{
             cell.textContent = typeof value === 'object' ? (value.text || '') : value;
           }
-          if (!row.classList.contains('question-row') && (idx === 0 || idx === 2 || idx === 3)){
+          if (!row.classList.contains('question-row') && !row.classList.contains('moment-row') && (idx === 0 || idx === 2 || idx === 3)){
             cell.className = 'cell-editable';
             cell.title = idx === 0 ? 'Click to change owner' : (idx === 2 ? 'Click to edit rating' : 'Click to edit comment');
           }
@@ -3461,6 +3565,7 @@ Yale University Bulldogs|#00356B|#FFFFFF|Yale
       placeParticipants();
       endDiscussionButton.style.display = 'inline-flex';
       undoButton.style.display = 'inline-flex';
+      markMomentButton.style.display = 'inline-flex';
       arrangeModeButton.style.display = 'inline-flex';
       educatorToggleButton.style.display = educator ? 'inline-flex' : 'none';
       educatorToggleButton.textContent = educatorHidden ? 'Show Educator' : 'Hide Educator';
@@ -3594,6 +3699,72 @@ Yale University Bulldogs|#00356B|#FFFFFF|Yale
       selectedRating = null;
       selectedRatingWasChosen = false;
       ratingBox.querySelectorAll('.rating-option').forEach(opt => opt.classList.remove('selected'));
+    }
+    function renderMomentOptions(){
+      momentOptions.innerHTML = '';
+      MOMENT_TYPES.forEach((type, idx) => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'moment-option' + (selectedMomentType === type.key ? ' selected' : '');
+        btn.onclick = () => selectMomentType(idx + 1);
+        btn.innerHTML = `<b>${idx + 1}. ${escapeHtml(type.label)}</b><span>${escapeHtml(type.detail)}</span>`;
+        momentOptions.appendChild(btn);
+      });
+    }
+    function selectMomentType(number){
+      const type = MOMENT_TYPES[number - 1];
+      if (!type) return;
+      selectedMomentType = type.key;
+      renderMomentOptions();
+      scheduleSave();
+    }
+    function openMomentMarker(){
+      if (!discussionStarted || discussionEnded) return;
+      selectedMomentType = null;
+      renderMomentOptions();
+      ratingBoxHiddenForMoment = isRatingOpen();
+      if (ratingBoxHiddenForMoment) ratingBox.style.display = 'none';
+      momentComment.innerHTML = '';
+      momentBox.style.display = 'block';
+      momentComment.focus();
+    }
+    function closeMomentMarker(restoreRating = true){
+      if (!momentBox || !isMomentOpen()) return;
+      momentBox.style.display = 'none';
+      momentComment.innerHTML = '';
+      selectedMomentType = null;
+      if (restoreRating && ratingBoxHiddenForMoment && currentSpeakerId && !discussionEnded){
+        ratingBox.style.display = 'block';
+        document.getElementById('comment').focus();
+      }
+      ratingBoxHiddenForMoment = false;
+    }
+    function formatMomentComment(command){
+      if (!momentComment) return;
+      momentComment.focus();
+      document.execCommand(command, false, null);
+      scheduleSave();
+    }
+    function saveMomentMarker(){
+      if (!discussionStarted || discussionEnded) return;
+      if (!selectedMomentType){
+        alert('Choose a moment type first.');
+        return;
+      }
+      pushUndo('mark moment');
+      const speaker = getPersonById(currentSpeakerId);
+      const commentHtml = sanitizeCommentHtml(momentComment.innerHTML || '');
+      const speakerContext = speaker ? `<div><strong>Current speaker:</strong> ${escapeHtml(speaker.name)}</div>` : '';
+      const row = logTableBody.insertRow();
+      row.className = 'moment-row';
+      row.insertCell(0).textContent = 'Marked Moment';
+      row.insertCell(1).textContent = new Date().toLocaleString();
+      row.insertCell(2).textContent = selectedMomentType;
+      row.insertCell(3).innerHTML = sanitizeCommentHtml(speakerContext + commentHtml);
+      row.insertCell(4).textContent = '';
+      updateLogCount();
+      closeMomentMarker(true);
+      scheduleSave();
     }
     function saveContribution(){
       if (!currentSpeakerId) return;
@@ -3770,6 +3941,7 @@ Yale University Bulldogs|#00356B|#FFFFFF|Yale
       pushUndo('end discussion');
       if (currentSpeakerId) finalizeCurrentSegment(Date.now());
       ratingBox.style.display = 'none';
+      closeMomentMarker(false);
       clearTagSelection();
       currentSpeakerId = null;
       currentSegmentStartedAt = null;
@@ -3777,6 +3949,7 @@ Yale University Bulldogs|#00356B|#FFFFFF|Yale
       pauseCenter.style.display = 'none';
       endDiscussionButton.style.display = 'none';
       undoButton.style.display = 'none';
+      markMomentButton.style.display = 'none';
       arrangeModeButton.style.display = displayPeople().length ? 'inline-flex' : 'none';
       arrangeDragModeButton.style.display = arrangeMode ? 'inline-flex' : 'none';
       snapCircleTopButton.style.display = arrangeMode && displayPeople().length ? 'inline-flex' : 'none';
@@ -4247,7 +4420,7 @@ Yale University Bulldogs|#00356B|#FFFFFF|Yale
 
     function updateLogCount(){
       const rows = Array.from(logTableBody.rows);
-      const contribs = rows.filter(r => !r.classList.contains('question-row') && r.cells[1] && r.cells[1].textContent.trim() !== '').length;
+      const contribs = rows.filter(r => !r.classList.contains('question-row') && !r.classList.contains('moment-row') && r.cells[1] && r.cells[1].textContent.trim() !== '').length;
       logCount.textContent = String(contribs);
     }
 
@@ -4291,7 +4464,7 @@ Yale University Bulldogs|#00356B|#FFFFFF|Yale
       const td = e.target.closest('td');
       if (!td) return;
       const tr = td.closest('tr');
-      if (!tr || tr.classList.contains('question-row')) return;
+      if (!tr || tr.classList.contains('question-row') || tr.classList.contains('moment-row')) return;
       const colIndex = td.cellIndex;
       if (colIndex !== 0 && colIndex !== 2 && colIndex !== 3) return;
       if (td.querySelector('input,select,textarea')) return;
@@ -5144,6 +5317,7 @@ Yale University Bulldogs|#00356B|#FFFFFF|Yale
       participantFormWrap.style.display = discussionStarted && !participants.length && !discussionEnded ? 'block' : 'none';
       endDiscussionButton.style.display = discussionStarted && !discussionEnded && displayPeople().length ? 'inline-flex' : 'none';
       undoButton.style.display = discussionStarted && !discussionEnded ? 'inline-flex' : 'none';
+      markMomentButton.style.display = discussionStarted && !discussionEnded ? 'inline-flex' : 'none';
       arrangeModeButton.style.display = discussionStarted && displayPeople().length ? 'inline-flex' : 'none';
       arrangeDragModeButton.style.display = arrangeMode && discussionStarted ? 'inline-flex' : 'none';
       snapCircleTopButton.style.display = arrangeMode && discussionStarted && displayPeople().length ? 'inline-flex' : 'none';
@@ -5188,6 +5362,7 @@ Yale University Bulldogs|#00356B|#FFFFFF|Yale
       }
     });
     document.addEventListener('keydown', e => {
+      if (isMomentOpen()) return;
       if (isRatingOpen()) return;
       const overlays = [notesOverlay, colorSchemePopup, tagSetPopup, customColorPopup, confirmRestartPopup, editParticipantsPopup, recoveryPopup];
       if (overlays.some(o => o && o.style.display === 'flex')) return;
@@ -5198,6 +5373,12 @@ Yale University Bulldogs|#00356B|#FFFFFF|Yale
         e.preventDefault();
         if (drawer.classList.contains('open')) closeDrawer();
         else switchTab('log');
+        return;
+      }
+
+      if (discussionStarted && !discussionEnded && !e.altKey && !e.ctrlKey && !e.metaKey && !e.shiftKey && k === 'Z'){
+        e.preventDefault();
+        openMomentMarker();
         return;
       }
 
@@ -5232,8 +5413,31 @@ Yale University Bulldogs|#00356B|#FFFFFF|Yale
       else selectParticipantById(pid);
     });
     document.addEventListener('keydown', e => {
+      if (isMomentOpen()){
+        if (e.ctrlKey && e.key === 'Enter'){
+          e.preventDefault();
+          saveMomentMarker();
+          return;
+        }
+        if (e.key >= '1' && e.key <= '4'){
+          e.preventDefault();
+          selectMomentType(parseInt(e.key, 10));
+          return;
+        }
+        if (e.key === 'Escape'){
+          e.preventDefault();
+          closeMomentMarker();
+          return;
+        }
+        return;
+      }
       if (!isRatingOpen()) return;
       const k = String(e.key || '').toUpperCase();
+      if (!isTypingTarget(document.activeElement) && !e.altKey && !e.ctrlKey && !e.metaKey && !e.shiftKey && k === 'Z'){
+        e.preventDefault();
+        openMomentMarker();
+        return;
+      }
       const isAltTag = e.altKey && !e.ctrlKey && !e.metaKey && k.length === 1;
       const isCmdShiftTag = e.metaKey && e.shiftKey && !e.ctrlKey && k.length === 1;
       const tagHotkeys = currentTagHotkeys();
@@ -5280,6 +5484,12 @@ Yale University Bulldogs|#00356B|#FFFFFF|Yale
       document.execCommand('insertText', false, text);
     });
     document.getElementById('comment').addEventListener('input', scheduleSave);
+    momentComment.addEventListener('paste', e => {
+      e.preventDefault();
+      const text = (e.clipboardData || window.clipboardData).getData('text/plain');
+      document.execCommand('insertText', false, text);
+    });
+    momentComment.addEventListener('input', scheduleSave);
 
     notesOverlay.addEventListener('click', e => { if (e.target === notesOverlay) closeNotesBox(); });
     colorSchemePopup.addEventListener('click', e => { if (e.target === colorSchemePopup) closeColorSchemePopup(); });
@@ -5313,6 +5523,11 @@ Yale University Bulldogs|#00356B|#FFFFFF|Yale
     window.pauseTimer = pauseTimer;
     window.selectRating = selectRating;
     window.saveContribution = saveContribution;
+    window.openMomentMarker = openMomentMarker;
+    window.closeMomentMarker = closeMomentMarker;
+    window.selectMomentType = selectMomentType;
+    window.saveMomentMarker = saveMomentMarker;
+    window.formatMomentComment = formatMomentComment;
     window.undoLastAction = undoLastAction;
     window.toggleStatsPanel = toggleStatsPanel;
     window.cycleStatsSize = cycleStatsSize;
