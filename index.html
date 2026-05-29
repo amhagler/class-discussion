@@ -1350,6 +1350,17 @@
     }
     .scheme-actions .select-button{
       flex:1 1 auto;
+      width:auto;
+      min-width:0;
+    }
+    .scheme-actions.saved-slot{
+      display:grid;
+      grid-template-columns:minmax(0, 1fr) 42px;
+    }
+    .scheme-actions.saved-slot .save-current-button,
+    .scheme-actions.saved-slot .clear-slot-button{
+      grid-column:1 / -1;
+      width:100%;
     }
     .favorite-button{
       width:38px;
@@ -5019,11 +5030,11 @@ Yale University Bulldogs|#00356B|#FFFFFF|Yale
         </div>
         <div class="team-name">${escapeHtml(name)}</div>
         <div class="scheme-meta">${saved ? 'Saved custom palette' : 'Empty saved slot'}</div>
-        <div class="scheme-actions">
+        <div class="scheme-actions saved-slot">
           <button class="select-button" style="flex:1 1 46%;" ${saved ? '' : 'disabled'}>Select</button>
           <button class="favorite-button ${isFav ? 'active' : ''}" title="${isFav ? 'Remove from favorites' : 'Add to favorites'}" ${saved ? '' : 'disabled'}>★</button>
-          <button class="select-button" style="flex:1 1 46%;background:rgba(35,97,146,.12);color:var(--ink);border:1px solid rgba(0,0,0,.10);box-shadow:none;">Save current</button>
-          <button class="select-button" style="flex:1 1 100%;background:rgba(0,0,0,.05);color:var(--ink);border:1px solid rgba(0,0,0,.10);box-shadow:none;" ${saved ? '' : 'disabled'}>Clear slot</button>
+          <button class="select-button save-current-button" style="background:rgba(35,97,146,.12);color:var(--ink);border:1px solid rgba(0,0,0,.10);box-shadow:none;">Save current</button>
+          <button class="select-button clear-slot-button" style="background:rgba(0,0,0,.05);color:var(--ink);border:1px solid rgba(0,0,0,.10);box-shadow:none;" ${saved ? '' : 'disabled'}>Clear slot</button>
         </div>
       `;
       const btns = li.querySelectorAll('button');
@@ -5041,18 +5052,34 @@ Yale University Bulldogs|#00356B|#FFFFFF|Yale
       colorSchemeList.appendChild(li);
     }
     function addCustomColorCard(){
+      const current = getCurrentPalette();
+      const customItem = {
+        name:'Custom Colors',
+        colors:[current.colors[0], current.colors[1]],
+        league:'Custom',
+        aliases:'Custom palette'
+      };
+      const isFav = isFavoriteSwatch(customItem);
       const li = document.createElement('li');
       li.className = 'scheme';
       li.innerHTML = `
         <div class="swatches">
-          <div class="swatch" style="background:#000"></div>
-          <div class="swatch" style="background:#fff"></div>
+          <div class="swatch" style="background:${escapeHtml(current.colors[0])}"></div>
+          <div class="swatch" style="background:${escapeHtml(current.colors[1])}"></div>
         </div>
         <div class="team-name">Custom Colors</div>
-        <div class="scheme-meta">Pick your own primary and secondary colors.</div>
-        <button class="select-button">Select your own</button>
+        <div class="scheme-meta">Pick your own primary and secondary colors, or favorite the current palette.</div>
+        <div class="scheme-actions">
+          <button class="select-button">Select your own</button>
+          <button class="favorite-button ${isFav ? 'active' : ''}" title="${isFav ? 'Remove from favorites' : 'Save as favorite'}">★</button>
+        </div>
       `;
-      li.querySelector('button').onclick = () => { openCustomColorPopup(); closeColorSchemePopup(); };
+      const buttons = li.querySelectorAll('button');
+      buttons[0].onclick = () => { openCustomColorPopup(); closeColorSchemePopup(); };
+      buttons[1].onclick = () => {
+        const latest = getCurrentPalette();
+        toggleFavoriteSwatch('Custom Colors', latest.colors[0], latest.colors[1], 'Custom', 'Custom palette');
+      };
       colorSchemeList.appendChild(li);
     }
     function addSchemeCard(team, opts = {}){
