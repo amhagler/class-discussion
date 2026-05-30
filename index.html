@@ -140,6 +140,55 @@
       transform:none !important;
       box-shadow:none !important;
     }
+    .btn.icon-btn{
+      width:38px;
+      height:38px;
+      padding:0;
+      border-radius:12px;
+      position:relative;
+      font-size:0;
+    }
+    .btn.icon-btn[data-icon="Keys"]{ width:48px; }
+    .btn.tracking-label{
+      width:auto;
+      height:38px;
+      padding:0 12px;
+      font-size:13px;
+    }
+    .btn.tracking-label::before,
+    .btn.tracking-label::after{
+      display:none;
+    }
+    .btn.icon-btn::before{
+      content:attr(data-icon);
+      font-size:13px;
+      font-weight:950;
+      letter-spacing:0;
+      line-height:1;
+    }
+    .btn.icon-btn::after{
+      content:attr(data-tip);
+      position:absolute;
+      left:50%;
+      top:calc(100% + 9px);
+      transform:translateX(-50%) translateY(-4px);
+      opacity:0;
+      pointer-events:none;
+      white-space:nowrap;
+      border-radius:8px;
+      padding:6px 8px;
+      background:rgba(31,35,40,.92);
+      color:#fff;
+      font-size:11px;
+      font-weight:800;
+      box-shadow:0 10px 24px rgba(0,0,0,.18);
+      transition:opacity .14s ease, transform .14s ease;
+      z-index:80;
+    }
+    .btn.icon-btn:hover::after{
+      opacity:1;
+      transform:translateX(-50%) translateY(0);
+    }
 
     .badge{
       display:inline-flex;
@@ -259,8 +308,8 @@
     }
     .workspace.stats-ended{
       display:grid;
-      grid-template-columns:minmax(620px, 1fr) minmax(250px, 330px);
-      gap:18px;
+      grid-template-columns:minmax(620px, 1fr) minmax(230px, 300px);
+      gap:clamp(28px, 4vw, 64px);
       align-items:start;
     }
     .workspace.stats-ended .stage{
@@ -278,6 +327,7 @@
       width:100%;
       transform:none;
       align-self:start;
+      justify-self:end;
     }
     @media (max-width:980px){
       .workspace.stats-ended{
@@ -308,11 +358,44 @@
       height:860px;
       border-radius:50%;
       border:2px solid rgba(0,0,0,.10);
-      background:rgba(255,255,255,.78);
+      background:
+        radial-gradient(circle at 50% 50%, rgba(35,97,146,.10) 0 16%, transparent 17%),
+        radial-gradient(circle at 50% 50%, transparent 0 62%, rgba(111,38,61,.055) 63% 64%, transparent 65%),
+        radial-gradient(circle at 50% 50%, transparent 0 78%, rgba(35,97,146,.08) 79% 80%, transparent 81%),
+        rgba(255,255,255,.78);
       box-shadow:var(--shadow);
       backdrop-filter:blur(10px);
       overflow:visible;
       transition:width .22s ease, height .22s ease, border-radius .22s ease;
+    }
+    #arena::before{
+      content:"";
+      position:absolute;
+      inset:36px;
+      border-radius:50%;
+      border:1px solid rgba(35,97,146,.10);
+      box-shadow:inset 0 0 70px rgba(35,97,146,.08);
+      pointer-events:none;
+      z-index:0;
+    }
+    #arena.empty::after{
+      content:"Ready for participants";
+      position:absolute;
+      left:50%;
+      top:50%;
+      transform:translate(-50%,-50%);
+      border-radius:14px;
+      padding:10px 14px;
+      background:rgba(255,255,255,.74);
+      border:1px solid rgba(35,97,146,.12);
+      color:var(--muted);
+      font-size:12px;
+      font-weight:900;
+      letter-spacing:.04em;
+      text-transform:uppercase;
+      box-shadow:0 12px 28px rgba(35,97,146,.10);
+      pointer-events:none;
+      z-index:3;
     }
     canvas#connectionCanvas{
       position:absolute;
@@ -411,6 +494,15 @@
       user-select:none;
       position:relative;
     }
+    .pill::after{
+      content:"";
+      position:absolute;
+      inset:-8px;
+      border-radius:999px;
+      border:2px solid transparent;
+      pointer-events:none;
+      opacity:0;
+    }
     .pill .count{
       font-size:12px;
       font-weight:700;
@@ -449,6 +541,15 @@
       transform:translateY(-1px) scale(1.03);
       box-shadow:0 16px 34px rgba(0,0,0,.16);
       outline:none;
+    }
+    .pill.active::after{
+      border-color:rgba(35,97,146,.38);
+      opacity:1;
+      animation:speakerHalo 1.25s ease-in-out infinite;
+    }
+    @keyframes speakerHalo{
+      0%, 100%{ transform:scale(.98); box-shadow:0 0 0 0 rgba(35,97,146,.20); }
+      50%{ transform:scale(1.08); box-shadow:0 0 0 7px rgba(35,97,146,.055); }
     }
     .pill.educator{
       border-radius:999px;
@@ -648,6 +749,10 @@
       border-color:transparent;
       box-shadow:0 10px 22px rgba(35,97,146,.16);
     }
+    .moment-option:nth-child(1){ border-left:5px solid rgba(35,97,146,.55); }
+    .moment-option:nth-child(2){ border-left:5px solid rgba(111,38,61,.50); }
+    .moment-option:nth-child(3){ border-left:5px solid rgba(183,121,31,.50); }
+    .moment-option:nth-child(4){ border-left:5px solid rgba(31,35,40,.38); }
     .moment-option b{
       font-size:13px;
       line-height:1.1;
@@ -853,6 +958,13 @@
       overflow:hidden;
       display:grid;
     }
+    .stats-panel .stat-card:nth-child(2){
+      background:
+        linear-gradient(135deg, rgba(35,97,146,.13), rgba(255,255,255,.70)),
+        rgba(255,255,255,.70);
+      border-color:rgba(35,97,146,.20);
+      box-shadow:0 12px 28px rgba(35,97,146,.10);
+    }
     .stats-panel::before{
       content:"";
       position:absolute;
@@ -930,7 +1042,7 @@
     }
     .stat-card{
       border:1px solid rgba(35,97,146,.10);
-      background:rgba(255,255,255,.62);
+      background:rgba(255,255,255,.52);
       border-radius:16px;
       padding:10px;
       display:grid;
@@ -977,8 +1089,9 @@
       gap:8px;
       font-size:12px;
       border-radius:12px;
-      background:rgba(35,97,146,.055);
+      background:linear-gradient(90deg, rgba(35,97,146,.10), rgba(255,255,255,.56));
       padding:7px 8px;
+      border:1px solid rgba(35,97,146,.08);
     }
     .mini-row b{
       overflow:hidden;
@@ -1336,24 +1449,40 @@
     }
     .scheme{
       border:1px solid rgba(0,0,0,.10);
-      border-radius:16px;
+      border-radius:14px;
       background:rgba(255,255,255,.70);
       padding:10px;
       display:flex;
       flex-direction:column;
       gap:10px;
+      overflow:hidden;
     }
     .swatches{ display:flex; gap:10px; align-items:center; }
+    .palette-bar{
+      height:42px;
+      margin:-10px -10px 0;
+      border-bottom:2px solid rgba(31,35,40,.18);
+      overflow:hidden;
+    }
     .swatch{
       width:30px;
       height:30px;
       border-radius:50%;
-      border:1px solid rgba(0,0,0,.10);
+      border:2px solid rgba(31,35,40,.22);
+      box-shadow:0 1px 0 rgba(255,255,255,.75) inset, 0 5px 12px rgba(0,0,0,.10);
+    }
+    .swatch.light-swatch{
+      border-color:rgba(31,35,40,.46);
+      box-shadow:
+        0 0 0 1px rgba(255,255,255,.92) inset,
+        0 0 0 1px rgba(31,35,40,.08),
+        0 5px 12px rgba(0,0,0,.12);
     }
     .scheme .team-name{
       font-size:13px;
       color:var(--ink);
       font-weight:800;
+      line-height:1.18;
     }
     .scheme .scheme-meta{
       font-size:11px;
@@ -1424,7 +1553,7 @@
     .scheme .select-button{
       width:100%;
       border:none;
-      border-radius:14px;
+      border-radius:12px;
       padding:10px 12px;
       cursor:pointer;
       background:var(--primary-color);
@@ -1551,10 +1680,118 @@
       background:rgba(35,97,146,.10) !important;
       border-top:1px solid rgba(35,97,146,.18);
     }
+
+    .hotkey-map{
+      position:fixed;
+      left:18px;
+      bottom:18px;
+      z-index:45;
+      width:min(310px, calc(100vw - 36px));
+      max-height:min(520px, calc(100vh - 110px));
+      display:none;
+      overflow:hidden;
+      border-radius:16px;
+      border:1px solid rgba(35,97,146,.18);
+      background:rgba(255,255,255,.88);
+      backdrop-filter:blur(16px);
+      box-shadow:0 18px 46px rgba(35,97,146,.16), var(--shadow-sm);
+    }
+    .hotkey-map.open{ display:grid; }
+    .hotkey-map.arrange-paused .hotkey-people{
+      opacity:.46;
+    }
+    .hotkey-map-head{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:12px;
+      border-bottom:1px solid rgba(35,97,146,.12);
+      background:linear-gradient(135deg, rgba(35,97,146,.10), rgba(111,38,61,.06));
+    }
+    .hotkey-map-head b{
+      color:var(--primary-color);
+      font-size:13px;
+      text-transform:uppercase;
+      letter-spacing:.08em;
+    }
+    .hotkey-map-body{
+      display:grid;
+      gap:10px;
+      padding:12px;
+      overflow:auto;
+    }
+    .hotkey-section-title{
+      color:var(--muted);
+      font-size:11px;
+      font-weight:900;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+      margin-bottom:6px;
+    }
+    .hotkey-grid{
+      display:grid;
+      grid-template-columns:repeat(2, minmax(0, 1fr));
+      gap:6px;
+    }
+    .hotkey-row{
+      display:flex;
+      align-items:center;
+      gap:7px;
+      min-width:0;
+      border-radius:10px;
+      background:rgba(35,97,146,.06);
+      border:1px solid rgba(35,97,146,.08);
+      padding:6px 7px;
+      font-size:12px;
+      color:var(--ink);
+    }
+    .hotkey-row.wide{
+      grid-column:1 / -1;
+    }
+    .hotkey-key{
+      min-width:26px;
+      height:24px;
+      padding:0 6px;
+      border-radius:8px;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      color:var(--secondary-color);
+      background:rgba(255,255,255,.92);
+      border:1px solid rgba(35,97,146,.18);
+      font-weight:950;
+      font-size:11px;
+      box-shadow:0 1px 0 rgba(255,255,255,.88) inset;
+      flex:0 0 auto;
+    }
+    .hotkey-name{
+      overflow:hidden;
+      text-overflow:ellipsis;
+      white-space:nowrap;
+      font-weight:800;
+    }
+    .hotkey-note{
+      color:var(--muted);
+      font-size:11px;
+      line-height:1.35;
+    }
+    .hotkey-empty{
+      color:var(--muted);
+      border:1px dashed rgba(35,97,146,.18);
+      border-radius:12px;
+      padding:9px;
+      font-size:12px;
+      line-height:1.35;
+      background:rgba(255,255,255,.56);
+    }
     .moment-row td:first-child{
       border-left:5px solid var(--secondary-color);
       color:var(--secondary-color);
       font-weight:900;
+    }
+    .moment-row td{
+      box-shadow:inset 0 1px 0 rgba(255,255,255,.62);
     }
     .moment-row td:nth-child(3){
       color:var(--secondary-color);
@@ -1666,6 +1903,13 @@
     @media (max-width:520px){
       .tag-row{ grid-template-columns:1fr; }
       .drawer-header{ align-items:flex-start; flex-direction:column; }
+      .hotkey-map{
+        left:12px;
+        right:12px;
+        bottom:12px;
+        width:auto;
+      }
+      .hotkey-grid{ grid-template-columns:1fr; }
     }
 
     @media print{
@@ -1682,6 +1926,7 @@
       #editParticipantsPopup,
       #notesBox,
       #recoveryPopup,
+      #hotkeyMap,
       .notes-out{
         display:none !important;
       }
@@ -1708,22 +1953,23 @@
 
       <div class="controls">
         <button id="endDiscussionButton" class="btn secondary" style="display:none;" onclick="endDiscussion()">End</button>
-        <button id="undoButton" class="btn ghost" style="display:none;" onclick="undoLastAction()" disabled>Undo Last</button>
-        <button id="markMomentButton" class="btn ghost" style="display:none;" onclick="openMomentMarker()" title="Mark Moment (Z)">Mark Moment</button>
-        <button id="arrangeModeButton" class="btn ghost" style="display:none;" onclick="toggleArrangeMode()">Arrange Mode</button>
-        <button id="arrangeDragModeButton" class="btn ghost" style="display:none;" onclick="toggleArrangeDragMode()">Free Drag</button>
-        <button id="snapCircleTopButton" class="btn ghost" style="display:none;" onclick="snapParticipantsToCircle()">Snap Circle</button>
-        <button id="educatorToggleButton" class="btn ghost" style="display:none;" onclick="toggleEducatorVisibility()">Hide Educator</button>
-        <button id="statsToggleButton" class="btn ghost" style="display:none;" onclick="toggleStatsPanel()">Hide Stats</button>
-        <button id="toggleDrawerButton" class="btn ghost" onclick="toggleDrawer()">Open Panel</button>
-        <button id="helpButton" class="btn ghost" onclick="openHelpDrawer()" title="How to use the Discussion Tracker">Help</button>
+        <button id="undoButton" class="btn ghost icon-btn" data-icon="↶" data-tip="Undo Last" style="display:none;" onclick="undoLastAction()" disabled>Undo Last</button>
+        <button id="markMomentButton" class="btn ghost icon-btn tracking-label" data-icon="Z" data-tip="Mark Moment" style="display:none;" onclick="openMomentMarker()" title="Mark Moment (Z)">Mark Moment</button>
+        <button id="arrangeModeButton" class="btn ghost icon-btn tracking-label" data-icon="A" data-tip="Arrange Mode" style="display:none;" onclick="toggleArrangeMode()">Arrange Mode</button>
+        <button id="arrangeDragModeButton" class="btn ghost icon-btn tracking-label" data-icon="D" data-tip="Free Drag" style="display:none;" onclick="toggleArrangeDragMode()">Free Drag</button>
+        <button id="snapCircleTopButton" class="btn ghost icon-btn tracking-label" data-icon="O" data-tip="Snap Circle" style="display:none;" onclick="snapParticipantsToCircle()">Snap Circle</button>
+        <button id="educatorToggleButton" class="btn ghost icon-btn tracking-label" data-icon="B" data-tip="Hide Educator" style="display:none;" onclick="toggleEducatorVisibility()">Hide Educator</button>
+        <button id="statsToggleButton" class="btn ghost icon-btn tracking-label" data-icon="Σ" data-tip="Hide Stats" style="display:none;" onclick="toggleStatsPanel()">Hide Stats</button>
+        <button id="hotkeyMapButton" class="btn ghost icon-btn" data-icon="Keys" data-tip="Show Hotkeys" style="display:none;" onclick="toggleHotkeyMap()">Hotkeys</button>
+        <button id="toggleDrawerButton" class="btn ghost icon-btn" data-icon="/" data-tip="Open Log" onclick="toggleDrawer()">Log Panel</button>
+        <button id="helpButton" class="btn ghost icon-btn" data-icon="?" data-tip="Help" onclick="openHelpDrawer()" title="How to use the Discussion Tracker">Help</button>
         <button id="copyBothButton" class="btn" style="display:none;" onclick="copyBoth()">Copy Both</button>
         <button id="restartDiscussionButton" class="btn" style="display:none;" onclick="confirmRestartDiscussion()">Restart</button>
         <button id="generateReportButton" class="btn secondary" style="display:none;" onclick="generateReport()">Generate Report</button>
-        <button id="colorSchemeButton" class="btn ghost" onclick="openColorSchemePopup()">Colors</button>
-        <button id="tagSetButton" class="btn ghost" onclick="openTagSetPopup()">Tags</button>
-        <button id="editParticipantsButton" class="btn ghost" style="display:none;" onclick="openEditParticipantsPopup()">Participants</button>
-        <button id="exportScreenshotButton" class="btn ghost" style="display:none;" onclick="exportScreenshot()">Screenshot / Snip</button>
+        <button id="colorSchemeButton" class="btn ghost icon-btn" data-icon="◐" data-tip="Colors" onclick="openColorSchemePopup()">Colors</button>
+        <button id="tagSetButton" class="btn ghost icon-btn" data-icon="#" data-tip="Tags" onclick="openTagSetPopup()">Tags</button>
+        <button id="editParticipantsButton" class="btn ghost icon-btn" data-icon="P" data-tip="Participants" style="display:none;" onclick="openEditParticipantsPopup()">Participants</button>
+        <button id="exportScreenshotButton" class="btn ghost icon-btn" data-icon="▣" data-tip="Capture" style="display:none;" onclick="exportScreenshot()">Screenshot / Snip</button>
         <button class="btn ghost" onclick="window.open('https://venmo.com/Ari-Hagler-2','_blank')" title="This tool is always free for teachers. If you find it useful, feel free to buy me a caffeinated beverage.">Buy Me Caffeine</button>
       </div>
     </div>
@@ -1788,10 +2034,10 @@
 
     <div class="workspace">
       <div class="stage" id="stage">
-        <div id="arena">
+        <div id="arena" class="empty">
           <canvas id="connectionCanvas"></canvas>
 
-          <div id="pauseCenter" class="pause-center">
+          <div id="pauseCenter" class="pause-center" style="display:none;">
             <button class="pause-circle" title="Pause (ends current speaking segment)" onclick="pauseTimer()">
               <span class="pause-icon">||</span>
             </button>
@@ -1928,6 +2174,14 @@
         </div>
       </aside>
     </div>
+
+    <aside id="hotkeyMap" class="hotkey-map" aria-hidden="true">
+      <div class="hotkey-map-head">
+        <b>Hotkeys</b>
+        <button class="stats-mini-btn" type="button" onclick="toggleHotkeyMap()">Close</button>
+      </div>
+      <div class="hotkey-map-body" id="hotkeyMapBody"></div>
+    </aside>
   </div>
 
   <div id="drawerBackdrop" class="drawer-backdrop" onclick="closeDrawer()"></div>
@@ -2256,6 +2510,7 @@
     const arrangeModeButton = document.getElementById('arrangeModeButton');
     const arrangeDragModeButton = document.getElementById('arrangeDragModeButton');
     const statsToggleButton = document.getElementById('statsToggleButton');
+    const hotkeyMapButton = document.getElementById('hotkeyMapButton');
     const statsSizeButton = document.getElementById('statsSizeButton');
     const classAverageToggleButton = document.getElementById('classAverageToggleButton');
     const recentReviewToggleButton = document.getElementById('recentReviewToggleButton');
@@ -2318,6 +2573,8 @@
     const recentReviewList = document.getElementById('recentReviewList');
     const workspace = document.querySelector('.workspace');
     const replayDock = document.getElementById('replayDock');
+    const hotkeyMap = document.getElementById('hotkeyMap');
+    const hotkeyMapBody = document.getElementById('hotkeyMapBody');
 
     const helpDrawer = document.getElementById('helpDrawer');
     const helpDrawerBackdrop = document.getElementById('helpDrawerBackdrop');
@@ -2354,6 +2611,7 @@
     let favoriteColorSwatches = [];
     let undoStack = [];
     let selectedTagsForEntry = new Set();
+    let hotkeyMapVisible = false;
     let autosaveTimer = null;
 
     let arenaW = 860;
@@ -2924,6 +3182,7 @@ Yale University Bulldogs|#00356B|#FFFFFF|Yale
         educatorHidden,
         classAverageVisible,
         recentReviewVisible,
+        hotkeyMapVisible,
         tagsEnabled,
         activeTagSet: structuredClone(activeTagSet),
         logRows: getLogRowsState(),
@@ -2958,6 +3217,7 @@ Yale University Bulldogs|#00356B|#FFFFFF|Yale
       educatorHidden = !!snap.educatorHidden;
       classAverageVisible = snap.classAverageVisible !== false;
       recentReviewVisible = snap.recentReviewVisible !== false;
+      hotkeyMapVisible = !!snap.hotkeyMapVisible;
       tagsEnabled = snap.tagsEnabled !== false;
       if (snap.activeTagSet?.tags){
         activeTagSet = {
@@ -3118,6 +3378,7 @@ Yale University Bulldogs|#00356B|#FFFFFF|Yale
       document.getElementById('statsPanel').classList.toggle('compact', compact);
       document.getElementById('statsPanel').classList.toggle('ended', discussionEnded);
       statsToggleButton.textContent = hidden ? 'Show Stats' : 'Hide Stats';
+      statsToggleButton.dataset.tip = hidden ? 'Show Stats' : 'Hide Stats';
       statsSizeButton.textContent = compact ? 'Normal' : 'Compact';
       classAverageToggleButton.textContent = classAverageVisible ? 'Hide Avg' : 'Show Avg';
       recentReviewToggleButton.textContent = recentReviewVisible ? 'Hide Review' : 'Show Review';
@@ -3129,6 +3390,7 @@ Yale University Bulldogs|#00356B|#FFFFFF|Yale
         if (displayPeople().length) placeParticipants();
         redrawConnections();
         positionFloatingPanels();
+        renderHotkeyMap();
       });
     }
     function cycleStatsSize(){
@@ -3189,16 +3451,19 @@ Yale University Bulldogs|#00356B|#FFFFFF|Yale
     function applyArrangeMode(){
       arrangeModeButton.classList.toggle('secondary', arrangeMode);
       arrangeModeButton.textContent = arrangeMode ? 'Tracking Mode' : 'Arrange Mode';
+      arrangeModeButton.dataset.tip = arrangeMode ? 'Tracking Mode' : 'Arrange Mode';
       snapCircleButton.style.display = arrangeMode && discussionStarted && displayPeople().length ? '' : 'none';
       snapCircleTopButton.style.display = arrangeMode && discussionStarted && displayPeople().length ? 'inline-flex' : 'none';
       arrangeDragModeButton.style.display = arrangeMode && discussionStarted ? 'inline-flex' : 'none';
       arrangeDragModeButton.textContent = arrangeDragMode === 'free' ? 'Free Drag' : 'Ring Order';
+      arrangeDragModeButton.dataset.tip = arrangeDragMode === 'free' ? 'Free Drag' : 'Ring Order';
       arrangeDragModeButton.classList.toggle('secondary', arrangeMode);
       snapCircleTopButton.classList.toggle('secondary', arrangeMode);
       snapCircleButton.classList.toggle('secondary', arrangeMode);
       placeParticipants();
       redrawConnections();
       positionFloatingPanels();
+      renderHotkeyMap();
     }
 
     function toggleArrangeMode(){
@@ -3224,9 +3489,11 @@ Yale University Bulldogs|#00356B|#FFFFFF|Yale
         if (currentSpeakerId === educator.id) pauseTimer();
       }
       educatorToggleButton.textContent = educatorHidden ? 'Show Educator' : 'Hide Educator';
+      educatorToggleButton.dataset.tip = educatorHidden ? 'Show Educator' : 'Hide Educator';
       placeParticipants();
       redrawConnections();
       updateStats();
+      renderHotkeyMap();
       scheduleSave();
     }
 
@@ -3262,10 +3529,15 @@ Yale University Bulldogs|#00356B|#FFFFFF|Yale
       const ringCount = ringPeople().length;
       arena.classList.toggle('crowded', ringCount > 14 && ringCount <= 22);
       arena.classList.toggle('very-crowded', ringCount > 22);
-      if (!people.length) return;
+      arena.classList.toggle('empty', people.length === 0);
+      if (!people.length){
+        renderHotkeyMap();
+        return;
+      }
 
       participants.forEach((p, i) => p.hotkeyLabel = hotkeyForIndex(i));
       if (educator) educator.hotkeyLabel = 'B';
+      renderHotkeyMap();
 
       const pillH = cssNumVar('--pill-h', 56);
       const inset = pillH * 0.22;
@@ -3486,6 +3758,49 @@ Yale University Bulldogs|#00356B|#FFFFFF|Yale
       if (idx >= 0) return 20 + idx;
       return null;
     }
+    function toggleHotkeyMap(){
+      hotkeyMapVisible = !hotkeyMapVisible;
+      renderHotkeyMap();
+      scheduleSave();
+    }
+    function hotkeyRow(key, label, extraClass = ''){
+      return `<div class="hotkey-row ${escapeHtml(extraClass)}"><span class="hotkey-key">${escapeHtml(key)}</span><span class="hotkey-name">${escapeHtml(label)}</span></div>`;
+    }
+    function renderHotkeyMap(){
+      if (!hotkeyMap || !hotkeyMapBody) return;
+      hotkeyMap.classList.toggle('open', hotkeyMapVisible);
+      hotkeyMap.classList.toggle('arrange-paused', arrangeMode);
+      hotkeyMap.setAttribute('aria-hidden', hotkeyMapVisible ? 'false' : 'true');
+      if (hotkeyMapButton){
+        hotkeyMapButton.classList.toggle('secondary', hotkeyMapVisible);
+        hotkeyMapButton.dataset.tip = hotkeyMapVisible ? 'Hide Hotkeys' : 'Show Hotkeys';
+      }
+      const globalRows = [
+        hotkeyRow('/', 'Log panel'),
+        hotkeyRow('Z', 'Mark moment'),
+        hotkeyRow('Esc', 'Close panel'),
+        hotkeyRow('Ctrl+Enter', 'Save comment', 'wide')
+      ];
+      if (educator && !educatorHidden) globalRows.splice(2, 0, hotkeyRow('B', educator.name || 'Educator'));
+      const peopleRows = participants
+        .map((p, idx) => ({ p, key:p.hotkeyLabel || hotkeyForIndex(idx) }))
+        .filter(item => item.key)
+        .map(item => hotkeyRow(item.key, item.p.name));
+      const peopleBlock = peopleRows.length
+        ? `<div class="hotkey-grid hotkey-people">${peopleRows.join('')}</div>`
+        : '<div class="hotkey-empty">Participant shortcuts appear after students are added.</div>';
+      hotkeyMapBody.innerHTML = `
+        <div>
+          <div class="hotkey-section-title">Participants</div>
+          ${peopleBlock}
+        </div>
+        <div>
+          <div class="hotkey-section-title">Global</div>
+          <div class="hotkey-grid">${globalRows.join('')}</div>
+        </div>
+        <div class="hotkey-note">${arrangeMode ? 'Tracking hotkeys are paused while Arrange Mode is on. ' : ''}Alt+Shift+participant key opens notes.</div>
+      `;
+    }
 
     function startDiscussion(){
       const titleInput = document.getElementById('discussionTitle').value.trim();
@@ -3567,6 +3882,7 @@ Yale University Bulldogs|#00356B|#FFFFFF|Yale
       undoButton.style.display = 'inline-flex';
       markMomentButton.style.display = 'inline-flex';
       arrangeModeButton.style.display = 'inline-flex';
+      hotkeyMapButton.style.display = 'inline-flex';
       educatorToggleButton.style.display = educator ? 'inline-flex' : 'none';
       educatorToggleButton.textContent = educatorHidden ? 'Show Educator' : 'Hide Educator';
       statsToggleButton.style.display = 'inline-flex';
@@ -3950,6 +4266,7 @@ Yale University Bulldogs|#00356B|#FFFFFF|Yale
       endDiscussionButton.style.display = 'none';
       undoButton.style.display = 'none';
       markMomentButton.style.display = 'none';
+      hotkeyMapButton.style.display = 'inline-flex';
       arrangeModeButton.style.display = displayPeople().length ? 'inline-flex' : 'none';
       arrangeDragModeButton.style.display = arrangeMode ? 'inline-flex' : 'none';
       snapCircleTopButton.style.display = arrangeMode && displayPeople().length ? 'inline-flex' : 'none';
@@ -5147,6 +5464,30 @@ Yale University Bulldogs|#00356B|#FFFFFF|Yale
         .toLowerCase()
         .includes(query);
     }
+    function colorWithAlpha(hex, alpha){
+      const clean = String(hex || '').trim();
+      if (!/^#[0-9a-f]{6}$/i.test(clean)) return clean || 'rgba(0,0,0,.12)';
+      const r = parseInt(clean.slice(1, 3), 16);
+      const g = parseInt(clean.slice(3, 5), 16);
+      const b = parseInt(clean.slice(5, 7), 16);
+      return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+    function isLightColor(hex){
+      const clean = String(hex || '').trim();
+      if (!/^#[0-9a-f]{6}$/i.test(clean)) return false;
+      const r = parseInt(clean.slice(1, 3), 16);
+      const g = parseInt(clean.slice(3, 5), 16);
+      const b = parseInt(clean.slice(5, 7), 16);
+      return ((r * 299 + g * 587 + b * 114) / 1000) > 225;
+    }
+    function swatchClass(hex){
+      return isLightColor(hex) ? 'swatch light-swatch' : 'swatch';
+    }
+    function paletteGradient(primary, secondary){
+      const p = escapeHtml(primary);
+      const s = escapeHtml(secondary);
+      return `linear-gradient(90deg, ${p} 0%, ${colorWithAlpha(primary, .74)} 22%, ${colorWithAlpha(secondary, .74)} 78%, ${s} 100%)`;
+    }
     function addSchemeEmpty(message){
       const li = document.createElement('li');
       li.className = 'scheme-empty';
@@ -5197,9 +5538,10 @@ Yale University Bulldogs|#00356B|#FFFFFF|Yale
       const li = document.createElement('li');
       li.className = 'scheme';
       li.innerHTML = `
+        <div class="palette-bar" aria-hidden="true" style="background:${paletteGradient(c1, c2)}"></div>
         <div class="swatches">
-          <div class="swatch" style="background:${escapeHtml(c1)}"></div>
-          <div class="swatch" style="background:${escapeHtml(c2)}"></div>
+          <div class="${swatchClass(c1)}" style="background:${escapeHtml(c1)}"></div>
+          <div class="${swatchClass(c2)}" style="background:${escapeHtml(c2)}"></div>
         </div>
         <div class="team-name">${escapeHtml(name)}</div>
         <div class="scheme-meta">${saved ? 'Saved custom palette' : 'Empty saved slot'}</div>
@@ -5236,9 +5578,10 @@ Yale University Bulldogs|#00356B|#FFFFFF|Yale
       const li = document.createElement('li');
       li.className = 'scheme';
       li.innerHTML = `
+        <div class="palette-bar" aria-hidden="true" style="background:${paletteGradient(current.colors[0], current.colors[1])}"></div>
         <div class="swatches">
-          <div class="swatch" style="background:${escapeHtml(current.colors[0])}"></div>
-          <div class="swatch" style="background:${escapeHtml(current.colors[1])}"></div>
+          <div class="${swatchClass(current.colors[0])}" style="background:${escapeHtml(current.colors[0])}"></div>
+          <div class="${swatchClass(current.colors[1])}" style="background:${escapeHtml(current.colors[1])}"></div>
         </div>
         <div class="team-name">Custom Colors</div>
         <div class="scheme-meta">Pick your own primary and secondary colors, or favorite the current palette.</div>
@@ -5262,9 +5605,10 @@ Yale University Bulldogs|#00356B|#FFFFFF|Yale
       const favoriteLabel = opts.favoriteView && team.label ? `<div class="favorite-label">${escapeHtml(team.label)}</div>` : '';
       const meta = opts.favoriteView ? `${team.league || 'Favorite'} · ${team.name}` : (team.league || '');
       li.innerHTML = `
+        <div class="palette-bar" aria-hidden="true" style="background:${paletteGradient(team.colors[0], team.colors[1])}"></div>
         <div class="swatches">
-          <div class="swatch" style="background:${team.colors[0]}"></div>
-          <div class="swatch" style="background:${team.colors[1]}"></div>
+          <div class="${swatchClass(team.colors[0])}" style="background:${team.colors[0]}"></div>
+          <div class="${swatchClass(team.colors[1])}" style="background:${team.colors[1]}"></div>
         </div>
         ${favoriteLabel}
         <div class="team-name">${escapeHtml(opts.favoriteView && team.label ? team.label : team.name)}</div>
@@ -5318,6 +5662,7 @@ Yale University Bulldogs|#00356B|#FFFFFF|Yale
       endDiscussionButton.style.display = discussionStarted && !discussionEnded && displayPeople().length ? 'inline-flex' : 'none';
       undoButton.style.display = discussionStarted && !discussionEnded ? 'inline-flex' : 'none';
       markMomentButton.style.display = discussionStarted && !discussionEnded ? 'inline-flex' : 'none';
+      hotkeyMapButton.style.display = discussionStarted ? 'inline-flex' : 'none';
       arrangeModeButton.style.display = discussionStarted && displayPeople().length ? 'inline-flex' : 'none';
       arrangeDragModeButton.style.display = arrangeMode && discussionStarted ? 'inline-flex' : 'none';
       snapCircleTopButton.style.display = arrangeMode && discussionStarted && displayPeople().length ? 'inline-flex' : 'none';
@@ -5333,7 +5678,7 @@ Yale University Bulldogs|#00356B|#FFFFFF|Yale
       copyBothDrawerButton.style.display = discussionEnded && !tabReport.disabled ? 'inline-flex' : 'none';
       exportFileButton.style.display = discussionStarted ? 'inline-flex' : 'none';
       copyLogButton.style.display = discussionStarted ? 'inline-flex' : 'none';
-      pauseCenter.style.display = discussionStarted && !discussionEnded ? 'block' : 'none';
+      pauseCenter.style.display = discussionStarted && !discussionEnded && displayPeople().length ? 'block' : 'none';
       replayDock.classList.toggle('open', discussionEnded);
       replayDock.setAttribute('aria-hidden', discussionEnded ? 'false' : 'true');
       applyStatsMode();
@@ -5344,6 +5689,7 @@ Yale University Bulldogs|#00356B|#FFFFFF|Yale
       updateLogCount();
       updateStats();
       updateUndoButton();
+      renderHotkeyMap();
     }
 
     document.getElementById('discussionTitle').addEventListener('keydown', e => {
@@ -5514,6 +5860,7 @@ Yale University Bulldogs|#00356B|#FFFFFF|Yale
       updateStageSize();
       tickClockAndStats();
       updateUndoButton();
+      renderHotkeyMap();
       checkForRecovery();
     });
 
@@ -5528,6 +5875,7 @@ Yale University Bulldogs|#00356B|#FFFFFF|Yale
     window.selectMomentType = selectMomentType;
     window.saveMomentMarker = saveMomentMarker;
     window.formatMomentComment = formatMomentComment;
+    window.toggleHotkeyMap = toggleHotkeyMap;
     window.undoLastAction = undoLastAction;
     window.toggleStatsPanel = toggleStatsPanel;
     window.cycleStatsSize = cycleStatsSize;
